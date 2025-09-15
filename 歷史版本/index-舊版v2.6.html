@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現金管理計算工具 v2.6</title>
+    <style>
+        /* --- 基本樣式和變數 --- */
+        :root {
+            --primary: #0d47a1; --primary-light: #1a73e8; --secondary: #34a853; --tertiary: #fbbc05; --danger: #ea4335; --warning: #ff9800; --light: #f8f9fa; --dark: #202124; --shadow: 0 4px 6px rgba(0, 0, 0, 0.1); --radius: 8px;
+            --note-1000: #3D93F0; --note-500: #C6A27B; --note-100: #DE4545; --coin-50: #DAA520; --coin-10: #453A3A; --coin-5: #A3A3A3; --coin-1: #790C0C;
+            --success: #28a745; --gray: #6c757d;
+        }
+        * {box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;}
+        body {background-color: #f0f2f5; color: var(--dark); line-height: 1.6; padding: 0.5rem;}
+        .container {max-width: 960px; margin: 0 auto; padding: 0 1rem;}
+        .header {text-align: center; margin: 1rem 0; color: var(--primary);}
+        .header h1 {margin-bottom: 0.5rem;}
+        .card {background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; margin-bottom: 1rem; border-top: 4px solid var(--primary);}
+        .section-title {color: var(--primary); margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--tertiary); font-size: 1.4rem; font-weight: 700;}
+        .subsection-title {color: var(--secondary); margin-top: 1rem; margin-bottom: 0.6rem; font-size: 1.2rem; font-weight: 600; display: flex; align-items: center;}
+        .subsection-title:before {content: ""; display: inline-block; width: 6px; height: 18px; background-color: var(--secondary); margin-right: 8px; border-radius: 3px;}
+        .input-form {display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem;}
+        .input-group {margin-bottom: 0.8rem; position: relative;}
+        .input-group label {display: block; margin-bottom: 0.4rem; font-weight: 600;}
+        .input-flexbox {display: flex; gap: 0.5rem; align-items: center;}
+        .bag-input {width: 25%; padding: 0.7rem 0.5rem; border: 2px solid #ddd; border-radius: var(--radius); font-size: 1rem; text-align: center; background-color: #f0f0f0;}
+        .amount-input {width: 75%; padding: 0.7rem; border: 2px solid #ddd; border-radius: var(--radius); font-size: 1.1rem; transition: all 0.3s; background-color: #f9f9f9;}
+        .input-group input:focus, .input-group select:focus {border-color: var(--primary-light); outline: none; box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2); background-color: white;}
+        .input-error {border-color: var(--danger) !important; animation: pulse-error 1.5s infinite;}
+        .error-message {color: var(--danger); font-size: 0.8rem; margin-top: 0.3rem; display: none; font-weight: bold;}
+        .error-message.active {display: block; animation: fadeIn 0.3s;}
+        .btn {background-color: var(--primary-light); color: white; border: none; border-radius: var(--radius); padding: 0.75rem 1.5rem; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; display: inline-block; text-align: center; font-weight: 600; letter-spacing: 0.5px; position: relative; overflow: hidden;}
+        .btn:hover:not(:disabled) {background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);}
+        .btn:active:not(:disabled) {transform: translateY(0);}
+        .btn:disabled {background-color: #aaa; cursor: not-allowed;}
+        .btn-block {display: block; width: 100%;}
+        .btn-clear {background-color: #6c757d;}
+        .btn-clear .progress-bar {position: absolute; top:0; left:0; height: 100%; background: rgba(255,255,255,0.3); width: 0; transition: width 0.1s linear;}
+        .btn-clear:hover {background-color: #5a6268;}
+        .btn-simulate {background-color: #28a745;}
+        .btn-simulate:hover {background-color: #218838;}
+        .buttons-row {display: flex; gap: 0.5rem; margin-bottom: 1rem;}
+        .buttons-row .btn {flex: 1;}
+        .result-section {display: none;}
+        .result-section.active {display: block; animation: fadeIn 0.5s;}
+        @keyframes fadeIn {from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);}}
+        @keyframes pulse-error {0% {box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.4);} 70% {box-shadow: 0 0 0 6px rgba(234, 67, 53, 0);} 100% {box-shadow: 0 0 0 0 rgba(234, 67, 53, 0);}}
+        .result-block {background-color: #f9f9f9; border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; border-left: 6px solid var(--tertiary);}
+        .warning-block {background-color: #fff3e0; border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; border-left: 6px solid var(--warning); position: relative;}
+        .warning-block:after {content: "⚠️"; position: absolute; top: 10px; right: 10px; font-size: 1.5rem; opacity: 0.2;}
+        .warning-title {color: var(--warning); font-weight: bold; margin-bottom: 0.6rem; font-size: 1.1rem; display: flex; align-items: center;}
+        .warning-title:before {content: "⚠️"; margin-right: 6px;}
+        .result-row {display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px dashed #e0e0e0;}
+        .result-row:last-child {border-bottom: none;}
+        .result-row .label {flex: 1; font-weight: 500;}
+        .result-row .value {text-align: right; font-weight: 600; min-width: 160px;}
+        .result-total {font-weight: bold; font-size: 1.15rem; color: var(--primary); border-top: 2px solid var(--tertiary); padding-top: 0.6rem; margin-top: 0.6rem;}
+        .coin-detail {font-size: 0.95rem; color: #555; margin-top: 0.6rem; padding: 0.6rem; border-radius: var(--radius); background-color: #efefef; border-left: 3px solid #bbb;}
+        .denomination {display: flex; align-items: center; margin-bottom: 6px;}
+        .denom-icon {width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 10px; border-radius: 50%; font-weight: bold; color: white; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;}
+        .note-1000 {background-color: var(--note-1000);} .note-500 {background-color: var(--note-500);} .note-100 {background-color: var(--note-100);} .coin-50 {background-color: var(--coin-50);} .coin-10 {background-color: var(--coin-10);} .coin-5 {background-color: var(--coin-5);} .coin-1 {background-color: var(--coin-1);}
+        .money-amount {font-size: 1.2rem; font-weight: 700; color: var(--primary);}
+        .summary-grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem;}
+        .summary-box {display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #e8f0fe; border-radius: var(--radius); padding: 0.6rem; border: 1px solid #c0d6f9; text-align: center; transition: all 0.3s;}
+        .summary-box.highlight-box {grid-column: 1 / -1; background-color: var(--secondary); border-color: var(--secondary); color: white;}
+        .summary-box.highlight-box .summary-title, .summary-box.highlight-box .summary-value {color: white;}
+        .summary-title {font-weight: 600; font-size: 0.95rem; line-height: 1.2; white-space: nowrap;}
+        .summary-value {font-size: 1.5rem; font-weight: 700; margin-top: 0.3rem; color: var(--primary);}
+        .summary-box.error {background-color: #ffebee; border-color: #ffcdd2; animation: pulse-error 1.5s infinite;}
+        .collapsible-header {cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+        .collapsible-header::after {content: "▼"; font-size: 0.8rem; transition: transform 0.3s; margin-left: 0.5rem;}
+        .collapsible-header.collapsed::after {transform: rotate(-90deg);}
+        .collapsible-content {overflow: hidden; max-height: 0; transition: max-height 0.5s ease-in-out; border-top: 1px solid #eee; padding-top: 0;}
+        .collapsible-content.active {max-height: 2000px; padding-top: 1rem;}
+        hr.orange-separator {border: none; border-top: 3px solid var(--warning); box-shadow: 0 0 8px rgba(255, 168, 0, 0.7); margin: 0.8rem 0;}
+        .modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);}
+        .modal-content {background-color: #fefefe; margin: 5% auto; padding: 0; border: 1px solid #888; width: 90%; max-width: 600px; border-radius: var(--radius); box-shadow: 0 4px 10px rgba(0,0,0,0.2); animation: slideDown 0.4s; overflow: hidden;}
+        @keyframes slideDown {from {opacity: 0; transform: translateY(-30px);} to {opacity: 1; transform: translateY(0);}}
+        .modal-header {background-color: var(--primary-light); color: white; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center;}
+        .modal-header h3 {margin: 0; font-size: 1.2rem;}
+        .close {color: white; font-size: 24px; font-weight: bold; cursor: pointer; opacity: 0.8; line-height: 1;}
+        .close:hover {opacity: 1;}
+        .modal-body {padding: 1rem; max-height: 70vh; overflow-y: auto;}
+        .table-container { overflow-x: auto; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .manual-section h4 { margin-top: 1rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .manual-section p, .manual-section ul { margin-bottom: 0.8rem; }
+        .manual-section ul { padding-left: 20px; }
+        .exchange-section {margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;}
+        .exchange-field {margin-bottom: 1rem;}
+        .exchange-field label {display: block; margin-bottom: 0.4rem; font-weight: 600;}
+        .exchange-input {width: 100%; padding: 0.7rem; border: 2px solid #ddd; border-radius: var(--radius); font-size: 1.1rem; background-color: #f9f9f9;}
+        .exchange-select {width: 100%; padding: 0.7rem; border: 2px solid #ddd; border-radius: var(--radius); font-size: 1rem; background-color: #f9f9f9;}
+        .exchange-info {background-color: #e8f0fe; padding: 1rem; border-radius: var(--radius); margin-top: 1rem;}
+        .exchange-info div {margin-bottom: 0.4rem; line-height: 1.5;}
+        .exchange-arrow {display: flex; justify-content: center; margin: 1rem 0; color: var(--primary); font-size: 2rem;}
+        .btn-exchange {background-color: var(--primary-light); width: 100%; padding: 0.8rem; font-size: 1.2rem;}
+        .info-btn {background-color: var(--primary-light); color: white; border: none; border-radius: var(--radius); padding: 0.4rem 0.8rem; margin: 0.4rem; font-size: 0.9rem; cursor: pointer;}
+        .action-buttons {display: flex; justify-content: center; gap: 8px; margin: 12px 0 8px; flex-wrap: wrap;}
+        
+        .item {display: flex; align-items: center; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;}
+        .item-content { flex: 1; min-width: 0; margin: 0 12px; }
+        .amount {font-size: 1.2rem; font-weight: 700; word-break: break-all; }
+        .meta {font-size: 1.0rem; font-weight: 600; background-color: #e8f5e9; color: #2c3e50; border: 1px solid #c8e6c9; border-radius: 4px; padding: 0.15rem 0.4rem; margin-left: auto; white-space: nowrap; flex-shrink: 0;}
+
+        .d1000 { background: var(--note-1000); } .d500 { background: var(--note-500); } .d100 { background: var(--note-100); } .d50 { background: var(--coin-50); } .d10 { background: var(--coin-10); } .d5 { background: var(--coin-5); } .d1 { background: var(--coin-1); }
+        .highlight-amount-pack {font-size: 1.8rem; font-weight: 800; background-color: var(--tertiary); color: var(--dark); padding: 0.2rem 0.6rem; border-radius: var(--radius); margin-right: 0.5rem; display: inline-block;}
+        .coin-pack-loose-count {font-size: 0.9rem; font-weight: 600; background-color: #e8f5e9; color: #2c3e50; border: 1px solid #c8e6c9; border-radius: 4px; padding: 0.15rem 0.4rem; white-space: nowrap; margin-left: 0.5rem;}
+        .coin-pack-value-container {margin-left: auto; display: flex; align-items: center; white-space: nowrap;}
+        .picker-group { display: flex; align-items: center; margin-bottom: 10px; }
+        .picker-group label { flex-basis: 100px; margin-right: 10px; font-weight: 600; }
+        .picker-group input[type="color"] { width: 60px; height: 30px; border: none; padding: 0; background: none; cursor: pointer; }
+        .hex-value { margin-left: 10px; font-family: monospace; font-size: 0.9em; color: #555; }
+        
+        .input-stepper { display: flex; align-items: center; gap: 4px; }
+        .input-stepper input { text-align: center; flex-grow: 1; width: 0; }
+        .stepper-btn { font-size: 1.2rem; font-weight: bold; color: var(--primary); background-color: #e8f0fe; border: 1px solid #c0d6f9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background-color 0.2s; flex-shrink: 0; }
+        .stepper-btn:hover { background-color: #d0e0fd; }
+        .stepper-btn:active { background-color: #b9d0fb; }
+        
+        .exchange-grid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: flex-start; gap: 1rem; }
+        .exchange-panel { padding: 1rem; border: 1px solid #ddd; border-radius: var(--radius); background: #fdfdfd; }
+        .exchange-panel h4 { color: var(--primary); margin-bottom: 0.5rem; }
+        .exchange-live-preview { font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem; min-height: 4.5em; border-left: 3px solid #eee; padding-left: 8px;}
+        .exchange-live-preview .swap-path { font-weight: bold; }
+        .exchange-live-preview .swap-path.possible { color: var(--success); }
+        .exchange-live-preview .swap-path.impossible { color: var(--danger); }
+        .history-controls { margin-top: 1rem; }
+        .history-log { background: #f1f3f4; border-radius: var(--radius); padding: 0.8rem; margin-top: 0.5rem; max-height: 200px; overflow-y: auto; }
+        .history-log-item { padding: 0.5rem; border-bottom: 1px solid #e0e0e0; cursor: pointer; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .history-log-item:last-child { border-bottom: none; }
+        .history-log-item:hover { background-color: #e8f0fe; }
+        .history-log-item.active { background-color: var(--tertiary); color: var(--dark); font-weight: bold; }
+        .history-timestamp { font-size: 0.8rem; color: var(--gray); margin-right: 1rem; flex-shrink: 0;}
+        .history-action { flex-grow: 1; }
+        .update-highlight { animation: flash-highlight 2s ease-out; }
+        @keyframes flash-highlight {
+            0%, 100% { background-color: transparent; }
+            25%, 75% { background-color: var(--tertiary); }
+        }
+
+        @media (max-width: 768px) {
+            .input-form {grid-template-columns: 1fr;}
+            .result-row {flex-direction: column; align-items: flex-start;}
+            .result-row .value {text-align: left; margin-top: 3px;}
+            .exchange-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>現金管理計算工具 v2.6</h1>
+            <p>輸入各面額總金額，系統自動計算零錢處理、預留零用金和營收上繳</p>
+            <div class="action-buttons">
+                <button id="show-package-info" class="info-btn">硬幣&紙鈔包裝資訊</button>
+                <button id="show-manual" class="info-btn">查看使用說明</button>
+                <button id="show-exchange" class="info-btn">面額換算工具 (總額)</button>
+                <button id="custom-color-btn" class="info-btn">自訂面額顏色</button>
+                <button id="show-changelog" class="info-btn">📅 每日更新紀錄</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-section">
+                <div class="buttons-row">
+                    <button id="clear-btn" class="btn btn-clear">
+                        <span class="btn-text">清除數值</span>
+                        <div class="progress-bar"></div>
+                    </button>
+                    <button id="simulate-btn" class="btn btn-simulate">模擬數值</button>
+                </div>
+                <h2 class="section-title">輸入各面額總金額</h2>
+                <div class="input-form">
+                    <div class="input-group"><div class="denomination"><div class="denom-icon note-1000">1K</div><label for="amount1000">1000 元</label></div><input type="text" id="amount1000" data-denomination="1000" data-is-count-mode="false" placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;"><div id="error1000" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon note-500">500</div><label for="amount500">500 元</label></div><input type="text" id="amount500" data-denomination="500" data-is-count-mode="false" placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;"><div id="error500" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon note-100">100</div><label for="amount100">100 元</label></div><div class="input-flexbox"><input type="text" id="bundle100" data-package-type="bundle" data-denomination="100" placeholder="捆" inputmode="numeric" class="bag-input"><input type="text" id="amount100" data-denomination="100" data-is-count-mode="false" placeholder="總額 或 0-99 張" inputmode="numeric" class="amount-input"></div><div id="error100" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon coin-50">50</div><label for="amount50">50 元</label></div><div class="input-flexbox"><input type="text" id="bag50" data-package-type="bag" data-denomination="50" placeholder="袋" inputmode="numeric" class="bag-input"><input type="text" id="amount50" data-denomination="50" placeholder="輸入總金額" inputmode="numeric" class="amount-input"></div><div id="error50" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon coin-10">10</div><label for="amount10">10 元</label></div><div class="input-flexbox"><input type="text" id="bag10" data-package-type="bag" data-denomination="10" placeholder="袋" inputmode="numeric" class="bag-input"><input type="text" id="amount10" data-denomination="10" placeholder="輸入總金額" inputmode="numeric" class="amount-input"></div><div id="error10" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon coin-5">5</div><label for="amount5">5 元</label></div><div class="input-flexbox"><input type="text" id="bag5" data-package-type="bag" data-denomination="5" placeholder="袋" inputmode="numeric" class="bag-input"><input type="text" id="amount5" data-denomination="5" placeholder="輸入總金額" inputmode="numeric" class="amount-input"></div><div id="error5" class="error-message"></div></div>
+                    <div class="input-group"><div class="denomination"><div class="denom-icon coin-1">1</div><label for="amount1">1 元</label></div><div class="input-flexbox"><input type="text" id="bag1" data-package-type="bag" data-denomination="1" placeholder="袋" inputmode="numeric" class="bag-input"><input type="text" id="amount1" data-denomination="1" placeholder="輸入總金額" inputmode="numeric" class="amount-input"></div><div id="error1" class="error-message"></div></div>
+                </div>
+                <button id="calculate-btn" class="btn btn-block">計算結果</button>
+            </div>
+        </div>
+
+        <div id="result-container" class="result-section">
+            <div class="card"><h2 class="section-title">結果總覽</h2><div class="summary-grid"><div class="summary-box highlight-box"><div class="summary-title">全部總金額</div><div id="total-amount" class="summary-value">0 元</div></div><div class="summary-box"><div class="summary-title">零錢處理</div><div id="summary-small-coins" class="summary-value">0 元</div></div><div id="petty-cash-box" class="summary-box"><div class="summary-title">預留零用金</div><div id="petty-cash-actual" class="summary-value">0 元</div></div><div class="summary-box"><div class="summary-title">營收上繳</div><div id="summary-revenue" class="summary-value">0 元</div></div></div></div>
+            <div id="revenue-card" class="card"><h2 class="section-title">營收上繳</h2><div class="result-block"><h3 class="subsection-title">紙鈔</h3><div id="revenue-notes"></div></div><hr class="orange-separator"><div class="result-block"><h3 class="subsection-title">硬幣</h3><div id="revenue-coins"></div></div><div class="result-block"><div class="result-row result-total"><div class="label">營收總額</div><div id="revenue-amount" class="value">0 元</div></div></div></div>
+            <div id="petty-cash-card" class="card"><h2 class="section-title">預留零用金 (目標 20,000 元)</h2><div class="result-block"><h3 class="subsection-title">紙鈔填滿</h3><div id="paper-money-detail"></div></div><hr><div class="result-block"><h3 class="subsection-title">保留硬幣</h3><div id="kept-coins-detail"></div></div><div id="balance-warning" class="warning-block" style="display: none;"><div class="warning-title">注意！</div><div id="balance-warning-text"></div></div><div class="result-block"><div class="result-row result-total"><div class="label">預留零用金實際總額</div><div id="petty-cash-final" class="value money-amount">0 元</div></div></div></div>
+            <div class="card"><h2 class="section-title collapsible-header" id="smallCoinsHeader">零錢處理 → 移入「營收」</h2><div class="collapsible-content" id="smallCoinsContent"><div class="result-block"><div class="result-row"><div class="label">四種硬幣合計 (50+10+5+1)</div><div id="total-coins" class="value money-amount">0 元</div></div><div class="result-row"><div class="label">多出兩位數 (mod 100)</div><div id="remainder-coins" class="value money-amount">0 元</div></div><div class="result-row result-total"><div class="label">移入營收的零錢</div><div id="moved-coins" class="value money-amount">0 元</div></div><div class="coin-detail" id="coin-breakdown"></div></div></div></div>
+            <div class="card"><h2 class="section-title collapsible-header" id="resultExchangeHeader">結果微調工具 (預留/上繳)</h2><div class="collapsible-content" id="resultExchangeContent"><div class="result-exchange-tool"><div class="exchange-grid"><div class="exchange-panel"><h4>從「預留金」轉出</h4><div class="exchange-field"><label for="result-exchange-from-denom">面額</label><select id="result-exchange-from-denom" class="exchange-select"></select></div><div class="exchange-field"><label for="result-exchange-from-count">張/枚數</label><div class="input-stepper"><button class="stepper-btn" data-target="result-exchange-from-count" data-step="-1">-</button><input type="number" id="result-exchange-from-count" class="exchange-input" placeholder="0" min="0"><button class="stepper-btn" data-target="result-exchange-from-count" data-step="1">+</button></div></div><div id="result-exchange-from-preview" class="exchange-live-preview"></div></div><div class="exchange-arrow">⇄</div><div class="exchange-panel"><h4>從「上繳營收」換入</h4><div class="exchange-field"><label for="result-exchange-to-denom">面額</label><select id="result-exchange-to-denom" class="exchange-select"></select></div><div id="result-exchange-to-preview" class="exchange-live-preview"></div></div></div><button id="perform-result-exchange-btn" class="btn btn-block btn-simulate">確認微調</button><div class="history-controls"><h3 class="subsection-title">微調歷史紀錄</h3><div class="buttons-row"><button id="undo-result-exchange-btn" class="btn btn-clear">恢復上一步</button><button id="reset-result-exchange-btn" class="btn btn-danger">重置所有微調</button></div><div id="result-exchange-history-log" class="history-log"><p style="text-align:center; color: var(--gray);">尚無微調紀錄</p></div></div></div></div></div>
+            <div class="card"><h2 class="section-title collapsible-header" id="coinConsolidationHeader">收納零錢對換 (上繳區/打包區)</h2><div class="collapsible-content" id="coinConsolidationContent"><div class="result-exchange-tool"><div class="exchange-grid"><div class="exchange-panel"><h4>從「上繳區」轉出</h4><div class="exchange-field"><label for="coin-consolidation-from-denom">硬幣面額</label><select id="coin-consolidation-from-denom" class="exchange-select"></select></div><div class="exchange-field"><label for="coin-consolidation-from-count">枚數</label><div class="input-stepper"><button class="stepper-btn" data-target="coin-consolidation-from-count" data-step="-1">-</button><input type="number" id="coin-consolidation-from-count" class="exchange-input" placeholder="0" min="0"><button class="stepper-btn" data-target="coin-consolidation-from-count" data-step="1">+</button></div></div><div id="coin-consolidation-from-preview" class="exchange-live-preview"></div></div><div class="exchange-arrow">⇄</div><div class="exchange-panel"><h4>從「打包區(預留)」換入</h4><div class="exchange-field"><label for="coin-consolidation-to-denom">硬幣面額</label><select id="coin-consolidation-to-denom" class="exchange-select"></select></div><div id="coin-consolidation-to-preview" class="exchange-live-preview"></div></div></div><button id="perform-coin-consolidation-btn" class="btn btn-block btn-simulate">確認交換</button></div></div></div>
+            <div id="coin-pack-card" class="card"><h2 class="section-title">零錢打包</h2><div class="result-block" id="coin-pack-block"></div></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="package-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3>硬幣 & 紙鈔包裝資訊</h3><span class="close">&times;</span></div><div class="modal-body"><div class="manual-section"><h4>硬幣袋裝換算表</h4><div class="table-container"><table><thead><tr><th>面額</th><th>每袋數量</th><th>每袋金額</th><th>備註</th></tr></thead><tbody><tr><td><strong>50元</strong></td><td>40枚</td><td>2,000元</td><td>每袋40枚裝</td></tr><tr><td><strong>10元</strong></td><td>50枚</td><td>500元</td><td>每袋50枚裝</td></tr><tr><td><strong>5元</strong></td><td>50枚</td><td>250元</td><td>每袋50枚裝</td></tr><tr><td><strong>1元</strong></td><td>100枚</td><td>100元</td><td>每袋100枚裝</td></tr></tbody></table></div><h4>紙鈔捆裝換算表</h4><div class="table-container"><table><thead><tr><th>面額</th><th>每捆數量</th><th>每捆金額</th><th>備註</th></tr></thead><tbody><tr><td><strong>1000元</strong></td><td>-</td><td>-</td><td>無需捆包</td></tr><tr><td><strong>500元</strong></td><td>20張</td><td>10,000元</td><td>不限制10,000元一捆</td></tr><tr><td><strong>100元</strong></td><td>20張</td><td>2,000元</td><td>強制2,000元一捆</td></tr></tbody></table></div></div></div></div></div>
+    <div id="manual-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3>POS機算錢-說明文件</h3><span class="close">&times;</span></div><div class="modal-body"><div class="manual-section"><h4>一、功能簡介</h4><p>此工具專為需處理大量現金交易的場景設計，自動化處理現金盤點、零用金分配與營收上繳。</p></div><div class="manual-section"><h4>二、計算規則</h4><h5>1. 零錢處理</h5><ul><li>計算四種硬幣（50, 10, 5, 1元）總額。</li><li>提取不足100元的零頭（總額 mod 100），這部分將移入「營收上繳」。</li></ul><h5>2. 預留零用金（目標20,000元）</h5><ul><li><strong>硬幣部分</strong>：保留所有可湊成百元的硬幣（即硬幣總額扣除上述零頭）。</li><li><strong>紙鈔部分</strong>：優先使用100元和500元，尋找能使總額最接近或等於20,000元的組合。</li></ul><h5>3. 營收上繳</h5><p>營收上繳金額 = 全部總金額 - 預留零用金實際總額。</p></div><div class="manual-section"><h4>三、面額換算功能</h4><p>提供兩種換算工具：</p><ul><li><strong>總額換算</strong>：在輸入階段，直接修改各面額的總金額。</li><li><strong>結果微調</strong>：在產生結果後，可將「預留金」與「上繳營收」中的特定面額互相交換，而不影響總金額。</li></ul></div></div></div></div>
+    <div id="exchange-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3>面額換算工具 (總額)</h3><span class="close">&times;</span></div><div class="modal-body"><div class="exchange-section"><h4>轉出面額</h4><div class="exchange-field"><label for="exchange-amount">金額</label><input type="text" id="exchange-amount" placeholder="輸入要轉換的金額" class="exchange-input" inputmode="numeric"></div><div class="exchange-field"><label for="exchange-from">選擇面額</label><select id="exchange-from" class="exchange-select"><option value="1000" selected>1000元</option><option value="500">500元</option><option value="100">100元</option><option value="50">50元</option><option value="10">10元</option><option value="5">5元</option><option value="1">1元</option></select></div><div class="exchange-info"><div>當前面額總額: <span id="from-current-amount">0</span> 元</div><div>(數量: <span id="from-current-count">0</span> 張/枚)</div><hr style="margin: 5px 0;"><div>轉換後剩餘金額: <span id="from-new-amount">0</span> 元</div><div>(數量: <span id="from-new-count">0</span> 張/枚)</div></div></div><div class="exchange-arrow">→</div><div class="exchange-section"><h4>轉入面額</h4><div class="exchange-field"><label for="exchange-to">選擇面額</label><select id="exchange-to" class="exchange-select"><option value="1000">1000元</option><option value="500">500元</option><option value="100">100元</option><option value="50">50元</option><option value="10">10元</option><option value="5">5元</option><option value="1" selected>1元</option></select></div><div class="exchange-info"><div>當前面額總額: <span id="to-current-amount">0</span> 元</div><div>(數量: <span id="to-current-count">0</span> 張/枚)</div><hr style="margin: 5px 0;"><div>轉換後總金額: <span id="to-new-amount">0</span> 元</div><div>(數量: <span id="to-new-count">0</span> 張/枚)</div></div></div><button id="exchange-confirm" class="btn btn-confirm btn-exchange">確認轉換</button></div></div></div>
+    <div id="color-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3>自訂面額顏色</h3><span class="close">&times;</span></div><div class="modal-body"><div class="picker-group"><label>1000 元:</label><input type="color" id="pick-1000"><span id="hex-1000" class="hex-value"></span></div><div class="picker-group"><label>500 元:</label> <input type="color" id="pick-500"> <span id="hex-500"  class="hex-value"></span></div><div class="picker-group"><label>100 元:</label> <input type="color" id="pick-100"> <span id="hex-100"  class="hex-value"></span></div><div class="picker-group"><label>50 元:</label>  <input type="color" id="pick-50">  <span id="hex-50"   class="hex-value"></span></div><div class="picker-group"><label>10 元:</label>  <input type="color" id="pick-10">  <span id="hex-10"   class="hex-value"></span></div><div class="picker-group"><label>5 元:</label>   <input type="color" id="pick-5">   <span id="hex-5"    class="hex-value"></span></div><div class="picker-group"><label>1 元:</label>   <input type="color" id="pick-1">   <span id="hex-1"    class="hex-value"></span></div><div style="display:flex;gap:8px;margin-top:16px;"><button id="reset-colors" class="btn btn-clear" style="flex:1;">一鍵還原預設色</button><button id="close-color-modal" class="btn btn-simulate" style="flex:1;">完成</button></div></div></div></div>
+    <div id="changelog-modal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📅 每日更新紀錄</h3><span class="close">&times;</span></div><div class="modal-body"><div class="manual-section"><h4>2025/7/2</h4><h5>🎉 重點更新</h5><ul><li><strong>README 文件完善</strong>：更新了完整的功能說明文件，詳細介紹工具的使用方式和技術特色。</li><li><strong>更新報告整理</strong>：新增了版本對比報告，記錄從 v1.0 到 v2.6 的完整演進過程。</li><li><strong>核心功能穩定</strong>：確認所有主要功能運作正常，包括計算引擎、微調工具、狀態持久化等。</li></ul><h5>🔧 文件改進</h5><ul><li><strong>使用說明優化</strong>：在 README 中新增了詳細的使用步驟和功能亮點說明。</li><li><strong>技術文件完整</strong>：補充了核心演算法邏輯的技術說明，方便開發者理解。</li><li><strong>版本歷程記錄</strong>：建立了完整的版本更新紀錄，追蹤功能演進。</li></ul><h5>📊 功能特色</h5><ul><li><strong>智慧計算引擎</strong>：自動處理零錢分配和預留金計算。</li><li><strong>便利輸入模式</strong>：支援張數快輸和袋/捆加總功能。</li><li><strong>強大微調工具</strong>：提供預留/上繳交換和零錢收納對換。</li><li><strong>狀態自動保存</strong>：使用 localStorage 技術保存使用者資料。</li></ul></div><hr><div class="manual-section"><h4>2025/6/4</h4><h5>🎉 重點更新</h5><ul><li><strong>核心程式完成</strong>：完成主要的現金管理計算功能開發。</li><li><strong>檔案結構整理</strong>：上傳了完整的專案檔案，包含主程式和說明文件。</li><li><strong>功能測試驗證</strong>：驗證了計算邏輯的正確性和使用者介面的完整性。</li></ul><h5>🔧 技術實現</h5><ul><li><strong>計算邏輯完善</strong>：實現了零錢處理、預留金分配、營收上繳的完整計算流程。</li><li><strong>介面設計優化</strong>：完成了響應式設計，支援各種裝置的良好顯示效果。</li><li><strong>狀態管理系統</strong>：建立了完整的應用程式狀態管理機制。</li></ul><h5>💰 業務邏輯</h5><ul><li><strong>預留零用金目標</strong>：設定為 20,000 元的標準目標。</li><li><strong>包裝規則定義</strong>：建立了完整的硬幣袋裝和紙鈔捆裝規則。</li><li><strong>面額處理邏輯</strong>：支援 7 種面額 (1000, 500, 100, 50, 10, 5, 1) 的完整處理。</li></ul></div><hr><div class="manual-section"><h4>2025/6/2</h4><h5>🔧 功能調整</h5><ul><li><strong>介面優化</strong>：針對使用者體驗進行了介面調整和優化。</li><li><strong>計算邏輯調整</strong>：微調了部分計算邏輯，提升準確性。</li><li><strong>錯誤處理改進</strong>：加強了輸入驗證和錯誤提示機制。</li></ul></div><hr><div class="manual-section"><h4>2025/5/29</h4><h5>🎉 專案啟動</h5><ul><li><strong>專案初始化</strong>：建立了現金管理計算工具的基礎架構。</li><li><strong>核心概念確立</strong>：定義了預留零用金、營收上繳、零錢處理的核心業務邏輯。</li><li><strong>技術架構規劃</strong>：選定了純前端技術棧 (HTML5 + CSS3 + JavaScript)。</li></ul></div><div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;"><h5 style="color: #2e7d32; margin: 0 0 8px 0;">版本演進總覽</h5><p style="margin: 5px 0;"><strong>v2.6 (2025/7/2)</strong>：文件完善，功能穩定</p><p style="margin: 5px 0;"><strong>v2.0-2.5 (2025/6/2-6/4)</strong>：核心功能開發與優化</p><p style="margin: 5px 0;"><strong>v1.0 (2025/5/29)</strong>：專案啟動與基礎建設</p></div></div></div></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- 常數與設定 ---
+        const APP_STATE_KEY = 'cashTool.v2.6.state';
+        const PETTY_CASH_TARGET = 20000;
+        const PACKAGING_RULES = { 'bundle100': { value: 2000, count: 20 }, 'bag50': { value: 2000, count: 40 }, 'bag10': { value: 500, count: 50 }, 'bag5': { value: 250, count: 50 }, 'bag1': { value: 100, count: 100 } };
+        const DENOMINATIONS = [1000, 500, 100, 50, 10, 5, 1];
+        const COIN_DENOMINATIONS = [50, 10, 5, 1];
+        const COUNT_MODE_DENOMS = [1000, 500, 100];
+        const LONG_PRESS_DURATION = 5000;
+        const DEFAULT_COLORS = { 1000: '#3D93F0', 500: '#C6A27B', 100: '#DE4545', 50: '#DAA520', 10: '#453A3A', 5: '#A3A3A3', 1: '#790C0C' };
+
+        // --- DOM 元素 ---
+        const dom = { calculateBtn: document.getElementById('calculate-btn'), clearBtn: document.getElementById('clear-btn'), clearBtnText: document.querySelector('#clear-btn .btn-text'), clearBtnProgress: document.querySelector('#clear-btn .progress-bar'), simulateBtn: document.getElementById('simulate-btn'), resultContainer: document.getElementById('result-container'), amountInputs: {}, bagInputs: {}, errorMessages: {},
+            modals: { package: document.getElementById('package-modal'), manual: document.getElementById('manual-modal'), exchange: document.getElementById('exchange-modal'), color: document.getElementById('color-modal'), changelog: document.getElementById('changelog-modal') },
+            buttons: { showPackage: document.getElementById('show-package-info'), showManual: document.getElementById('show-manual'), showExchange: document.getElementById('show-exchange'), showColor: document.getElementById('custom-color-btn'), showChangelog: document.getElementById('show-changelog') },
+            exchange: { amount: document.getElementById('exchange-amount'), from: document.getElementById('exchange-from'), to: document.getElementById('exchange-to'), confirm: document.getElementById('exchange-confirm'), fromCurrentAmount: document.getElementById('from-current-amount'), fromCurrentCount: document.getElementById('from-current-count'), fromNewAmount: document.getElementById('from-new-amount'), fromNewCount: document.getElementById('from-new-count'), toCurrentAmount: document.getElementById('to-current-amount'), toCurrentCount: document.getElementById('to-current-count'), toNewAmount: document.getElementById('to-new-amount'), toNewCount: document.getElementById('to-new-count') },
+            color: { pickers: {}, hexes: {}, resetBtn: document.getElementById('reset-colors'), closeBtn: document.getElementById('close-color-modal') },
+            resultExchange: { container: document.getElementById('resultExchangeContent'), header: document.getElementById('resultExchangeHeader'), fromDenom: document.getElementById('result-exchange-from-denom'), fromCount: document.getElementById('result-exchange-from-count'), fromPreview: document.getElementById('result-exchange-from-preview'), toDenom: document.getElementById('result-exchange-to-denom'), toPreview: document.getElementById('result-exchange-to-preview'), performBtn: document.getElementById('perform-result-exchange-btn'), undoBtn: document.getElementById('undo-result-exchange-btn'), resetBtn: document.getElementById('reset-result-exchange-btn'), log: document.getElementById('result-exchange-history-log'), },
+            coinConsolidation: { fromDenom: document.getElementById('coin-consolidation-from-denom'), fromCount: document.getElementById('coin-consolidation-from-count'), fromPreview: document.getElementById('coin-consolidation-from-preview'), toDenom: document.getElementById('coin-consolidation-to-denom'), toPreview: document.getElementById('coin-consolidation-to-preview'), performBtn: document.getElementById('perform-coin-consolidation-btn') }
+        };
+        DENOMINATIONS.forEach(denom => {
+            dom.amountInputs[denom] = document.getElementById(`amount${denom}`);
+            dom.errorMessages[denom] = document.getElementById(`error${denom}`);
+            const bagInput = document.getElementById(`bag${denom}`) || document.getElementById(`bundle${denom}`);
+            if (bagInput) dom.bagInputs[denom] = bagInput;
+            dom.color.pickers[denom] = document.getElementById(`pick-${denom}`);
+            dom.color.hexes[denom] = document.getElementById(`hex-${denom}`);
+        });
+
+        // --- 應用程式狀態 ---
+        let state = { inputs: {}, results: null, exchangeHistory: [], };
+        let longPressTimer = null;
+        let isLongPress = false;
+
+        // --- 核心功能 ---
+        function init() {
+            bindEventListeners();
+            loadState();
+            initColorPickers();
+            console.log("現金管理工具 v2.6 已初始化。");
+        }
+
+        function bindEventListeners() {
+            dom.clearBtn.addEventListener('click', handleClearClick);
+            dom.calculateBtn.addEventListener('click', handleCalculate);
+            dom.simulateBtn.addEventListener('click', simulateValues);
+            dom.clearBtn.addEventListener('mousedown', startHardResetTimer);
+            dom.clearBtn.addEventListener('touchstart', startHardResetTimer, { passive: true });
+            dom.clearBtn.addEventListener('mouseup', cancelHardResetTimer);
+            dom.clearBtn.addEventListener('mouseleave', cancelHardResetTimer);
+            dom.clearBtn.addEventListener('touchend', cancelHardResetTimer);
+            Object.values(dom.amountInputs).forEach(input => { input.addEventListener('input', handleAmountInput); input.addEventListener('blur', handleAmountBlur); });
+            Object.values(dom.bagInputs).forEach(input => { input.addEventListener('input', handleBagInput); });
+            document.querySelectorAll('.collapsible-header').forEach(header => { header.addEventListener('click', () => { const content = document.getElementById(header.id.replace('Header', 'Content')); header.classList.toggle('collapsed'); if (content) content.classList.toggle('active'); }); });
+            
+            // Modals
+            dom.buttons.showPackage.onclick = () => dom.modals.package.style.display = 'block';
+            dom.buttons.showManual.onclick = () => dom.modals.manual.style.display = 'block';
+            dom.buttons.showExchange.onclick = () => { initExchangeModal(); dom.modals.exchange.style.display = 'block'; };
+            dom.buttons.showColor.onclick = () => dom.modals.color.style.display = 'block';
+            dom.buttons.showChangelog.onclick = () => dom.modals.changelog.style.display = 'block';
+            document.querySelectorAll('.modal .close').forEach(btn => btn.onclick = () => { Object.values(dom.modals).forEach(m => m.style.display = 'none'); });
+            window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; };
+
+            // 總額換算工具
+            [dom.exchange.amount, dom.exchange.from, dom.exchange.to].forEach(el => el.addEventListener('input', updateExchangeInfo));
+            dom.exchange.confirm.addEventListener('click', performExchange);
+
+            // 顏色選擇器
+            Object.values(dom.color.pickers).forEach(p => p.addEventListener('input', handleColorChange));
+            dom.color.resetBtn.addEventListener('click', resetColors);
+            dom.color.closeBtn.addEventListener('click', () => dom.modals.color.style.display = 'none');
+
+            // Stepper +/- 按鈕
+            document.querySelectorAll('.stepper-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const targetInput = document.getElementById(e.currentTarget.dataset.target);
+                    const step = parseInt(e.currentTarget.dataset.step, 10);
+                    if (targetInput) {
+                        let currentValue = parseInt(targetInput.value, 10) || 0;
+                        targetInput.value = Math.max(0, currentValue + step);
+                        targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            });
+
+            // 結果微調工具
+            const rex = dom.resultExchange;
+            rex.performBtn.addEventListener('click', performResultExchange);
+            rex.undoBtn.addEventListener('click', undoResultExchange);
+            rex.resetBtn.addEventListener('click', resetResultExchanges);
+            [rex.fromDenom, rex.fromCount, rex.toDenom].forEach(el => { el.addEventListener('input', updateResultExchangePreview); });
+            rex.log.addEventListener('click', handleHistoryLogClick);
+
+            // 收納零錢對換工具
+            const cc = dom.coinConsolidation;
+            cc.performBtn.addEventListener('click', performCoinConsolidation);
+            [cc.fromDenom, cc.fromCount, cc.toDenom].forEach(el => { el.addEventListener('input', updateCoinConsolidationPreview); });
+        }
+
+        // --- 狀態管理 (LocalStorage) ---
+        function saveState() { try { localStorage.setItem(APP_STATE_KEY, JSON.stringify(state)); } catch (e) { console.error("無法儲存狀態:", e); } }
+        function loadState() {
+            try {
+                const savedState = localStorage.getItem(APP_STATE_KEY);
+                if (savedState) {
+                    state = JSON.parse(savedState);
+                    DENOMINATIONS.forEach(denom => {
+                        if (state.inputs && state.inputs[denom]) {
+                            if(dom.amountInputs[denom]) dom.amountInputs[denom].value = formatNumber(state.inputs[denom].amount);
+                            if(dom.bagInputs[denom]) dom.bagInputs[denom].value = state.inputs[denom].packages || '';
+                        }
+                    });
+                    if (state.results) {
+                        updateUI(state.results);
+                        dom.resultContainer.classList.add('active');
+                        if (state.exchangeHistory && state.exchangeHistory.length > 0) {
+                           setupResultExchangeTool();
+                           setupCoinConsolidationTool();
+                           renderResultExchangeHistory();
+                        }
+                    }
+                    validateAllInputs();
+                }
+            } catch (e) {
+                console.error("無法載入狀態:", e);
+                localStorage.removeItem(APP_STATE_KEY);
+            }
+        }
+
+        // --- 事件處理函數 ---
+        function handleClearClick() {
+            if (!isLongPress) {
+                softClear();
+            }
+        }
+        function handleAmountInput(e) {
+            const input = e.target;
+            const denomination = parseInt(input.dataset.denomination, 10);
+            const rawValue = input.value.replace(/,/g, '');
+            if (COUNT_MODE_DENOMS.includes(denomination)) {
+                input.dataset.isCountMode = /^\d{1,2}$/.test(rawValue) ? 'true' : 'false';
+            }
+            formatInputWithCommas(input);
+            validateAllInputs();
+            updateStateFromInputs();
+            saveState();
+        }
+        function handleAmountBlur(e) {
+            const input = e.target;
+            if (input.dataset.isCountMode === 'true') {
+                const denomination = parseInt(input.dataset.denomination, 10);
+                const count = parseInputValue(input.value);
+                input.value = formatNumber(count * denomination);
+                input.dataset.isCountMode = 'false';
+            }
+            validateAllInputs();
+            updateStateFromInputs();
+            saveState();
+        }
+        function handleBagInput() { 
+            validateAllInputs();
+            updateStateFromInputs(); 
+            saveState(); 
+        }
+        function handleCalculate() {
+            if (!validateAllInputs()) {
+                alert('部分金額輸入錯誤，請檢查紅色框標示的欄位！');
+                return;
+            }
+            const inputs = collectInputs();
+            const results = calculateResults(inputs);
+            state.results = results;
+            state.exchangeHistory = [JSON.parse(JSON.stringify(results))];
+            updateUI(results);
+            setupResultExchangeTool();
+            setupCoinConsolidationTool();
+            dom.resultContainer.classList.add('active');
+            saveState();
+        }
+        function softClear() {
+            state = { inputs: {}, results: null, exchangeHistory: [] };
+            Object.values(dom.amountInputs).forEach(input => input.value = '');
+            Object.values(dom.bagInputs).forEach(input => input.value = '');
+            Object.values(dom.errorMessages).forEach(el => el.classList.remove('active'));
+            Object.values(dom.amountInputs).forEach(el => el.classList.remove('input-error'));
+            dom.calculateBtn.disabled = false;
+            dom.resultContainer.classList.remove('active');
+            saveState();
+        }
+        function hardReset() {
+            softClear();
+            resetColors();
+            localStorage.removeItem(APP_STATE_KEY);
+            alert('已徹底重置工具並清除所有儲存的資料。');
+        }
+
+        // --- 輸入驗證 ---
+        function validateAllInputs() {
+            let allValid = true;
+            const inputs = collectInputs();
+            for (const denomStr in inputs) {
+                const denom = parseInt(denomStr, 10);
+                const { totalAmount } = inputs[denom];
+                const inputEl = dom.amountInputs[denom];
+                const errorEl = dom.errorMessages[denom];
+                if (totalAmount % denom !== 0) {
+                    allValid = false;
+                    inputEl.classList.add('input-error');
+                    errorEl.textContent = `總額必須是 ${denom} 的倍數`;
+                    errorEl.classList.add('active');
+                } else {
+                    inputEl.classList.remove('input-error');
+                    errorEl.classList.remove('active');
+                }
+            }
+            dom.calculateBtn.disabled = !allValid;
+            return allValid;
+        }
+
+        // --- 計算邏輯 ---
+        function collectInputs() {
+            const inputs = {};
+            DENOMINATIONS.forEach(denom => {
+                const amount = parseInputValue(dom.amountInputs[denom].value);
+                const packages = dom.bagInputs[denom] ? parseInputValue(dom.bagInputs[denom].value) : 0;
+                let packageAmount = 0;
+                if (packages > 0 && dom.bagInputs[denom]) {
+                    const packageKey = `${dom.bagInputs[denom].dataset.packageType}${denom}`;
+                    if (PACKAGING_RULES[packageKey]) {
+                        packageAmount = packages * PACKAGING_RULES[packageKey].value;
+                    }
+                }
+                const totalAmount = amount + packageAmount;
+                inputs[denom] = { totalAmount, count: Math.floor(totalAmount / denom) };
+            });
+            return inputs;
+        }
+
+        function calculateResults(inputs) {
+            const results = {};
+            results.initialInputs = JSON.parse(JSON.stringify(inputs));
+            results.totalAmount = DENOMINATIONS.reduce((sum, denom) => sum + inputs[denom].totalAmount, 0);
+            const totalCoinsAmount = COIN_DENOMINATIONS.reduce((sum, denom) => sum + inputs[denom].totalAmount, 0);
+            results.movedCoinsAmount = totalCoinsAmount % 100;
+            results.keptCoinsAmount = totalCoinsAmount - results.movedCoinsAmount;
+            results.movedCoinsBreakdown = getCoinsBreakdown(results.movedCoinsAmount, {50: inputs[50].totalAmount, 10: inputs[10].totalAmount, 5: inputs[5].totalAmount, 1: inputs[1].totalAmount});
+            const remainingCashNeeded = PETTY_CASH_TARGET - results.keptCoinsAmount;
+            let pettyCashPaperDetails = { used100: 0, used500: 0, amount: 0 };
+            if (remainingCashNeeded > 0) {
+                const combo = findOptimalCombination(remainingCashNeeded, inputs[100].count, inputs[500].count);
+                if (combo.found) {
+                    pettyCashPaperDetails = { used100: combo.used100, used500: combo.used500, amount: combo.amount100 + combo.amount500 };
+                } else {
+                    const used500 = Math.min(inputs[500].count, Math.floor(remainingCashNeeded / 500));
+                    const stillNeeded = remainingCashNeeded - (used500 * 500);
+                    const used100 = Math.min(inputs[100].count, Math.floor(stillNeeded / 100));
+                    pettyCashPaperDetails = { used100, used500, amount: (used100 * 100) + (used500 * 500) };
+                }
+            }
+            results.actualPettyCash = results.keptCoinsAmount + pettyCashPaperDetails.amount;
+            results.revenueAmount = results.totalAmount - results.actualPettyCash;
+            results.balanceGap = PETTY_CASH_TARGET - results.actualPettyCash;
+            results.distribution = { pettyCash: {}, revenue: {} };
+            DENOMINATIONS.forEach(denom => {
+                let pettyCashCount = 0;
+                if (denom === 100) pettyCashCount = pettyCashPaperDetails.used100;
+                else if (denom === 500) pettyCashCount = pettyCashPaperDetails.used500;
+                else if (COIN_DENOMINATIONS.includes(denom)) {
+                    pettyCashCount = inputs[denom].count - (results.movedCoinsBreakdown[denom] || 0);
+                }
+                results.distribution.pettyCash[denom] = pettyCashCount;
+                results.distribution.revenue[denom] = inputs[denom].count - pettyCashCount;
+            });
+            return results;
+        }
+
+        // --- UI 更新 ---
+        function updateUI(results, highlights = {}) {
+            document.getElementById('total-amount').textContent = formatMoney(results.totalAmount);
+            document.getElementById('summary-small-coins').textContent = formatMoney(results.movedCoinsAmount);
+            document.getElementById('petty-cash-actual').textContent = formatMoney(results.actualPettyCash);
+            document.getElementById('summary-revenue').textContent = formatMoney(results.revenueAmount);
+            document.getElementById('petty-cash-box').classList.toggle('error', results.balanceGap !== 0);
+            
+            let revenueNotesHTML = '', revenueCoinsHTML = '';
+            DENOMINATIONS.forEach(denom => {
+                const count = results.distribution.revenue[denom];
+                if (count > 0) { const html = createDenomItemHTML(denom, count); if (denom >= 100) revenueNotesHTML += html; else revenueCoinsHTML += html; }
+            });
+            document.getElementById('revenue-notes').innerHTML = revenueNotesHTML || '<p class="item">無</p>';
+            document.getElementById('revenue-coins').innerHTML = revenueCoinsHTML || '<p class="item">無</p>';
+            document.getElementById('revenue-amount').textContent = formatMoney(results.revenueAmount);
+
+            let pettyNotesHTML = '', pettyCoinsHTML = '';
+            DENOMINATIONS.forEach(denom => {
+                const count = results.distribution.pettyCash[denom];
+                if (count > 0) { const html = createDenomItemHTML(denom, count); if (denom >= 100) pettyNotesHTML += html; else pettyCoinsHTML += html; }
+            });
+            document.getElementById('paper-money-detail').innerHTML = pettyNotesHTML || '<p class="item">無</p>';
+            document.getElementById('kept-coins-detail').innerHTML = pettyCoinsHTML || '<p class="item">無</p>';
+            document.getElementById('petty-cash-final').textContent = formatMoney(results.actualPettyCash);
+            
+            const warningEl = document.getElementById('balance-warning');
+            if (results.balanceGap !== 0) {
+                document.getElementById('balance-warning-text').innerHTML = `預留零用金與目標相差 <strong>${formatMoney(results.balanceGap)}</strong>`;
+                warningEl.style.display = 'block';
+            } else { warningEl.style.display = 'none'; }
+            
+            document.getElementById('total-coins').textContent = formatMoney(COIN_DENOMINATIONS.reduce((sum, d) => sum + results.initialInputs[d].totalAmount, 0));
+            document.getElementById('remainder-coins').textContent = formatMoney(results.movedCoinsAmount);
+            document.getElementById('moved-coins').textContent = formatMoney(results.movedCoinsAmount);
+            
+            let coinBreakdownHTML = '';
+            if (results.movedCoinsAmount > 0) {
+                const parts = [];
+                COIN_DENOMINATIONS.forEach(denom => { if (results.movedCoinsBreakdown[denom] > 0) parts.push(`<span class="denom-icon d${denom}" style="width:24px;height:24px;line-height:24px;font-size:0.8rem;margin:0 2px;">${denom}</span>x${results.movedCoinsBreakdown[denom]}`); });
+                coinBreakdownHTML = `<div style="text-align:center;">${formatMoney(results.movedCoinsAmount)} = ${parts.join(' + ')}</div>`;
+            } else { coinBreakdownHTML = '<div style="text-align:center;">無零錢移入營收</div>'; }
+            document.getElementById('coin-breakdown').innerHTML = coinBreakdownHTML;
+
+            let coinPackHTML = '';
+            COIN_DENOMINATIONS.forEach(denom => {
+                const packageInfo = calculatePackages(results.distribution.pettyCash[denom], denom);
+                if (packageInfo.loose > 0) { coinPackHTML += createDenomItemHTML(denom, packageInfo.loose, true); }
+            });
+            document.getElementById('coin-pack-block').innerHTML = coinPackHTML || '<p class="item">無散裝硬幣</p>';
+
+            if (highlights.revenue) flashElement(document.getElementById('revenue-card'));
+            if (highlights.petty) flashElement(document.getElementById('petty-cash-card'));
+            if (highlights.packing) flashElement(document.getElementById('coin-pack-card'));
+        }
+        
+        function flashElement(el) {
+            if (!el) return;
+            el.classList.remove('update-highlight');
+            void el.offsetWidth; // Trigger reflow
+            el.classList.add('update-highlight');
+        }
+
+        function createDenomItemHTML(denom, count, isPackView = false) {
+            const amount = count * denom;
+            if (isPackView) {
+                return `<li class="item"><div class="denom-icon d${denom}">${denom}</div><div class="coin-pack-value-container"><span class="highlight-amount-pack">${formatNumber(amount)}</span><span class="coin-pack-loose-count">(${count}枚)</span></div></li>`;
+            }
+            const packageInfo = calculatePackages(count, denom);
+            let metaText = '';
+            if (denom >= 100) { metaText = packageInfo.packages > 0 ? `${packageInfo.packages}捆` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}張` : '') : `${count}張`; }
+            else { metaText = packageInfo.packages > 0 ? `${packageInfo.packages}袋` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}枚` : '') : `${count}枚`; }
+            return `<li class="item"><div class="denom-icon d${denom}">${denom}</div><div class="item-content"><div class="amount money-amount-${denom}">${formatMoney(amount)}</div></div><div class="meta">${metaText}</div></li>`;
+        }
+
+        // --- 結果微調工具 (邏輯修正) ---
+        function setupResultExchangeTool() {
+            const rex = dom.resultExchange;
+            let optionsHTML = DENOMINATIONS.map(denom => `<option value="${denom}">${denom}元</option>`).join('');
+            rex.fromDenom.innerHTML = optionsHTML;
+            rex.toDenom.innerHTML = optionsHTML;
+            rex.fromDenom.value = '100';
+            rex.toDenom.value = '50';
+            rex.fromCount.value = '';
+            updateResultExchangePreview();
+            renderResultExchangeHistory();
+        }
+        function updateResultExchangePreview() {
+            const rex = dom.resultExchange;
+            const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
+            if (!currentResults) return;
+            const fromDenom = parseInt(rex.fromDenom.value, 10);
+            const toDenom = parseInt(rex.toDenom.value, 10);
+            const fromCountInput = parseInt(rex.fromCount.value, 10) || 0;
+            const fromPettyCount = currentResults.distribution.pettyCash[fromDenom] || 0;
+            rex.fromPreview.innerHTML = `可用: ${fromPettyCount} 張/枚`;
+            const toRevenueCount = currentResults.distribution.revenue[toDenom] || 0;
+            rex.toPreview.innerHTML = `可用: ${toRevenueCount} 張/枚`;
+            
+            const swapPath = findValidSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
+            if(fromCountInput > 0) {
+                 if (swapPath.possible) {
+                    rex.toPreview.innerHTML += `<br><span class="swap-path possible">✔ 可換入 ${swapPath.countToReceive} 張/枚</span>`;
+                } else {
+                    rex.toPreview.innerHTML += `<br><span class="swap-path impossible">✖ 無法完成此交換</span>`;
+                }
+            }
+            rex.performBtn.disabled = !swapPath.possible;
+        }
+        function findValidSwapPath(fromDenom, toDenom, fromCount, distribution) {
+            if (fromCount <= 0 || fromDenom === toDenom) return { possible: false };
+            const amountToSwap = fromCount * fromDenom;
+            if (amountToSwap % toDenom !== 0) return { possible: false };
+            const toCount = amountToSwap / toDenom;
+
+            if (distribution.pettyCash[fromDenom] >= fromCount && distribution.revenue[toDenom] >= toCount) {
+                return { possible: true, countToReceive: toCount };
+            }
+            return { possible: false };
+        }
+        function performResultExchange() {
+            const rex = dom.resultExchange;
+            const fromDenom = parseInt(rex.fromDenom.value, 10);
+            const toDenom = parseInt(rex.toDenom.value, 10);
+            const fromCount = parseInt(rex.fromCount.value, 10);
+            const lastResult = state.exchangeHistory[state.exchangeHistory.length - 1];
+            const swapPath = findValidSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
+            if (!swapPath.possible) { alert("無法執行此交換，請檢查數量與面額。"); return; }
+            
+            const newResult = JSON.parse(JSON.stringify(lastResult));
+            const toCount = swapPath.countToReceive;
+
+            newResult.distribution.pettyCash[fromDenom] -= fromCount;
+            newResult.distribution.revenue[fromDenom] += fromCount;
+            newResult.distribution.revenue[toDenom] -= toCount;
+            newResult.distribution.pettyCash[toDenom] += toCount;
+
+            newResult.lastAction = { type: 'main_swap', text: `[預留]${fromDenom}元x${fromCount} ⇄ [上繳]${toDenom}元x${toCount}` };
+            state.exchangeHistory.push(newResult);
+            updateUI(newResult, { petty: true, revenue: true });
+            renderResultExchangeHistory();
+            updateResultExchangePreview();
+            saveState();
+        }
+        
+        // --- 收納零錢對換工具 ---
+        function setupCoinConsolidationTool() {
+            const cc = dom.coinConsolidation;
+            let optionsHTML = COIN_DENOMINATIONS.map(denom => `<option value="${denom}">${denom}元</option>`).join('');
+            cc.fromDenom.innerHTML = optionsHTML;
+            cc.toDenom.innerHTML = optionsHTML;
+            cc.fromDenom.value = '5';
+            cc.toDenom.value = '10';
+            cc.fromCount.value = '';
+            updateCoinConsolidationPreview();
+        }
+        function updateCoinConsolidationPreview() {
+            const cc = dom.coinConsolidation;
+            const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
+            if (!currentResults) return;
+
+            const fromDenom = parseInt(cc.fromDenom.value, 10);
+            const toDenom = parseInt(cc.toDenom.value, 10);
+            const fromCountInput = parseInt(cc.fromCount.value, 10) || 0;
+            
+            const fromRevenueCount = currentResults.distribution.revenue[fromDenom] || 0;
+            cc.fromPreview.innerHTML = `可用: ${fromRevenueCount} 枚`;
+
+            const toPackingCount = calculatePackages(currentResults.distribution.pettyCash[toDenom] || 0, toDenom).loose;
+            cc.toPreview.innerHTML = `可用: ${toPackingCount} 枚`;
+            
+            const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
+
+            if (fromCountInput > 0) {
+                if (swapPath.possible) {
+                    cc.toPreview.innerHTML += `<br><span class="swap-path possible">✔ 可換入 ${swapPath.countToReceive} 枚</span>`;
+                } else {
+                    cc.toPreview.innerHTML += `<br><span class="swap-path impossible">✖ 無法完成此交換</span>`;
+                }
+            }
+            cc.performBtn.disabled = !swapPath.possible;
+        }
+        function findValidCoinSwapPath(fromDenom, toDenom, fromCount, distribution) {
+            if (fromCount <= 0 || fromDenom === toDenom) return { possible: false };
+            const amountToSwap = fromCount * fromDenom;
+            if (amountToSwap % toDenom !== 0) return { possible: false };
+            const toCount = amountToSwap / toDenom;
+
+            const revenueHasEnough = distribution.revenue[fromDenom] >= fromCount;
+            const packingHasEnough = calculatePackages(distribution.pettyCash[toDenom], toDenom).loose >= toCount;
+
+            if (revenueHasEnough && packingHasEnough) {
+                return { possible: true, countToReceive: toCount };
+            }
+            return { possible: false };
+        }
+        function performCoinConsolidation() {
+            const cc = dom.coinConsolidation;
+            const fromDenom = parseInt(cc.fromDenom.value, 10);
+            const toDenom = parseInt(cc.toDenom.value, 10);
+            const fromCount = parseInt(cc.fromCount.value, 10);
+            const lastResult = state.exchangeHistory[state.exchangeHistory.length - 1];
+            const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
+            if (!swapPath.possible) { alert("無法執行此交換，請檢查數量與面額。"); return; }
+
+            const newResult = JSON.parse(JSON.stringify(lastResult));
+            const toCount = swapPath.countToReceive;
+            
+            newResult.distribution.revenue[fromDenom] -= fromCount;
+            newResult.distribution.pettyCash[fromDenom] += fromCount;
+            newResult.distribution.pettyCash[toDenom] -= toCount;
+            newResult.distribution.revenue[toDenom] += toCount;
+
+            newResult.lastAction = { type: 'coin_consolidation', text: `[上繳]${fromDenom}元x${fromCount} ⇄ [打包]${toDenom}元x${toCount}` };
+            state.exchangeHistory.push(newResult);
+            updateUI(newResult, { revenue: true, packing: true });
+            renderResultExchangeHistory();
+            updateCoinConsolidationPreview();
+            saveState();
+        }
+
+        // --- 歷史紀錄 (共用) ---
+        function undoResultExchange() { if (state.exchangeHistory.length <= 1) return; state.exchangeHistory.pop(); const lastResult = state.exchangeHistory[state.exchangeHistory.length - 1]; updateUI(lastResult); renderResultExchangeHistory(); updateResultExchangePreview(); updateCoinConsolidationPreview(); saveState(); }
+        function resetResultExchanges() { if (state.exchangeHistory.length <= 1) return; state.exchangeHistory = [state.exchangeHistory[0]]; const initialResult = state.exchangeHistory[0]; updateUI(initialResult); renderResultExchangeHistory(); updateResultExchangePreview(); updateCoinConsolidationPreview(); saveState(); }
+        function handleHistoryLogClick(e) { const item = e.target.closest('.history-log-item'); if (item) { revertToHistoryState(parseInt(item.dataset.index, 10)); } }
+        function revertToHistoryState(index) { if (index < 0 || index >= state.exchangeHistory.length) return; state.exchangeHistory = state.exchangeHistory.slice(0, index + 1); const targetState = state.exchangeHistory[index]; updateUI(targetState); renderResultExchangeHistory(); updateResultExchangePreview(); updateCoinConsolidationPreview(); saveState(); }
+        function renderResultExchangeHistory() {
+            const logEl = dom.resultExchange.log;
+            if (!state.exchangeHistory || state.exchangeHistory.length <= 1) { logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">尚無微調紀錄</p>'; return; }
+            let html = '';
+            const activeIndex = state.exchangeHistory.length - 1;
+            state.exchangeHistory.forEach((item, index) => {
+                let actionText = index === 0 ? '初始狀態' : `<span class="history-timestamp">${new Date(item.lastAction.time).toLocaleTimeString('zh-TW', { hour12: false })}</span> <span class="history-action">${item.lastAction.text}</span>`;
+                if (index > 0) html += `<div class="history-log-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">${actionText}</div>`;
+            });
+            logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">尚無微調紀錄</p>';
+        }
+
+        // --- 總額換算工具 ---
+        function initExchangeModal() {
+            const ex = dom.exchange;
+            ex.amount.value = '';
+            updateExchangeInfo();
+        }
+        function updateExchangeInfo() {
+            const ex = dom.exchange;
+            const amount = parseInputValue(ex.amount.value);
+            const fromDenom = parseInt(ex.from.value, 10);
+            const toDenom = parseInt(ex.to.value, 10);
+            const fromCurrentAmount = parseInputValue(dom.amountInputs[fromDenom].value);
+            const fromCurrentCount = Math.floor(fromCurrentAmount / fromDenom);
+            const toCurrentAmount = parseInputValue(dom.amountInputs[toDenom].value);
+            const toCurrentCount = Math.floor(toCurrentAmount / toDenom);
+            ex.fromCurrentAmount.textContent = formatNumber(fromCurrentAmount);
+            ex.fromCurrentCount.textContent = fromCurrentCount;
+            ex.toCurrentAmount.textContent = formatNumber(toCurrentAmount);
+            ex.toCurrentCount.textContent = toCurrentCount;
+            let fromNewAmount = fromCurrentAmount, fromNewCount = fromCurrentCount, toNewAmount = toCurrentAmount, toNewCount = toCurrentCount;
+            if (amount > 0 && amount <= fromCurrentAmount && amount % fromDenom === 0) {
+                fromNewAmount -= amount;
+                toNewAmount += amount;
+            }
+            ex.fromNewAmount.textContent = formatNumber(fromNewAmount);
+            ex.fromNewCount.textContent = Math.floor(fromNewAmount / fromDenom);
+            ex.toNewAmount.textContent = formatNumber(toNewAmount);
+            ex.toNewCount.textContent = Math.floor(toNewAmount / toDenom);
+        }
+        function performExchange() {
+            const ex = dom.exchange;
+            const amount = parseInputValue(ex.amount.value);
+            const fromDenom = parseInt(ex.from.value, 10);
+            const toDenom = parseInt(ex.to.value, 10);
+            const fromInput = dom.amountInputs[fromDenom];
+            const toInput = dom.amountInputs[toDenom];
+            const fromCurrentAmount = parseInputValue(fromInput.value);
+            if (amount <= 0 || amount > fromCurrentAmount || amount % fromDenom !== 0) { alert('請輸入有效的轉換金額。'); return; }
+            fromInput.value = formatNumber(fromCurrentAmount - amount);
+            toInput.value = formatNumber(parseInputValue(toInput.value) + amount);
+            dom.modals.exchange.style.display = 'none';
+            updateStateFromInputs();
+            saveState();
+        }
+
+        // --- 顏色選擇器 ---
+        function initColorPickers() {
+            DENOMINATIONS.forEach(denom => {
+                const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
+                const color = getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || DEFAULT_COLORS[denom];
+                dom.color.pickers[denom].value = color;
+                dom.color.hexes[denom].textContent = color.toUpperCase();
+            });
+        }
+        function handleColorChange(e) {
+            const denom = parseInt(e.target.id.split('-')[1], 10);
+            const color = e.target.value;
+            applyColor(denom, color);
+            dom.color.hexes[denom].textContent = color.toUpperCase();
+        }
+        function applyColor(denom, color) {
+            const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
+            document.documentElement.style.setProperty(varName, color);
+        }
+        function resetColors() {
+            Object.entries(DEFAULT_COLORS).forEach(([denom, color]) => applyColor(denom, color));
+            initColorPickers();
+        }
+
+        // --- 輔助函數 ---
+        function updateStateFromInputs() { state.inputs = {}; DENOMINATIONS.forEach(denom => { state.inputs[denom] = { amount: parseInputValue(dom.amountInputs[denom].value), packages: dom.bagInputs[denom] ? parseInputValue(dom.bagInputs[denom].value) : 0 }; }); }
+        function formatMoney(number) { return new Intl.NumberFormat('zh-TW').format(number || 0) + ' 元'; }
+        function formatNumber(number) { const num = parseFloat(String(number).replace(/,/g, '')); return isNaN(num) ? '' : new Intl.NumberFormat('zh-TW').format(num); }
+        function parseInputValue(input) { return parseInt(String(input).replace(/,/g, ''), 10) || 0; }
+        function formatInputWithCommas(input) { const cursorPos = input.selectionStart; const originalLength = input.value.length; input.value = formatNumber(input.value.replace(/[^\d]/g, '')); const newLength = input.value.length; input.setSelectionRange(cursorPos + (newLength - originalLength), cursorPos + (newLength - originalLength)); }
+        function simulateValues() { softClear(); dom.amountInputs['1000'].value = formatNumber('16000'); dom.amountInputs['500'].value = formatNumber('17000'); dom.amountInputs['100'].value = formatNumber('6100'); dom.amountInputs['50'].value = formatNumber('1400'); dom.amountInputs['10'].value = formatNumber('910'); dom.amountInputs['5'].value = formatNumber('410'); dom.amountInputs['1'].value = formatNumber('51'); if(dom.bagInputs['50']) dom.bagInputs['50'].value = '1'; if(dom.bagInputs['1']) dom.bagInputs['1'].value = '1'; updateStateFromInputs(); saveState(); validateAllInputs();}
+        function startHardResetTimer(e) { e.preventDefault(); isLongPress = false; let startTime = Date.now(); dom.clearBtnProgress.style.transition = `width ${LONG_PRESS_DURATION / 1000}s linear`; dom.clearBtnProgress.style.width = '100%'; longPressTimer = setTimeout(() => { isLongPress = true; hardReset(); cancelHardResetTimer(); }, LONG_PRESS_DURATION); }
+        function cancelHardResetTimer() { clearTimeout(longPressTimer); longPressTimer = null; dom.clearBtnProgress.style.transition = 'width 0.2s'; dom.clearBtnProgress.style.width = '0%'; dom.clearBtnText.textContent = '清除數值'; setTimeout(() => { isLongPress = false; }, 50); }
+        function getCoinsBreakdown(targetAmount, availableAmounts) { let remaining = targetAmount; const result = { 50: 0, 10: 0, 5: 0, 1: 0 }; for (const denom of COIN_DENOMINATIONS) { const availableCount = Math.floor(availableAmounts[denom] / denom); const neededCount = Math.floor(remaining / denom); const usedCount = Math.min(availableCount, neededCount); result[denom] = usedCount; remaining -= usedCount * denom; if (remaining <= 0) break; } return result; }
+        function calculatePackages(totalCount, denomination) { let packageKey = ''; if (denomination === 100) packageKey = 'bundle100'; else if (denomination <= 50) packageKey = `bag${denomination}`; else return { packages: 0, loose: totalCount, looseAmount: totalCount * denomination }; const rule = PACKAGING_RULES[packageKey]; if (!rule) return { packages: 0, loose: totalCount, looseAmount: totalCount * denomination }; const packages = Math.floor(totalCount / rule.count); const loose = totalCount % rule.count; return { packages, loose, looseAmount: loose * denomination }; }
+        function findOptimalCombination(remainingCashNeeded, available100Count, available500Count) { for (let i = available100Count; i >= 0; i--) { const amount100 = i * 100; const remainingFor500 = remainingCashNeeded - amount100; if (remainingFor500 >= 0 && remainingFor500 % 500 === 0) { const needed500Count = remainingFor500 / 500; if (needed500Count <= available500Count) { return { found: true, used100: i, used500: needed500Count, amount100, amount500: remainingFor500 }; } } } return { found: false }; }
+
+        // --- 啟動應用 ---
+        init();
+    });
+    </script>
+</body>
+</html>
