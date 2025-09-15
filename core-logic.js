@@ -445,4 +445,19 @@ if (typeof module !== 'undefined' && module.exports) {
         formatMoney,
         formatInputWithCommas
     };
+} else {
+    // 瀏覽器環境：將函數暴露到全局作用域
+    window.APP_CONFIG = APP_CONFIG;
+    window.collectInputs = collectInputs;
+    window.calculateResults = calculateResults;
+    window.findOptimalCombination = findOptimalCombination;
+    window.getCoinsBreakdown = getCoinsBreakdown;
+    window.calculatePackages = calculatePackages;
+    window.validateAllInputs = validateAllInputs;
+    window.findValidSwapPath = findValidSwapPath;
+    window.findValidCoinSwapPath = findValidCoinSwapPath;
+    window.parseInputValue = parseInputValue;
+    window.formatNumber = formatNumber;
+    window.formatMoney = formatMoney;
+    window.formatInputWithCommas = formatInputWithCommas;
 }

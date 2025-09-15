@@ -533,4 +533,24 @@ if (typeof module !== 'undefined' && module.exports) {
         initExchangeModal,
         updateExchangeInfo
     };
+} else {
+    // 瀏覽器環境：將函數暴露到全局作用域
+    window.updateUI = updateUI;
+    window.updateSummarySection = updateSummarySection;
+    window.updateRevenueSection = updateRevenueSection;
+    window.updatePettyCashSection = updatePettyCashSection;
+    window.updateSmallCoinsSection = updateSmallCoinsSection;
+    window.updateCoinPackSection = updateCoinPackSection;
+    window.createDenomItemHTML = createDenomItemHTML;
+    window.flashElement = flashElement;
+    window.setupResultExchangeTool = setupResultExchangeTool;
+    window.updateResultExchangePreview = updateResultExchangePreview;
+    window.setupCoinConsolidationTool = setupCoinConsolidationTool;
+    window.updateCoinConsolidationPreview = updateCoinConsolidationPreview;
+    window.renderResultExchangeHistory = renderResultExchangeHistory;
+    window.initColorPickers = initColorPickers;
+    window.applyColor = applyColor;
+    window.resetColors = resetColors;
+    window.initExchangeModal = initExchangeModal;
+    window.updateExchangeInfo = updateExchangeInfo;
 }

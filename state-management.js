@@ -466,4 +466,13 @@ if (typeof module !== 'undefined' && module.exports) {
         migrateState,
         createStateManager
     };
+} else {
+    // 瀏覽器環境：將函數暴露到全局作用域
+    window.StateManager = StateManager;
+    window.updateStateFromInputs = updateStateFromInputs;
+    window.restoreInputsFromState = restoreInputsFromState;
+    window.createStateSnapshot = createStateSnapshot;
+    window.validateSnapshot = validateSnapshot;
+    window.migrateState = migrateState;
+    window.createStateManager = createStateManager;
 }
