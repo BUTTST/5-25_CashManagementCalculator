@@ -11,9 +11,6 @@ function updateUI(results, highlights = {}) {
     // 更新總覽區塊
     updateSummarySection(results);
     
-    // 更新PC與代收區塊
-    updatePCCollectionSection(results);
-    
     // 更新營收上繳區塊
     updateRevenueSection(results);
     
@@ -184,18 +181,6 @@ function updateCoinPackSection(results) {
     packBlock.innerHTML = coinPackHTML || '<p class="item">無散裝硬幣</p>';
 }
 
-/**
- * 更新PC與代收區塊
- * @param {Object} results - 計算結果
- */
-function updatePCCollectionSection(results) {
-    const pcData = calculatePCCollection(results);
-    
-    document.getElementById('pc-total-notes').textContent = `${pcData.totalNotes} 張`;
-    document.getElementById('pc-total-coins').textContent = `${pcData.totalCoins} 枚`;
-    document.getElementById('pc-revenue-amount').textContent = formatMoney(pcData.totalAmount);
-    document.getElementById('pc-petty-amount').textContent = formatMoney(pcData.pettyCashAmount);
-}
 
 /**
  * 更新驗證區塊狀態
@@ -654,7 +639,6 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         updateUI,
         updateSummarySection,
-        updatePCCollectionSection,
         updateRevenueSection,
         updatePettyCashSection,
         updateSmallCoinsSection,
@@ -680,7 +664,6 @@ if (typeof module !== 'undefined' && module.exports) {
     // 瀏覽器環境：將函數暴露到全局作用域
     window.updateUI = updateUI;
     window.updateSummarySection = updateSummarySection;
-    window.updatePCCollectionSection = updatePCCollectionSection;
     window.updateRevenueSection = updateRevenueSection;
     window.updatePettyCashSection = updatePettyCashSection;
     window.updateSmallCoinsSection = updateSmallCoinsSection;

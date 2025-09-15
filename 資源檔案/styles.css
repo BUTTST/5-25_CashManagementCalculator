@@ -1087,10 +1087,6 @@ th {
 }
 
 /* 額外計算區塊樣式 */
-.extra-calc {
-    margin-top: 1rem;
-}
-
 .extra-calc-header {
     display: flex;
     align-items: center;
@@ -1101,6 +1097,7 @@ th {
     font-weight: 600;
     cursor: pointer;
     justify-content: space-between;
+    margin: -1rem -1rem 0 -1rem;
 }
 
 .extra-calc-header-title {

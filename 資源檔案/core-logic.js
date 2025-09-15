@@ -2,7 +2,7 @@
 
 // === 常數與配置 ===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v3.5.state',           // localStorage 儲存鍵值
+    STATE_KEY: 'cashTool.v3.6.state',           // localStorage 儲存鍵值
     PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
     LONG_PRESS_DURATION: 5000,                  // 長按重置的持續時間（毫秒）
     
@@ -584,35 +584,6 @@ function initializeMovableBlocks() {
     });
 }
 
-// === PC與代收相關功能 ===
-
-/**
- * 計算PC與代收相關數據
- * @param {Object} results - 計算結果
- * @returns {Object} PC與代收統計
- */
-function calculatePCCollection(results) {
-    // 計算需要上繳的總紙鈔數量
-    let totalNotes = 0;
-    let totalCoins = 0;
-    
-    getSupportedDenominations().forEach(denom => {
-        const count = results.distribution.revenue[denom] || 0;
-        if (denom >= 100) {
-            totalNotes += count;
-        } else {
-            totalCoins += count;
-        }
-    });
-    
-    return {
-        totalNotes,
-        totalCoins,
-        totalAmount: results.revenueAmount,
-        pettyCashAmount: results.actualPettyCash
-    };
-}
-
 // === 額外計算功能 ===
 
 /**
@@ -735,7 +706,6 @@ if (typeof module !== 'undefined' && module.exports) {
         moveBlock,
         addMoveButtons,
         initializeMovableBlocks,
-        calculatePCCollection,
         importTotalAmount,
         updateExtraCalc,
         toggleExtraCalcLock,
@@ -760,7 +730,6 @@ if (typeof module !== 'undefined' && module.exports) {
     window.moveBlock = moveBlock;
     window.addMoveButtons = addMoveButtons;
     window.initializeMovableBlocks = initializeMovableBlocks;
-    window.calculatePCCollection = calculatePCCollection;
     window.importTotalAmount = importTotalAmount;
     window.updateExtraCalc = updateExtraCalc;
     window.toggleExtraCalcLock = toggleExtraCalcLock;

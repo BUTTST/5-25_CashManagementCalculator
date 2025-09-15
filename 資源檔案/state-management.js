@@ -12,7 +12,7 @@ class StateManager {
             inputs: {},           // 使用者輸入資料
             results: null,        // 計算結果
             exchangeHistory: [],  // 微調歷史記錄
-            version: '3.5'        // 版本號
+            version: '3.6'        // 版本號
         };
         this.listeners = [];      // 狀態變更監聽器
     }
@@ -60,7 +60,7 @@ class StateManager {
             inputs: {},
             results: null,
             exchangeHistory: [],
-            version: '3.5'
+            version: '3.6'
         };
         localStorage.removeItem(this.stateKey);
         this.notifyListeners('clear', this.state);

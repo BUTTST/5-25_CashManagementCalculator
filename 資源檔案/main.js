@@ -19,7 +19,7 @@ class CashManagementApp {
         // 初始化保存機台選擇
         this.currentSaveMachineNumber = null;
         
-        console.log("現金管理工具 v3.5 已初始化。");
+        console.log("現金管理工具 v3.6 已初始化。");
     }
     
     /**
@@ -508,10 +508,13 @@ class CashManagementApp {
      * @returns {boolean} 是否所有輸入都有效
      */
     validateAllInputs() {
-        const inputs = collectInputs(this.domElements);
-        const isValid = validateAllInputs(this.domElements, inputs);
+        // 調用 core-logic.js 中的 validateAllInputs 函數
+        const isValid = window.validateAllInputs ? 
+            window.validateAllInputs(this.domElements, {}) : true;
         
-        this.domElements.calculateBtn.disabled = !isValid;
+        if (this.domElements.calculateBtn) {
+            this.domElements.calculateBtn.disabled = !isValid;
+        }
         return isValid;
     }
     
