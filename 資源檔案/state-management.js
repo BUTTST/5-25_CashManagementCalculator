@@ -11,7 +11,8 @@ class StateManager {
         this.state = {
             inputs: {},           // 使用者輸入資料
             results: null,        // 計算結果
-            exchangeHistory: []   // 微調歷史記錄
+            exchangeHistory: [],  // 微調歷史記錄
+            version: '3.4'        // 版本號
         };
         this.listeners = [];      // 狀態變更監聽器
     }
@@ -58,7 +59,8 @@ class StateManager {
         this.state = {
             inputs: {},
             results: null,
-            exchangeHistory: []
+            exchangeHistory: [],
+            version: '3.4'
         };
         localStorage.removeItem(this.stateKey);
         this.notifyListeners('clear', this.state);
@@ -319,14 +321,17 @@ class StateManager {
 function updateStateFromInputs(stateManager, domInputs) {
     const inputs = {};
     
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    // 使用動態面額列表，包含擴展面額
+    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
         const amountInput = domInputs.amountInputs[denom];
         const bagInput = domInputs.bagInputs[denom];
         
-        inputs[denom] = {
-            amount: parseInputValue(amountInput ? amountInput.value : '0'),
-            packages: parseInputValue(bagInput ? bagInput.value : '0')
-        };
+        if (amountInput) {
+            inputs[denom] = {
+                amount: parseInputValue(amountInput.value || '0'),
+                packages: parseInputValue(bagInput ? bagInput.value : '0')
+            };
+        }
     });
     
     stateManager.updateInputs(inputs);
@@ -340,15 +345,14 @@ function updateStateFromInputs(stateManager, domInputs) {
 function restoreInputsFromState(state, domInputs) {
     if (!state.inputs) return;
     
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    // 使用所有支持的面額，包含擴展面額
+    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
         const inputData = state.inputs[denom];
-        if (inputData) {
-            const amountInput = domInputs.amountInputs[denom];
-            const bagInput = domInputs.bagInputs[denom];
-            
-            if (amountInput) {
-                amountInput.value = formatNumber(inputData.amount || 0);
-            }
+        const amountInput = domInputs.amountInputs[denom];
+        const bagInput = domInputs.bagInputs[denom];
+        
+        if (inputData && amountInput) {
+            amountInput.value = formatNumber(inputData.amount || 0);
             
             if (bagInput && inputData.packages) {
                 bagInput.value = inputData.packages.toString();

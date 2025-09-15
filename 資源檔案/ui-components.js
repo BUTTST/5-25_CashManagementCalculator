@@ -11,6 +11,9 @@ function updateUI(results, highlights = {}) {
     // 更新總覽區塊
     updateSummarySection(results);
     
+    // 更新PC與代收區塊
+    updatePCCollectionSection(results);
+    
     // 更新營收上繳區塊
     updateRevenueSection(results);
     
@@ -52,7 +55,7 @@ function updateRevenueSection(results) {
     let revenueCoinsHTML = '';
     
     // 分別處理紙鈔和硬幣
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    getSupportedDenominations().forEach(denom => {
         const count = results.distribution.revenue[denom];
         if (count > 0) {
             const html = createDenomItemHTML(denom, count);
@@ -78,8 +81,13 @@ function updatePettyCashSection(results) {
     let pettyNotesHTML = '';
     let pettyCoinsHTML = '';
     
-    // 分別處理紙鈔和硬幣
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    // 分別處理紙鈔和硬幣（排除僅營收面額）
+    getSupportedDenominations().forEach(denom => {
+        // 跳過僅營收面額
+        if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
+            return;
+        }
+        
         const count = results.distribution.pettyCash[denom];
         if (count > 0) {
             const html = createDenomItemHTML(denom, count);
@@ -123,7 +131,7 @@ function updateBalanceWarning(results) {
 function updateSmallCoinsSection(results) {
     // 計算硬幣總額
     const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
-        (sum, d) => sum + results.initialInputs[d].totalAmount, 0
+        (sum, d) => sum + (results.initialInputs[d] ? results.initialInputs[d].totalAmount : 0), 0
     );
     
     // 更新基本資訊
@@ -174,6 +182,42 @@ function updateCoinPackSection(results) {
     // 更新 DOM 元素
     const packBlock = document.getElementById('coin-pack-block');
     packBlock.innerHTML = coinPackHTML || '<p class="item">無散裝硬幣</p>';
+}
+
+/**
+ * 更新PC與代收區塊
+ * @param {Object} results - 計算結果
+ */
+function updatePCCollectionSection(results) {
+    const pcData = calculatePCCollection(results);
+    
+    document.getElementById('pc-total-notes').textContent = `${pcData.totalNotes} 張`;
+    document.getElementById('pc-total-coins').textContent = `${pcData.totalCoins} 枚`;
+    document.getElementById('pc-revenue-amount').textContent = formatMoney(pcData.totalAmount);
+    document.getElementById('pc-petty-amount').textContent = formatMoney(pcData.pettyCashAmount);
+}
+
+/**
+ * 更新驗證區塊狀態
+ */
+function updateVerificationStatus() {
+    const checkboxes = document.querySelectorAll('.verify-checkbox');
+    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const totalCount = checkboxes.length;
+    
+    document.getElementById('verification-count').textContent = `${checkedCount}/${totalCount}`;
+    
+    // 更新狀態顯示
+    const statusElement = document.getElementById('verification-status');
+    if (checkedCount === totalCount) {
+        statusElement.style.background = 'rgba(52, 168, 83, 0.1)';
+        statusElement.style.borderColor = 'rgba(52, 168, 83, 0.3)';
+        statusElement.querySelector('.status-text').style.color = 'var(--secondary)';
+    } else {
+        statusElement.style.background = 'rgba(13, 71, 161, 0.1)';
+        statusElement.style.borderColor = 'rgba(13, 71, 161, 0.2)';
+        statusElement.querySelector('.status-text').style.color = 'var(--primary)';
+    }
 }
 
 /**
@@ -264,9 +308,20 @@ function flashElement(el) {
 function setupResultExchangeTool(domElements) {
     const rex = domElements.resultExchange;
     
-    // 建立面額選項
-    const optionsHTML = APP_CONFIG.DENOMINATIONS
-        .map(denom => `<option value="${denom}">${denom}元</option>`)
+    // 建立面額選項（排除僅營收面額）
+    const availableDenoms = APP_CONFIG.DENOMINATIONS.filter(denom => 
+        !APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)
+    );
+    
+    const optionsHTML = availableDenoms
+        .map(denom => {
+            const className = APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom) ? 
+                (APP_CONFIG.SETTINGS.showExtendedDenoms ? 'extended-option show' : 'extended-option') :
+                '';
+            const style = APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom) && !APP_CONFIG.SETTINGS.showExtendedDenoms ? 
+                'style="display: none;"' : '';
+            return `<option value="${denom}" class="${className}" ${style}>${denom}元</option>`;
+        })
         .join('');
     
     rex.fromDenom.innerHTML = optionsHTML;
@@ -421,7 +476,7 @@ function renderResultExchangeHistory(domElements, state) {
  * @param {Object} domElements - DOM 元素集合
  */
 function initColorPickers(domElements) {
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
         const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
         const currentColor = getComputedStyle(document.documentElement)
             .getPropertyValue(varName).trim() || APP_CONFIG.DEFAULT_COLORS[denom];
@@ -432,6 +487,14 @@ function initColorPickers(domElements) {
         if (picker && hexDisplay) {
             picker.value = currentColor;
             hexDisplay.textContent = currentColor.toUpperCase();
+        }
+        
+        // 控制擴展面額的顏色選擇器顯示
+        if (APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom)) {
+            const colorElement = document.getElementById(`color-picker-${denom}`);
+            if (colorElement) {
+                colorElement.classList.toggle('show', APP_CONFIG.SETTINGS.showExtendedDenoms);
+            }
         }
     });
 }
@@ -458,6 +521,75 @@ function resetColors(domElements) {
     if (domElements) {
         initColorPickers(domElements);
     }
+}
+
+/**
+ * 切換擴展面額顯示
+ * @param {boolean} show - 是否顯示
+ */
+function toggleExtendedDenominations(show) {
+    // 更新設定
+    APP_CONFIG.SETTINGS.showExtendedDenoms = show;
+    
+    // 更新輸入欄位
+    document.querySelectorAll('.extended-denom').forEach(el => {
+        el.classList.toggle('show', show);
+    });
+    
+    // 更新選項
+    document.querySelectorAll('.extended-option').forEach(el => {
+        el.classList.toggle('show', show);
+        el.style.display = show ? 'block' : 'none';
+    });
+    
+    // 更新顏色選擇器
+    document.querySelectorAll('.extended-color').forEach(el => {
+        el.classList.toggle('show', show);
+    });
+    
+    // 更新面額換算工具
+    updateExchangeOptions();
+}
+
+/**
+ * 更新換算工具的選項
+ */
+function updateExchangeOptions() {
+    const selects = document.querySelectorAll('#exchange-from, #exchange-to');
+    selects.forEach(select => {
+        const options = select.querySelectorAll('.extended-option');
+        options.forEach(option => {
+            option.style.display = APP_CONFIG.SETTINGS.showExtendedDenoms ? 'block' : 'none';
+        });
+    });
+}
+
+/**
+ * 切換暗色模式
+ * @param {boolean} isDark - 是否為暗色模式
+ */
+function toggleDarkMode(isDark) {
+    APP_CONFIG.SETTINGS.darkMode = isDark;
+    document.body.classList.toggle('dark-mode', isDark);
+    
+    // 更新按鈕圖示
+    const themeIcon = document.querySelector('#theme-toggle .theme-icon');
+    if (themeIcon) {
+        themeIcon.textContent = isDark ? '🌞' : '🌙';
+    }
+}
+
+/**
+ * 初始化驗證區塊
+ */
+function initVerificationBlock() {
+    const checkboxes = document.querySelectorAll('.verify-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateVerificationStatus);
+    });
+    
+    // 初始化狀態
+    updateVerificationStatus();
 }
 
 // === 總額換算工具 ===
@@ -516,6 +648,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         updateUI,
         updateSummarySection,
+        updatePCCollectionSection,
         updateRevenueSection,
         updatePettyCashSection,
         updateSmallCoinsSection,
@@ -531,12 +664,17 @@ if (typeof module !== 'undefined' && module.exports) {
         applyColor,
         resetColors,
         initExchangeModal,
-        updateExchangeInfo
+        updateExchangeInfo,
+        toggleExtendedDenominations,
+        toggleDarkMode,
+        initVerificationBlock,
+        updateVerificationStatus
     };
 } else {
     // 瀏覽器環境：將函數暴露到全局作用域
     window.updateUI = updateUI;
     window.updateSummarySection = updateSummarySection;
+    window.updatePCCollectionSection = updatePCCollectionSection;
     window.updateRevenueSection = updateRevenueSection;
     window.updatePettyCashSection = updatePettyCashSection;
     window.updateSmallCoinsSection = updateSmallCoinsSection;
@@ -553,4 +691,8 @@ if (typeof module !== 'undefined' && module.exports) {
     window.resetColors = resetColors;
     window.initExchangeModal = initExchangeModal;
     window.updateExchangeInfo = updateExchangeInfo;
+    window.toggleExtendedDenominations = toggleExtendedDenominations;
+    window.toggleDarkMode = toggleDarkMode;
+    window.initVerificationBlock = initVerificationBlock;
+    window.updateVerificationStatus = updateVerificationStatus;
 }

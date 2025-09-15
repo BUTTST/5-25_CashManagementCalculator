@@ -13,7 +13,10 @@ class CashManagementApp {
         this.longPressTimer = null;
         this.isLongPress = false;
         
-        console.log("現金管理工具 v2.6 已初始化。");
+        // 保存相關
+        this.saveHistory = [];
+        
+        console.log("現金管理工具 v3.4 已初始化。");
     }
     
     /**
@@ -41,7 +44,10 @@ class CashManagementApp {
                 manual: document.getElementById('manual-modal'),
                 exchange: document.getElementById('exchange-modal'),
                 color: document.getElementById('color-modal'),
-                changelog: document.getElementById('changelog-modal')
+                changelog: document.getElementById('changelog-modal'),
+                settings: document.getElementById('settings-modal'),
+                save: document.getElementById('save-modal'),
+                export: document.getElementById('export-modal')
             },
             
             // 功能按鈕
@@ -50,7 +56,11 @@ class CashManagementApp {
                 showManual: document.getElementById('show-manual'),
                 showExchange: document.getElementById('show-exchange'),
                 showColor: document.getElementById('custom-color-btn'),
-                showChangelog: document.getElementById('show-changelog')
+                showChangelog: document.getElementById('show-changelog'),
+                themeToggle: document.getElementById('theme-toggle'),
+                settings: document.getElementById('settings-btn'),
+                save: document.getElementById('save-btn'),
+                export: document.getElementById('export-btn')
             },
             
             // 總額換算工具
@@ -100,20 +110,57 @@ class CashManagementApp {
                 toDenom: document.getElementById('coin-consolidation-to-denom'),
                 toPreview: document.getElementById('coin-consolidation-to-preview'),
                 performBtn: document.getElementById('perform-coin-consolidation-btn')
+            },
+            
+            // 設定相關
+            settings: {
+                showExtendedDenoms: document.getElementById('show-extended-denoms'),
+                machine1: document.getElementById('machine-1'),
+                machine2: document.getElementById('machine-2'),
+                staffList: document.getElementById('staff-list'),
+                newStaffName: document.getElementById('new-staff-name'),
+                addStaffBtn: document.getElementById('add-staff-btn'),
+                saveSettingsBtn: document.getElementById('save-settings-btn'),
+                resetSettingsBtn: document.getElementById('reset-settings-btn')
+            },
+            
+            // 保存相關
+            save: {
+                timestamp: document.getElementById('save-timestamp'),
+                machine: document.getElementById('save-machine'),
+                staff: document.getElementById('save-staff'),
+                confirmBtn: document.getElementById('confirm-save-btn'),
+                cancelBtn: document.getElementById('cancel-save-btn')
+            },
+            
+            // 導出相關
+            export: {
+                settingsBtn: document.getElementById('export-settings-btn'),
+                historyBtn: document.getElementById('export-history-btn'),
+                allBtn: document.getElementById('export-all-btn'),
+                result: document.getElementById('export-result'),
+                text: document.getElementById('export-text'),
+                copyBtn: document.getElementById('copy-export-btn'),
+                downloadBtn: document.getElementById('download-export-btn')
             }
         };
         
-        // 初始化面額相關的 DOM 元素
-        APP_CONFIG.DENOMINATIONS.forEach(denom => {
-            dom.amountInputs[denom] = document.getElementById(`amount${denom}`);
-            dom.errorMessages[denom] = document.getElementById(`error${denom}`);
+        // 初始化面額相關的 DOM 元素（包含擴展面額）
+        [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
+            const amountInput = document.getElementById(`amount${denom}`);
+            const errorMessage = document.getElementById(`error${denom}`);
+            const picker = document.getElementById(`pick-${denom}`);
+            const hex = document.getElementById(`hex-${denom}`);
+            
+            // 只儲存存在的元素
+            if (amountInput) dom.amountInputs[denom] = amountInput;
+            if (errorMessage) dom.errorMessages[denom] = errorMessage;
+            if (picker) dom.color.pickers[denom] = picker;
+            if (hex) dom.color.hexes[denom] = hex;
             
             const bagInput = document.getElementById(`bag${denom}`) || 
                            document.getElementById(`bundle${denom}`);
             if (bagInput) dom.bagInputs[denom] = bagInput;
-            
-            dom.color.pickers[denom] = document.getElementById(`pick-${denom}`);
-            dom.color.hexes[denom] = document.getElementById(`hex-${denom}`);
         });
         
         return dom;
@@ -158,12 +205,16 @@ class CashManagementApp {
         
         // === 輸入欄位事件 ===
         Object.values(dom.amountInputs).forEach(input => {
-            input.addEventListener('input', (e) => this.handleAmountInput(e));
-            input.addEventListener('blur', (e) => this.handleAmountBlur(e));
+            if (input) {
+                input.addEventListener('input', (e) => this.handleAmountInput(e));
+                input.addEventListener('blur', (e) => this.handleAmountBlur(e));
+            }
         });
         
         Object.values(dom.bagInputs).forEach(input => {
-            input.addEventListener('input', () => this.handleBagInput());
+            if (input) {
+                input.addEventListener('input', () => this.handleBagInput());
+            }
         });
         
         // === 摺疊面板 ===
@@ -184,6 +235,20 @@ class CashManagementApp {
         };
         dom.buttons.showColor.onclick = () => dom.modals.color.style.display = 'block';
         dom.buttons.showChangelog.onclick = () => dom.modals.changelog.style.display = 'block';
+        
+        // === 新增功能按鈕 ===
+        if (dom.buttons.themeToggle) {
+            dom.buttons.themeToggle.onclick = () => this.handleThemeToggle();
+        }
+        if (dom.buttons.settings) {
+            dom.buttons.settings.onclick = () => this.handleSettingsClick();
+        }
+        if (dom.buttons.save) {
+            dom.buttons.save.onclick = () => this.handleSaveClick();
+        }
+        if (dom.buttons.export) {
+            dom.buttons.export.onclick = () => this.handleExportClick();
+        }
         
         // 彈窗關閉按鈕
         document.querySelectorAll('.modal .close').forEach(btn => {
@@ -241,6 +306,53 @@ class CashManagementApp {
         [cc.fromDenom, cc.fromCount, cc.toDenom].forEach(el => {
             el.addEventListener('input', () => this.updateCoinConsolidationPreview());
         });
+        
+        // === 新增功能事件綁定 ===
+        
+        // 設定相關事件
+        if (dom.settings.showExtendedDenoms) {
+            dom.settings.showExtendedDenoms.addEventListener('change', (e) => this.handleExtendedDenomsToggle(e));
+        }
+        if (dom.settings.machine1) {
+            dom.settings.machine1.addEventListener('click', () => this.handleMachineSelect(1));
+        }
+        if (dom.settings.machine2) {
+            dom.settings.machine2.addEventListener('click', () => this.handleMachineSelect(2));
+        }
+        if (dom.settings.addStaffBtn) {
+            dom.settings.addStaffBtn.addEventListener('click', () => this.handleAddStaff());
+        }
+        if (dom.settings.saveSettingsBtn) {
+            dom.settings.saveSettingsBtn.addEventListener('click', () => this.handleSaveSettings());
+        }
+        if (dom.settings.resetSettingsBtn) {
+            dom.settings.resetSettingsBtn.addEventListener('click', () => this.handleResetSettings());
+        }
+        
+        // 保存相關事件
+        if (dom.save.confirmBtn) {
+            dom.save.confirmBtn.addEventListener('click', () => this.handleConfirmSave());
+        }
+        if (dom.save.cancelBtn) {
+            dom.save.cancelBtn.addEventListener('click', () => this.handleCancelSave());
+        }
+        
+        // 導出相關事件
+        if (dom.export.settingsBtn) {
+            dom.export.settingsBtn.addEventListener('click', () => this.handleExportSettings());
+        }
+        if (dom.export.historyBtn) {
+            dom.export.historyBtn.addEventListener('click', () => this.handleExportHistory());
+        }
+        if (dom.export.allBtn) {
+            dom.export.allBtn.addEventListener('click', () => this.handleExportAll());
+        }
+        if (dom.export.copyBtn) {
+            dom.export.copyBtn.addEventListener('click', () => this.handleCopyExport());
+        }
+        if (dom.export.downloadBtn) {
+            dom.export.downloadBtn.addEventListener('click', () => this.handleDownloadExport());
+        }
     }
     
     // === 事件處理函數 ===
@@ -337,16 +449,32 @@ class CashManagementApp {
         this.stateManager.clearState();
         
         // 清除輸入欄位
-        Object.values(this.domElements.amountInputs).forEach(input => input.value = '');
-        Object.values(this.domElements.bagInputs).forEach(input => input.value = '');
+        Object.values(this.domElements.amountInputs).forEach(input => {
+            if (input) input.value = '';
+        });
+        Object.values(this.domElements.bagInputs).forEach(input => {
+            if (input) input.value = '';
+        });
         
         // 清除錯誤狀態
-        Object.values(this.domElements.errorMessages).forEach(el => el.classList.remove('active'));
-        Object.values(this.domElements.amountInputs).forEach(el => el.classList.remove('input-error'));
+        Object.values(this.domElements.errorMessages).forEach(el => {
+            if (el) el.classList.remove('active');
+        });
+        Object.values(this.domElements.amountInputs).forEach(el => {
+            if (el) el.classList.remove('input-error');
+        });
         
         // 重置按鈕狀態
         this.domElements.calculateBtn.disabled = false;
         this.domElements.resultContainer.classList.remove('active');
+        
+        // 重置驗證狀態
+        document.querySelectorAll('.verify-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+        if (typeof updateVerificationStatus !== 'undefined') {
+            updateVerificationStatus();
+        }
     }
     
     /**
@@ -420,9 +548,18 @@ class CashManagementApp {
             1: '51'
         };
         
+        // 如果啟用了擴展面額，添加模擬數據
+        if (APP_CONFIG.SETTINGS.showExtendedDenoms) {
+            simulateData[2000] = '10000';
+            simulateData[200] = '2400';
+        }
+        
         // 填入模擬數據
         Object.entries(simulateData).forEach(([denom, value]) => {
-            this.domElements.amountInputs[denom].value = formatNumber(value);
+            const input = this.domElements.amountInputs[denom];
+            if (input) {
+                input.value = formatNumber(value);
+            }
         });
         
         // 設定袋裝數據
@@ -675,6 +812,409 @@ class CashManagementApp {
                 // 其他狀態變更暫時不需要特殊處理
                 break;
         }
+    }
+    
+    // === 新增功能事件處理 ===
+    
+    /**
+     * 處理主題切換
+     */
+    handleThemeToggle() {
+        const isDark = !APP_CONFIG.SETTINGS.darkMode;
+        toggleDarkMode(isDark);
+        this.saveSettings();
+    }
+    
+    /**
+     * 處理設定按鈕點擊
+     */
+    handleSettingsClick() {
+        this.updateSettingsModal();
+        this.domElements.modals.settings.style.display = 'block';
+    }
+    
+    /**
+     * 處理保存按鈕點擊
+     */
+    handleSaveClick() {
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        this.domElements.save.timestamp.textContent = timestamp;
+        this.domElements.save.machine.textContent = `①${APP_CONFIG.SETTINGS.machineNumber}`;
+        
+        // 更新人員選項
+        const staffSelect = this.domElements.save.staff;
+        staffSelect.innerHTML = APP_CONFIG.SETTINGS.staffList
+            .map((staff, index) => `<option value="${index}">${staff}</option>`)
+            .join('');
+            
+        this.domElements.modals.save.style.display = 'block';
+    }
+    
+    /**
+     * 處理導出按鈕點擊
+     */
+    handleExportClick() {
+        if (this.domElements.export.result) {
+            this.domElements.export.result.style.display = 'none';
+        }
+        this.domElements.modals.export.style.display = 'block';
+    }
+    
+    /**
+     * 更新設定彈窗
+     */
+    updateSettingsModal() {
+        if (this.domElements.settings.showExtendedDenoms) {
+            this.domElements.settings.showExtendedDenoms.checked = APP_CONFIG.SETTINGS.showExtendedDenoms;
+        }
+        if (this.domElements.settings.machine1) {
+            this.domElements.settings.machine1.classList.toggle('active', APP_CONFIG.SETTINGS.machineNumber === 1);
+        }
+        if (this.domElements.settings.machine2) {
+            this.domElements.settings.machine2.classList.toggle('active', APP_CONFIG.SETTINGS.machineNumber === 2);
+        }
+        this.renderStaffList();
+    }
+    
+    /**
+     * 處理擴展面額切換
+     */
+    handleExtendedDenomsToggle(e) {
+        const show = e.target.checked;
+        
+        // 如果關閉且有數值，警示使用者
+        if (!show && this.hasExtendedDenomsValues()) {
+            const confirmed = confirm('關閉顯示將清空 2000 和 200 面額的輸入值，是否繼續？');
+            if (!confirmed) {
+                e.target.checked = true;
+                return;
+            }
+            
+            // 清空數值
+            if (this.domElements.amountInputs[2000]) {
+                this.domElements.amountInputs[2000].value = '';
+            }
+            if (this.domElements.amountInputs[200]) {
+                this.domElements.amountInputs[200].value = '';
+            }
+        }
+        
+        if (typeof toggleExtendedDenominations !== 'undefined') {
+            toggleExtendedDenominations(show);
+        }
+        this.saveSettings();
+    }
+    
+    /**
+     * 檢查是否有擴展面額的數值
+     */
+    hasExtendedDenomsValues() {
+        const val2000 = this.domElements.amountInputs[2000] ? parseInputValue(this.domElements.amountInputs[2000].value) : 0;
+        const val200 = this.domElements.amountInputs[200] ? parseInputValue(this.domElements.amountInputs[200].value) : 0;
+        return val2000 > 0 || val200 > 0;
+    }
+    
+    /**
+     * 處理機台選擇
+     */
+    handleMachineSelect(machineNumber) {
+        APP_CONFIG.SETTINGS.machineNumber = machineNumber;
+        
+        if (this.domElements.settings.machine1) {
+            this.domElements.settings.machine1.classList.toggle('active', machineNumber === 1);
+        }
+        if (this.domElements.settings.machine2) {
+            this.domElements.settings.machine2.classList.toggle('active', machineNumber === 2);
+        }
+        
+        this.saveSettings();
+    }
+    
+    /**
+     * 處理新增人員
+     */
+    handleAddStaff() {
+        const nameInput = this.domElements.settings.newStaffName;
+        if (!nameInput) return;
+        
+        const name = nameInput.value.trim();
+        if (name && !APP_CONFIG.SETTINGS.staffList.includes(name)) {
+            APP_CONFIG.SETTINGS.staffList.push(name);
+            this.renderStaffList();
+            nameInput.value = '';
+            this.saveSettings();
+        }
+    }
+    
+    /**
+     * 處理刪除人員
+     */
+    handleRemoveStaff(index) {
+        if (APP_CONFIG.SETTINGS.staffList.length > 1) {
+            APP_CONFIG.SETTINGS.staffList.splice(index, 1);
+            this.renderStaffList();
+            this.saveSettings();
+        }
+    }
+    
+    /**
+     * 處理保存設定
+     */
+    handleSaveSettings() {
+        this.saveSettings();
+        alert('設定已保存！');
+        this.domElements.modals.settings.style.display = 'none';
+    }
+    
+    /**
+     * 處理重置設定
+     */
+    handleResetSettings() {
+        if (confirm('確定要恢復所有設定為預設值嗎？')) {
+            this.resetSettings();
+            this.updateSettingsModal();
+            alert('設定已重置！');
+        }
+    }
+    
+    /**
+     * 處理確認保存
+     */
+    handleConfirmSave() {
+        const timestamp = this.domElements.save.timestamp.textContent;
+        const machine = APP_CONFIG.SETTINGS.machineNumber;
+        const staffIndex = parseInt(this.domElements.save.staff.value);
+        const staff = APP_CONFIG.SETTINGS.staffList[staffIndex];
+        
+        const saveData = {
+            timestamp,
+            machine,
+            staff,
+            inputs: this.stateManager.getState().inputs,
+            results: this.stateManager.getState().results,
+            settings: { ...APP_CONFIG.SETTINGS }
+        };
+        
+        this.saveHistory.push(saveData);
+        this.saveSaveHistory();
+        
+        alert(`記錄已保存！\\n時間: ${timestamp}\\n機號: ①${machine}\\n人員: ${staff}`);
+        this.domElements.modals.save.style.display = 'none';
+    }
+    
+    /**
+     * 處理取消保存
+     */
+    handleCancelSave() {
+        this.domElements.modals.save.style.display = 'none';
+    }
+    
+    /**
+     * 處理導出設定
+     */
+    handleExportSettings() {
+        const settingsData = {
+            settings: { ...APP_CONFIG.SETTINGS },
+            colors: this.getCurrentColors(),
+            version: '3.4',
+            exportTime: new Date().toISOString()
+        };
+        
+        this.showExportResult(JSON.stringify(settingsData, null, 2), '設定資料');
+    }
+    
+    /**
+     * 處理導出歷史
+     */
+    handleExportHistory() {
+        const historyData = {
+            saveHistory: this.saveHistory,
+            version: '3.4',
+            exportTime: new Date().toISOString()
+        };
+        
+        this.showExportResult(JSON.stringify(historyData, null, 2), '歷史資料');
+    }
+    
+    /**
+     * 處理導出所有
+     */
+    handleExportAll() {
+        const allData = {
+            settings: { ...APP_CONFIG.SETTINGS },
+            colors: this.getCurrentColors(),
+            saveHistory: this.saveHistory,
+            currentState: this.stateManager.getState(),
+            version: '3.4',
+            exportTime: new Date().toISOString()
+        };
+        
+        this.showExportResult(JSON.stringify(allData, null, 2), '完整資料');
+    }
+    
+    /**
+     * 處理複製導出
+     */
+    handleCopyExport() {
+        const text = this.domElements.export.text.value;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('已複製到剪貼板！');
+        }).catch(() => {
+            // 備用方案
+            this.domElements.export.text.select();
+            document.execCommand('copy');
+            alert('已複製到剪貼板！');
+        });
+    }
+    
+    /**
+     * 處理下載導出
+     */
+    handleDownloadExport() {
+        const text = this.domElements.export.text.value;
+        const filename = this.currentExportFilename || 'export.json';
+        
+        const blob = new Blob([text], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    /**
+     * 顯示導出結果
+     */
+    showExportResult(data, type) {
+        this.domElements.export.text.value = data;
+        this.currentExportFilename = `cash-tool-${type}-${new Date().toISOString().slice(0, 10)}.json`;
+        this.domElements.export.result.style.display = 'block';
+    }
+    
+    /**
+     * 重置設定
+     */
+    resetSettings() {
+        APP_CONFIG.SETTINGS = {
+            showExtendedDenoms: false,
+            darkMode: false,
+            machineNumber: 1,
+            staffList: ['1號', '2號', '3號']
+        };
+        
+        if (typeof toggleDarkMode !== 'undefined') {
+            toggleDarkMode(false);
+        }
+        if (typeof toggleExtendedDenominations !== 'undefined') {
+            toggleExtendedDenominations(false);
+        }
+        this.saveSettings();
+    }
+    
+    /**
+     * 取得當前顏色
+     */
+    getCurrentColors() {
+        const colors = {};
+        [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
+            const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
+            colors[denom] = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        });
+        return colors;
+    }
+    
+    /**
+     * 初始化新增功能
+     */
+    initNewFeatures() {
+        // 初始化区块移动功能
+        if (typeof initializeMovableBlocks !== 'undefined') {
+            initializeMovableBlocks();
+        }
+        
+        // 初始化驗證區塊
+        if (typeof initVerificationBlock !== 'undefined') {
+            initVerificationBlock();
+        }
+        
+        // 初始化設定
+        this.loadSettings();
+        
+        // 載入保存歷史
+        this.loadSaveHistory();
+        
+        // 初始化人員清單
+        this.renderStaffList();
+    }
+    
+    /**
+     * 載入設定
+     */
+    loadSettings() {
+        const saved = localStorage.getItem('cashTool.settings');
+        if (saved) {
+            try {
+                const settings = JSON.parse(saved);
+                Object.assign(APP_CONFIG.SETTINGS, settings);
+                
+                // 應用設定
+                if (typeof toggleDarkMode !== 'undefined') {
+                    toggleDarkMode(APP_CONFIG.SETTINGS.darkMode);
+                }
+                if (typeof toggleExtendedDenominations !== 'undefined') {
+                    toggleExtendedDenominations(APP_CONFIG.SETTINGS.showExtendedDenoms);
+                }
+            } catch (error) {
+                console.error('載入設定失敗:', error);
+            }
+        }
+    }
+    
+    /**
+     * 保存設定
+     */
+    saveSettings() {
+        localStorage.setItem('cashTool.settings', JSON.stringify(APP_CONFIG.SETTINGS));
+    }
+    
+    /**
+     * 渲染人員清單
+     */
+    renderStaffList() {
+        if (!this.domElements.settings || !this.domElements.settings.staffList) return;
+        
+        const listEl = this.domElements.settings.staffList;
+        listEl.innerHTML = APP_CONFIG.SETTINGS.staffList.map((staff, index) => `
+            <div class="staff-item">
+                <span>${staff}</span>
+                <button onclick="cashApp.handleRemoveStaff(${index})" class="btn btn-clear" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">刪除</button>
+            </div>
+        `).join('');
+    }
+    
+    /**
+     * 載入保存歷史
+     */
+    loadSaveHistory() {
+        const saved = localStorage.getItem('cashTool.saveHistory');
+        if (saved) {
+            try {
+                this.saveHistory = JSON.parse(saved);
+            } catch (error) {
+                console.error('載入保存歷史失敗:', error);
+                this.saveHistory = [];
+            }
+        }
+    }
+    
+    /**
+     * 保存保存歷史
+     */
+    saveSaveHistory() {
+        localStorage.setItem('cashTool.saveHistory', JSON.stringify(this.saveHistory));
     }
 }
 

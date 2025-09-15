@@ -2,12 +2,14 @@
 
 // === 常數與配置 ===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v2.6.state',           // localStorage 儲存鍵值
+    STATE_KEY: 'cashTool.v3.4.state',           // localStorage 儲存鍵值
     PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
     LONG_PRESS_DURATION: 5000,                  // 長按重置的持續時間（毫秒）
     
     // 包裝規則：定義各面額的包裝方式
     PACKAGING_RULES: { 
+        'bundle2000': { value: 20000, count: 10 },  // 2000元：10張一捆，價值20000元
+        'bundle200': { value: 4000, count: 20 },    // 200元：20張一捆，價值4000元
         'bundle100': { value: 2000, count: 20 },    // 100元：20張一捆，價值2000元
         'bag50': { value: 2000, count: 40 },        // 50元：40枚一袋，價值2000元
         'bag10': { value: 500, count: 50 },         // 10元：50枚一袋，價值500元
@@ -16,21 +18,63 @@ const APP_CONFIG = {
     },
     
     // 面額配置
-    DENOMINATIONS: [1000, 500, 100, 50, 10, 5, 1],     // 所有支援的面額
-    COIN_DENOMINATIONS: [50, 10, 5, 1],                 // 硬幣面額
-    COUNT_MODE_DENOMS: [1000, 500, 100],                // 支援張數快輸模式的面額
+    BASE_DENOMINATIONS: [1000, 500, 100, 50, 10, 5, 1],  // 基礎支援的面額
+    EXTENDED_DENOMINATIONS: [2000, 200],                  // 擴展面額（可選）
+    COIN_DENOMINATIONS: [50, 10, 5, 1],                   // 硬幣面額
+    COUNT_MODE_DENOMS: [2000, 1000, 500, 200, 100],       // 支援張數快輸模式的面額
+    REVENUE_ONLY_DENOMS: [2000, 200],                     // 僅能放在營收的面額
+    
+    // 應用程式設定
+    SETTINGS: {
+        showExtendedDenoms: false,  // 是否顯示2000和200面額
+        darkMode: false,            // 深色模式
+        machineNumber: 1,           // 機號
+        staffList: ['1號', '2號', '3號']  // 人員清單
+    },
     
     // 預設顏色主題
     DEFAULT_COLORS: { 
+        2000: '#8e24aa',    // 紫色
         1000: '#3D93F0',    // 藍色
         500: '#C6A27B',     // 棕色
+        200: '#ff7043',     // 橙色
         100: '#DE4545',     // 紅色
         50: '#DAA520',      // 金色
         10: '#453A3A',      // 深灰
         5: '#A3A3A3',       // 灰色
         1: '#790C0C'        // 深紅
-    }
+    },
+    
+    // 可移動區塊配置
+    MOVABLE_BLOCKS: [
+        'summary-section',
+        'pc-collection-section', 
+        'revenue-section',
+        'petty-cash-section',
+        'small-coins-section',
+        'result-exchange-section',
+        'coin-consolidation-section',
+        'coin-pack-section',
+        'verification-section'
+    ]
 };
+
+// 動態計算支援的面額（根據設定）
+function getSupportedDenominations() {
+    let denoms = [...APP_CONFIG.BASE_DENOMINATIONS];
+    if (APP_CONFIG.SETTINGS.showExtendedDenoms) {
+        denoms = [...APP_CONFIG.EXTENDED_DENOMINATIONS, ...denoms];
+        denoms.sort((a, b) => b - a);
+    }
+    return denoms;
+}
+
+// 更新 DENOMINATIONS 屬性以支援動態設定
+Object.defineProperty(APP_CONFIG, 'DENOMINATIONS', {
+    get: function() {
+        return getSupportedDenominations();
+    }
+});
 
 // === 核心計算函數 ===
 
@@ -42,18 +86,25 @@ const APP_CONFIG = {
 function collectInputs(domInputs) {
     const inputs = {};
     
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    getSupportedDenominations().forEach(denom => {
+        // 檢查DOM元素是否存在
+        const amountInput = domInputs.amountInputs[denom];
+        if (!amountInput) {
+            inputs[denom] = { totalAmount: 0, count: 0 };
+            return;
+        }
+        
         // 取得金額輸入值
-        const amount = parseInputValue(domInputs.amountInputs[denom].value);
+        const amount = parseInputValue(amountInput.value);
         
         // 取得包裝輸入值（袋/捆數量）
-        const packages = domInputs.bagInputs[denom] ? 
-            parseInputValue(domInputs.bagInputs[denom].value) : 0;
+        const bagInput = domInputs.bagInputs[denom];
+        const packages = bagInput ? parseInputValue(bagInput.value) : 0;
         
         // 計算包裝金額
         let packageAmount = 0;
-        if (packages > 0 && domInputs.bagInputs[denom]) {
-            const packageKey = `${domInputs.bagInputs[denom].dataset.packageType}${denom}`;
+        if (packages > 0 && bagInput) {
+            const packageKey = `${bagInput.dataset.packageType}${denom}`;
             if (APP_CONFIG.PACKAGING_RULES[packageKey]) {
                 packageAmount = packages * APP_CONFIG.PACKAGING_RULES[packageKey].value;
             }
@@ -81,15 +132,15 @@ function calculateResults(inputs) {
     // 保存原始輸入資料
     results.initialInputs = JSON.parse(JSON.stringify(inputs));
     
-    // 計算總金額
-    results.totalAmount = APP_CONFIG.DENOMINATIONS.reduce(
-        (sum, denom) => sum + inputs[denom].totalAmount, 0
+    // 計算總金額（使用動態面額列表）
+    results.totalAmount = getSupportedDenominations().reduce(
+        (sum, denom) => sum + (inputs[denom] ? inputs[denom].totalAmount : 0), 0
     );
     
     // === 零錢處理邏輯 ===
     // 計算所有硬幣的總金額
     const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
-        (sum, denom) => sum + inputs[denom].totalAmount, 0
+        (sum, denom) => sum + (inputs[denom] ? inputs[denom].totalAmount : 0), 0
     );
     
     // 計算需要移入營收的零頭（不足100元的部分）
@@ -102,10 +153,10 @@ function calculateResults(inputs) {
     results.movedCoinsBreakdown = getCoinsBreakdown(
         results.movedCoinsAmount, 
         {
-            50: inputs[50].totalAmount,
-            10: inputs[10].totalAmount,
-            5: inputs[5].totalAmount,
-            1: inputs[1].totalAmount
+            50: inputs[50] ? inputs[50].totalAmount : 0,
+            10: inputs[10] ? inputs[10].totalAmount : 0,
+            5: inputs[5] ? inputs[5].totalAmount : 0,
+            1: inputs[1] ? inputs[1].totalAmount : 0
         }
     );
     
@@ -119,8 +170,8 @@ function calculateResults(inputs) {
         // 使用最佳組合演算法找出紙鈔分配方案
         const combo = findOptimalCombination(
             remainingCashNeeded, 
-            inputs[100].count, 
-            inputs[500].count
+            inputs[100] ? inputs[100].count : 0, 
+            inputs[500] ? inputs[500].count : 0
         );
         
         if (combo.found) {
@@ -132,9 +183,12 @@ function calculateResults(inputs) {
             };
         } else {
             // 無法完美湊齊，使用貪心策略
-            const used500 = Math.min(inputs[500].count, Math.floor(remainingCashNeeded / 500));
+            const available500 = inputs[500] ? inputs[500].count : 0;
+            const available100 = inputs[100] ? inputs[100].count : 0;
+            
+            const used500 = Math.min(available500, Math.floor(remainingCashNeeded / 500));
             const stillNeeded = remainingCashNeeded - (used500 * 500);
-            const used100 = Math.min(inputs[100].count, Math.floor(stillNeeded / 100));
+            const used100 = Math.min(available100, Math.floor(stillNeeded / 100));
             
             pettyCashPaperDetails = { 
                 used100, 
@@ -156,21 +210,34 @@ function calculateResults(inputs) {
     // === 各面額分配結果 ===
     results.distribution = { pettyCash: {}, revenue: {} };
     
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
+    getSupportedDenominations().forEach(denom => {
+        if (!inputs[denom]) {
+            results.distribution.pettyCash[denom] = 0;
+            results.distribution.revenue[denom] = 0;
+            return;
+        }
+        
         let pettyCashCount = 0;
         
-        // 根據面額類型分配數量
-        if (denom === 100) {
-            pettyCashCount = pettyCashPaperDetails.used100;
-        } else if (denom === 500) {
-            pettyCashCount = pettyCashPaperDetails.used500;
-        } else if (APP_CONFIG.COIN_DENOMINATIONS.includes(denom)) {
-            // 硬幣：總數減去移入營收的數量
-            pettyCashCount = inputs[denom].count - (results.movedCoinsBreakdown[denom] || 0);
+        // 僅營收面額不放在預留金中
+        if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
+            pettyCashCount = 0;
+        } else {
+            // 根據面額類型分配數量
+            if (denom === 100) {
+                pettyCashCount = pettyCashPaperDetails.used100;
+            } else if (denom === 500) {
+                pettyCashCount = pettyCashPaperDetails.used500;
+            } else if (APP_CONFIG.COIN_DENOMINATIONS.includes(denom)) {
+                // 硬幣：總數減去移入營收的數量
+                const totalCount = inputs[denom] ? inputs[denom].count : 0;
+                pettyCashCount = totalCount - (results.movedCoinsBreakdown[denom] || 0);
+            }
         }
         
         results.distribution.pettyCash[denom] = pettyCashCount;
-        results.distribution.revenue[denom] = inputs[denom].count - pettyCashCount;
+        const totalCount = inputs[denom] ? inputs[denom].count : 0;
+        results.distribution.revenue[denom] = totalCount - pettyCashCount;
     });
     
     return results;
@@ -294,6 +361,9 @@ function validateAllInputs(domInputs, inputs) {
         const { totalAmount } = inputs[denom];
         const inputEl = domInputs.amountInputs[denom];
         const errorEl = domInputs.errorMessages[denom];
+        
+        // 跳過不存在的DOM元素
+        if (!inputEl || !errorEl) continue;
         
         // 檢查總額是否為面額的倍數
         if (totalAmount % denom !== 0) {
@@ -427,11 +497,128 @@ function formatInputWithCommas(input) {
     input.setSelectionRange(newCursorPos, newCursorPos);
 }
 
+// === 區塊移動功能 ===
+
+/**
+ * 移動區塊位置
+ * @param {string} blockId - 區塊 ID
+ * @param {string} direction - 移動方向 ('up' | 'down')
+ */
+function moveBlock(blockId, direction) {
+    const container = document.getElementById('result-container');
+    const currentBlock = document.getElementById(blockId);
+    
+    if (!currentBlock || !container) return false;
+    
+    const allBlocks = Array.from(container.children).filter(child => 
+        APP_CONFIG.MOVABLE_BLOCKS.includes(child.id)
+    );
+    
+    const currentIndex = allBlocks.indexOf(currentBlock);
+    
+    if (direction === 'up' && currentIndex > 0) {
+        container.insertBefore(currentBlock, allBlocks[currentIndex - 1]);
+        return true;
+    } else if (direction === 'down' && currentIndex < allBlocks.length - 1) {
+        container.insertBefore(allBlocks[currentIndex + 1], currentBlock);
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * 為區塊添加移動按鈕
+ * @param {HTMLElement} block - 區塊元素
+ */
+function addMoveButtons(block) {
+    if (!block || block.classList.contains('has-move-buttons')) return;
+    
+    const header = block.querySelector('.section-title');
+    if (!header) return;
+    
+    // 檢查是否已經有移動按鈕
+    if (header.querySelector('.move-buttons')) return;
+    
+    const moveButtonsContainer = document.createElement('div');
+    moveButtonsContainer.className = 'move-buttons';
+    moveButtonsContainer.innerHTML = `
+        <button class="move-btn move-up" data-block-id="${block.id}" data-direction="up" title="向上移動">
+            <span class="move-icon">▲</span>
+        </button>
+        <button class="move-btn move-down" data-block-id="${block.id}" data-direction="down" title="向下移動">
+            <span class="move-icon">▼</span>
+        </button>
+    `;
+    
+    header.appendChild(moveButtonsContainer);
+    block.classList.add('has-move-buttons');
+    
+    // 綁定點擊事件
+    moveButtonsContainer.addEventListener('click', (e) => {
+        e.stopPropagation(); // 防止觸發摺疊功能
+        const btn = e.target.closest('.move-btn');
+        if (btn) {
+            const blockId = btn.dataset.blockId;
+            const direction = btn.dataset.direction;
+            if (moveBlock(blockId, direction)) {
+                // 移動成功後的視覺回饋
+                block.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    block.style.transform = '';
+                }, 200);
+            }
+        }
+    });
+}
+
+/**
+ * 初始化所有可移動區塊的移動按鈕
+ */
+function initializeMovableBlocks() {
+    APP_CONFIG.MOVABLE_BLOCKS.forEach(blockId => {
+        const block = document.getElementById(blockId);
+        if (block) {
+            addMoveButtons(block);
+        }
+    });
+}
+
+// === PC與代收相關功能 ===
+
+/**
+ * 計算PC與代收相關數據
+ * @param {Object} results - 計算結果
+ * @returns {Object} PC與代收統計
+ */
+function calculatePCCollection(results) {
+    // 計算需要上繳的總紙鈔數量
+    let totalNotes = 0;
+    let totalCoins = 0;
+    
+    getSupportedDenominations().forEach(denom => {
+        const count = results.distribution.revenue[denom] || 0;
+        if (denom >= 100) {
+            totalNotes += count;
+        } else {
+            totalCoins += count;
+        }
+    });
+    
+    return {
+        totalNotes,
+        totalCoins,
+        totalAmount: results.revenueAmount,
+        pettyCashAmount: results.actualPettyCash
+    };
+}
+
 // === 匯出核心函數 ===
 if (typeof module !== 'undefined' && module.exports) {
     // Node.js 環境
     module.exports = {
         APP_CONFIG,
+        getSupportedDenominations,
         collectInputs,
         calculateResults,
         findOptimalCombination,
@@ -443,11 +630,16 @@ if (typeof module !== 'undefined' && module.exports) {
         parseInputValue,
         formatNumber,
         formatMoney,
-        formatInputWithCommas
+        formatInputWithCommas,
+        moveBlock,
+        addMoveButtons,
+        initializeMovableBlocks,
+        calculatePCCollection
     };
 } else {
     // 瀏覽器環境：將函數暴露到全局作用域
     window.APP_CONFIG = APP_CONFIG;
+    window.getSupportedDenominations = getSupportedDenominations;
     window.collectInputs = collectInputs;
     window.calculateResults = calculateResults;
     window.findOptimalCombination = findOptimalCombination;
@@ -460,4 +652,8 @@ if (typeof module !== 'undefined' && module.exports) {
     window.formatNumber = formatNumber;
     window.formatMoney = formatMoney;
     window.formatInputWithCommas = formatInputWithCommas;
+    window.moveBlock = moveBlock;
+    window.addMoveButtons = addMoveButtons;
+    window.initializeMovableBlocks = initializeMovableBlocks;
+    window.calculatePCCollection = calculatePCCollection;
 }
