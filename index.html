@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>現金管理計算工具 v3.4</title>
+    <title>現金管理計算工具 v3.5</title>
     
     <!-- 引入樣式表 -->
     <link rel="stylesheet" href="資源檔案/styles.css">
@@ -13,7 +13,7 @@
         <!-- 頁面標題與操作按鈕 -->
         <div class="header">
             <div class="header-top">
-                <h1>現金管理計算工具 v3.4</h1>
+                <h1>現金管理計算工具 v3.5</h1>
                 <div class="header-controls">
                     <button id="theme-toggle" class="control-btn" title="切換主題">
                         <span class="theme-icon">🌙</span>
@@ -174,6 +174,41 @@
                 
                 <!-- 計算按鈕 -->
                 <button id="calculate-btn" class="btn btn-block">計算結果</button>
+
+                <!-- 代收(+) — PC(-) 額外計算 -->
+                <div class="extra-calc">
+                    <div class="extra-calc-header" id="extraCalcHeader">
+                        <div class="extra-calc-header-title">
+                            代收(+) — PC(-) 額外計算
+                            <span class="extra-calc-header-icon" id="extraCalcIcon">▼</span>
+                        </div>
+                        <button id="lock-btn" class="lock-btn" title="鎖定/解鎖輸入框">🔓</button>
+                    </div>
+                    <div class="extra-calc-container collapsed" id="extraCalcContainer">
+                        <div class="extra-calc-row">
+                            <div class="extra-calc-col">
+                                <label for="report-total">報表總額</label>
+                                <input type="text" id="report-total" placeholder="輸入報表總額" class="extra-calc-input" inputmode="numeric">
+                            </div>
+                            <div class="extra-calc-col">
+                                <label for="collect-amount">總金額</label>
+                                <div style="display:flex;align-items:center;">
+                                    <input type="text" id="collect-amount" placeholder="輸入總金額" class="extra-calc-input" inputmode="numeric">
+                                    <button type="button" class="calc-btn" onclick="importTotalAmount()">匯入</button>
+                                </div>
+                            </div>
+                            <div class="extra-calc-col">
+                                <label for="pc-amount">PC ( - )：</label>
+                                <input type="text" id="pc-amount" placeholder="輸入 PC 金額" inputmode="numeric" class="extra-calc-input">
+                            </div>
+                        </div>
+                        <div class="extra-calc-result" id="extra-calc-result">計算結果：0 元</div>
+                        <div class="explanation">
+                            <p><span class="highlight-add">代收</span>：是全部總金額現金會 <span class="highlight-add">多</span>，帳表不用改</p>
+                            <p><span class="highlight-sub">PC</span>：帳表上的金額要 <span class="highlight-sub">減去</span> PC 的金額才是實際要看的數值。</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -735,30 +770,55 @@
 
     <!-- 保存彈窗 -->
     <div id="save-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content large-modal">
             <div class="modal-header">
                 <h3>💾 保存記錄</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="save-info">
-                    <div class="save-item">
-                        <label>時間：</label>
-                        <span id="save-timestamp" class="save-value"></span>
+                <div class="save-form">
+                    <div class="save-section">
+                        <h4>基本資訊</h4>
+                        <div class="save-item">
+                            <label>時間：</label>
+                            <span id="save-timestamp" class="save-value"></span>
+                        </div>
+                        <div class="save-item">
+                            <label>機號：</label>
+                            <div class="machine-selector">
+                                <button id="save-machine-1" class="machine-btn save-machine-btn active">①</button>
+                                <button id="save-machine-2" class="machine-btn save-machine-btn">②</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="save-item">
-                        <label>機號：</label>
-                        <span id="save-machine" class="save-value"></span>
-                    </div>
-                    <div class="save-item">
-                        <label>人員：</label>
-                        <select id="save-staff" class="save-select"></select>
+                    
+                    <div class="save-section">
+                        <h4>人員設定</h4>
+                        <div class="staff-save-manager">
+                            <div id="save-staff-list" class="save-staff-list"></div>
+                            <div class="staff-controls">
+                                <input type="text" id="save-new-staff-name" placeholder="輸入人員名稱" class="staff-input">
+                                <button id="save-add-staff-btn" class="btn btn-simulate">新增</button>
+                            </div>
+                            <div class="save-item">
+                                <label>選擇負責人員：</label>
+                                <select id="save-staff-select" class="save-select"></select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="save-actions">
                     <button id="confirm-save-btn" class="btn btn-success">確認保存</button>
                     <button id="cancel-save-btn" class="btn btn-clear">取消</button>
+                </div>
+                
+                <!-- 歷史記錄復原 -->
+                <div class="save-history-section">
+                    <h4>已保存記錄 <span class="history-count" id="save-history-count">(0)</span></h4>
+                    <div id="save-history-list" class="save-history-list">
+                        <p class="no-history">尚無保存記錄</p>
+                    </div>
                 </div>
             </div>
         </div>

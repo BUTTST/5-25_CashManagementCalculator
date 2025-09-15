@@ -332,8 +332,14 @@ function setupResultExchangeTool(domElements) {
     rex.toDenom.value = '50';
     rex.fromCount.value = '';
     
-    updateResultExchangePreview(domElements);
-    renderResultExchangeHistory(domElements);
+    // 檢查是否有狀態再調用預覽更新
+    if (window.cashApp && window.cashApp.stateManager) {
+        const state = window.cashApp.stateManager.getState();
+        if (state.exchangeHistory && state.exchangeHistory.length > 0) {
+            updateResultExchangePreview(domElements, state);
+            renderResultExchangeHistory(domElements, state);
+        }
+    }
 }
 
 /**

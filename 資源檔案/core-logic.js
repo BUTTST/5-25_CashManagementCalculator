@@ -2,7 +2,7 @@
 
 // === 常數與配置 ===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v3.4.state',           // localStorage 儲存鍵值
+    STATE_KEY: 'cashTool.v3.5.state',           // localStorage 儲存鍵值
     PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
     LONG_PRESS_DURATION: 5000,                  // 長按重置的持續時間（毫秒）
     
@@ -613,6 +613,107 @@ function calculatePCCollection(results) {
     };
 }
 
+// === 額外計算功能 ===
+
+/**
+ * 匯入全部總金額到額外計算的總金額欄位
+ */
+function importTotalAmount() {
+    const totalEl = document.getElementById('total-amount');
+    if (!totalEl) return;
+    
+    const num = parseInt(totalEl.textContent.replace(/[^0-9]/g, '')) || 0;
+    const collectAmountInput = document.getElementById('collect-amount');
+    if (collectAmountInput) {
+        collectAmountInput.value = formatNumber(num);
+        // 觸發計算更新
+        updateExtraCalc();
+    }
+}
+
+/**
+ * 更新額外計算結果
+ */
+function updateExtraCalc() {
+    const reportInput = document.getElementById('report-total');
+    const collectInput = document.getElementById('collect-amount');
+    const pcInput = document.getElementById('pc-amount');
+    const resultEl = document.getElementById('extra-calc-result');
+    
+    if (!reportInput || !collectInput || !pcInput || !resultEl) return;
+    
+    const reportTotal = parseInputValue(reportInput.value);
+    const collectAmount = parseInputValue(collectInput.value);
+    const pcAmount = parseInputValue(pcInput.value);
+    
+    // 計算差額：(總金額 - 報表總額) - PC金額
+    const diff = (collectAmount - reportTotal) - pcAmount;
+    resultEl.textContent = `計算結果：${formatMoney(diff)}`;
+}
+
+/**
+ * 切換額外計算區塊的鎖定狀態
+ */
+function toggleExtraCalcLock() {
+    const lockBtn = document.getElementById('lock-btn');
+    const inputs = document.querySelectorAll('.extra-calc-input');
+    
+    if (!lockBtn) return;
+    
+    const isLocked = lockBtn.classList.contains('locked');
+    
+    lockBtn.classList.toggle('locked');
+    lockBtn.textContent = isLocked ? '🔓' : '🔒';
+    lockBtn.title = isLocked ? '鎖定/解鎖輸入框' : '點擊解鎖輸入框';
+    
+    inputs.forEach(input => {
+        input.disabled = !isLocked;
+    });
+    
+    // 如果解鎖，立即更新計算結果
+    if (isLocked) {
+        updateExtraCalc();
+    }
+}
+
+/**
+ * 初始化額外計算功能
+ */
+function initExtraCalc() {
+    const header = document.getElementById('extraCalcHeader');
+    const container = document.getElementById('extraCalcContainer');
+    const icon = document.getElementById('extraCalcIcon');
+    const lockBtn = document.getElementById('lock-btn');
+    const inputs = document.querySelectorAll('.extra-calc-input');
+    
+    // 折疊/展開功能
+    if (header && container && icon) {
+        header.addEventListener('click', (e) => {
+            // 確保點擊的不是鎖定按鈕
+            if (!e.target.closest('#lock-btn')) {
+                container.classList.toggle('collapsed');
+                icon.classList.toggle('collapsed');
+            }
+        });
+    }
+    
+    // 鎖定功能
+    if (lockBtn) {
+        lockBtn.addEventListener('click', toggleExtraCalcLock);
+    }
+    
+    // 輸入框事件
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            formatInputWithCommas(input);
+            updateExtraCalc();
+        });
+    });
+    
+    // 初始化狀態
+    updateExtraCalc();
+}
+
 // === 匯出核心函數 ===
 if (typeof module !== 'undefined' && module.exports) {
     // Node.js 環境
@@ -634,7 +735,11 @@ if (typeof module !== 'undefined' && module.exports) {
         moveBlock,
         addMoveButtons,
         initializeMovableBlocks,
-        calculatePCCollection
+        calculatePCCollection,
+        importTotalAmount,
+        updateExtraCalc,
+        toggleExtraCalcLock,
+        initExtraCalc
     };
 } else {
     // 瀏覽器環境：將函數暴露到全局作用域
@@ -656,4 +761,8 @@ if (typeof module !== 'undefined' && module.exports) {
     window.addMoveButtons = addMoveButtons;
     window.initializeMovableBlocks = initializeMovableBlocks;
     window.calculatePCCollection = calculatePCCollection;
+    window.importTotalAmount = importTotalAmount;
+    window.updateExtraCalc = updateExtraCalc;
+    window.toggleExtraCalcLock = toggleExtraCalcLock;
+    window.initExtraCalc = initExtraCalc;
 }

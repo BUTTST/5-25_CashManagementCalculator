@@ -934,6 +934,43 @@ th {
     color: var(--dark);
 }
 
+.dark-mode .amount-input,
+.dark-mode .bag-input,
+.dark-mode .exchange-input,
+.dark-mode .staff-input,
+.dark-mode .save-select,
+.dark-mode .exchange-select,
+.dark-mode .extra-calc-input,
+.dark-mode select,
+.dark-mode textarea {
+    background-color: #404040;
+    color: var(--dark);
+    border-color: #555;
+}
+
+.dark-mode .amount-input:focus,
+.dark-mode .bag-input:focus,
+.dark-mode .exchange-input:focus,
+.dark-mode .staff-input:focus,
+.dark-mode .save-select:focus,
+.dark-mode .exchange-select:focus,
+.dark-mode .extra-calc-input:focus,
+.dark-mode select:focus,
+.dark-mode textarea:focus {
+    background-color: #4a4a4a;
+    border-color: var(--primary-light);
+}
+
+.dark-mode .extra-calc-container {
+    background-color: #2c2c2c;
+    border-color: #555;
+}
+
+.dark-mode .extra-calc-result {
+    background-color: rgba(52, 168, 83, 0.2);
+    color: var(--secondary);
+}
+
 /* 頁面頂部樣式 */
 .header-top {
     display: flex;
@@ -1047,6 +1084,169 @@ th {
 .pc-value.highlight {
     color: var(--primary);
     font-size: 1.5rem;
+}
+
+/* 額外計算區塊樣式 */
+.extra-calc {
+    margin-top: 1rem;
+}
+
+.extra-calc-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--primary-light);
+    color: white;
+    padding: 0.8rem;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-weight: 600;
+    cursor: pointer;
+    justify-content: space-between;
+}
+
+.extra-calc-header-title {
+    display: flex;
+    align-items: center;
+}
+
+.extra-calc-header-icon {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.extra-calc-header-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.extra-calc-container {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0 0 var(--radius) var(--radius);
+    border: 1px solid #e9ecef;
+    border-top: none;
+    overflow: hidden;
+    max-height: 1000px;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.extra-calc-container.collapsed {
+    max-height: 0;
+    padding: 0;
+    border: 0;
+}
+
+.extra-calc-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.extra-calc-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.extra-calc-col label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.extra-calc-input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 2px solid #ddd;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.extra-calc-input:focus {
+    border-color: var(--primary-light);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    background-color: white;
+}
+
+.extra-calc-input:disabled {
+    background-color: #e9ecef;
+    color: var(--gray);
+}
+
+.extra-calc-result {
+    text-align: center;
+    padding: 0.8rem;
+    background-color: #e8f5e9;
+    border-radius: var(--radius);
+    font-weight: bold;
+    color: var(--success);
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+}
+
+.lock-btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius);
+    margin-left: 1rem;
+    transition: all 0.3s;
+}
+
+.lock-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.lock-btn.locked {
+    color: var(--warning);
+}
+
+.calc-btn {
+    margin-left: 0.5rem;
+    padding: 0 0.6rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    height: 2.4rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.calc-btn:hover {
+    background: var(--primary-light);
+}
+
+.calc-btn:active {
+    opacity: 0.8;
+}
+
+.explanation {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.explanation p {
+    margin-bottom: 0.5rem;
+}
+
+.highlight-add {
+    background: #d4edda;
+    padding: 0 0.2rem;
+    border-radius: 4px;
+}
+
+.highlight-sub {
+    background: #f8d7da;
+    padding: 0 0.2rem;
+    border-radius: 4px;
 }
 
 /* 驗證區塊 */
@@ -1290,28 +1490,50 @@ th {
     justify-content: flex-end;
 }
 
-.save-info {
+.large-modal .modal-content {
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.save-form {
+    margin-bottom: 1.5rem;
+}
+
+.save-section {
     background: rgba(13, 71, 161, 0.05);
     border-radius: var(--radius);
     padding: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.save-section h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(13, 71, 161, 0.2);
+    padding-bottom: 0.5rem;
 }
 
 .save-item {
     display: flex;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .save-item label {
     font-weight: 600;
-    width: 60px;
+    min-width: 80px;
     color: var(--primary);
 }
 
 .save-value {
     color: var(--dark);
     font-weight: 500;
+    background: rgba(52, 168, 83, 0.1);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid rgba(52, 168, 83, 0.3);
 }
 
 .save-select {
@@ -1319,12 +1541,198 @@ th {
     border: 2px solid #ddd;
     border-radius: var(--radius);
     background: white;
+    flex: 1;
+}
+
+.save-machine-btn {
+    margin: 0 0.2rem;
+}
+
+.staff-save-manager {
+    border: 2px solid #ddd;
+    border-radius: var(--radius);
+    padding: 1rem;
+    background: white;
+}
+
+.save-staff-list {
+    min-height: 100px;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    border: 1px solid #eee;
+    border-radius: var(--radius);
+    padding: 0.5rem;
+}
+
+.save-staff-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.save-staff-item:hover {
+    background: #e9ecef;
+}
+
+.save-staff-name {
+    font-weight: 500;
+    flex: 1;
+    cursor: pointer;
+}
+
+.save-staff-name.editing {
+    background: white;
+    border: 1px solid var(--primary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.save-staff-controls {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.save-staff-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-staff-btn.edit {
+    background: var(--tertiary);
+    color: var(--dark);
+}
+
+.save-staff-btn.delete {
+    background: var(--danger);
+    color: white;
+}
+
+.save-staff-btn:hover {
+    opacity: 0.8;
 }
 
 .save-actions {
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    padding: 1rem 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.save-history-section {
+    margin-top: 1.5rem;
+}
+
+.save-history-section h4 {
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-count {
+    background: var(--secondary);
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.save-history-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 2px solid #eee;
+    border-radius: var(--radius);
+    padding: 0.5rem;
+}
+
+.history-record {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem;
+    background: #f8f9fa;
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s;
+}
+
+.history-record:hover {
+    background: #e9ecef;
+    border-color: var(--primary);
+}
+
+.history-info {
+    flex: 1;
+}
+
+.history-timestamp {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.history-details {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-top: 0.2rem;
+}
+
+.history-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.restore-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.restore-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.delete-history-btn {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+}
+
+.delete-history-btn:hover {
+    background: #c82333;
+}
+
+.no-history {
+    text-align: center;
+    color: var(--gray);
+    font-style: italic;
+    padding: 2rem;
 }
 
 .export-options {
@@ -1425,6 +1833,15 @@ th {
 @media (max-width: 768px) {
     .input-form {
         grid-template-columns: 1fr;
+    }
+    
+    .extra-calc-row {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .extra-calc-col {
+        width: 100%;
     }
     
     .result-row {

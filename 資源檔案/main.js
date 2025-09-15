@@ -16,7 +16,10 @@ class CashManagementApp {
         // 保存相關
         this.saveHistory = [];
         
-        console.log("現金管理工具 v3.4 已初始化。");
+        // 初始化保存機台選擇
+        this.currentSaveMachineNumber = null;
+        
+        console.log("現金管理工具 v3.5 已初始化。");
     }
     
     /**
@@ -419,27 +422,41 @@ class CashManagementApp {
      * 處理計算按鈕點擊
      */
     handleCalculate() {
+        console.log('開始計算...');
+        
         if (!this.validateAllInputs()) {
             alert('部分金額輸入錯誤，請檢查紅色框標示的欄位！');
             return;
         }
         
-        // 收集輸入資料
-        const inputs = collectInputs(this.domElements);
-        
-        // 執行計算
-        const results = calculateResults(inputs);
-        
-        // 更新狀態
-        this.stateManager.updateResults(results);
-        
-        // 更新 UI
-        updateUI(results);
-        setupResultExchangeTool(this.domElements);
-        setupCoinConsolidationTool(this.domElements);
-        
-        // 顯示結果區塊
-        this.domElements.resultContainer.classList.add('active');
+        try {
+            // 收集輸入資料
+            const inputs = collectInputs(this.domElements);
+            console.log('輸入資料:', inputs);
+            
+            // 執行計算
+            const results = calculateResults(inputs);
+            console.log('計算結果:', results);
+            
+            // 更新狀態
+            this.stateManager.updateResults(results);
+            
+            // 更新 UI
+            updateUI(results);
+            setupResultExchangeTool(this.domElements);
+            setupCoinConsolidationTool(this.domElements);
+            
+            // 確保結果區塊顯示
+            setTimeout(() => {
+                this.domElements.resultContainer.classList.add('active');
+                this.domElements.resultContainer.style.display = 'block';
+                console.log('結果區塊已顯示');
+            }, 100);
+            
+        } catch (error) {
+            console.error('計算過程發生錯誤:', error);
+            alert('計算過程發生錯誤，請重新嘗試。');
+        }
     }
     
     /**
@@ -984,16 +1001,23 @@ class CashManagementApp {
      */
     handleConfirmSave() {
         const timestamp = this.domElements.save.timestamp.textContent;
-        const machine = APP_CONFIG.SETTINGS.machineNumber;
-        const staffIndex = parseInt(this.domElements.save.staff.value);
+        const machine = this.currentSaveMachineNumber || APP_CONFIG.SETTINGS.machineNumber;
+        const staffIndex = parseInt(this.domElements.save.staffSelect.value);
         const staff = APP_CONFIG.SETTINGS.staffList[staffIndex];
         
+        if (!this.stateManager.getState().results) {
+            alert('請先進行計算再保存！');
+            return;
+        }
+        
         const saveData = {
+            id: Date.now().toString(),
             timestamp,
             machine,
             staff,
             inputs: this.stateManager.getState().inputs,
             results: this.stateManager.getState().results,
+            exchangeHistory: this.stateManager.getState().exchangeHistory,
             settings: { ...APP_CONFIG.SETTINGS }
         };
         
@@ -1001,6 +1025,7 @@ class CashManagementApp {
         this.saveSaveHistory();
         
         alert(`記錄已保存！\\n時間: ${timestamp}\\n機號: ①${machine}\\n人員: ${staff}`);
+        this.renderSaveHistory();
         this.domElements.modals.save.style.display = 'none';
     }
     
@@ -1126,6 +1151,247 @@ class CashManagementApp {
         return colors;
     }
     
+    // === 保存功能相關 ===
+    
+    /**
+     * 處理保存機台選擇
+     */
+    handleSaveMachineSelect(machineNumber) {
+        this.currentSaveMachineNumber = machineNumber;
+        this.updateSaveMachineButtons();
+    }
+    
+    /**
+     * 更新保存機台按鈕狀態
+     */
+    updateSaveMachineButtons() {
+        const machine = this.currentSaveMachineNumber || APP_CONFIG.SETTINGS.machineNumber;
+        if (this.domElements.save.machine1) {
+            this.domElements.save.machine1.classList.toggle('active', machine === 1);
+        }
+        if (this.domElements.save.machine2) {
+            this.domElements.save.machine2.classList.toggle('active', machine === 2);
+        }
+    }
+    
+    /**
+     * 處理保存新增人員
+     */
+    handleSaveAddStaff() {
+        const nameInput = this.domElements.save.newStaffName;
+        if (!nameInput) return;
+        
+        const name = nameInput.value.trim();
+        if (name && !APP_CONFIG.SETTINGS.staffList.includes(name)) {
+            APP_CONFIG.SETTINGS.staffList.push(name);
+            this.renderSaveStaffList();
+            this.updateSaveStaffSelect();
+            nameInput.value = '';
+            this.saveSettings();
+        }
+    }
+    
+    /**
+     * 渲染保存人員清單
+     */
+    renderSaveStaffList() {
+        if (!this.domElements.save.staffList) return;
+        
+        const listEl = this.domElements.save.staffList;
+        listEl.innerHTML = APP_CONFIG.SETTINGS.staffList.map((staff, index) => `
+            <div class="save-staff-item">
+                <span class="save-staff-name" data-index="${index}" onclick="cashApp.editSaveStaffName(${index})">${staff}</span>
+                <div class="save-staff-controls">
+                    <button class="save-staff-btn edit" onclick="cashApp.editSaveStaffName(${index})">編輯</button>
+                    <button class="save-staff-btn delete" onclick="cashApp.deleteSaveStaff(${index})">刪除</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    /**
+     * 更新保存人員選擇
+     */
+    updateSaveStaffSelect() {
+        if (!this.domElements.save.staffSelect) return;
+        
+        const selectEl = this.domElements.save.staffSelect;
+        selectEl.innerHTML = APP_CONFIG.SETTINGS.staffList
+            .map((staff, index) => `<option value="${index}">${staff}</option>`)
+            .join('');
+    }
+    
+    /**
+     * 編輯保存人員名稱
+     */
+    editSaveStaffName(index) {
+        const nameSpan = document.querySelector(`[data-index="${index}"]`);
+        if (!nameSpan) return;
+        
+        const currentName = APP_CONFIG.SETTINGS.staffList[index];
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.className = 'save-staff-name editing';
+        
+        nameSpan.replaceWith(input);
+        input.focus();
+        input.select();
+        
+        const saveEdit = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName && !APP_CONFIG.SETTINGS.staffList.includes(newName)) {
+                APP_CONFIG.SETTINGS.staffList[index] = newName;
+                this.saveSettings();
+            }
+            this.renderSaveStaffList();
+            this.updateSaveStaffSelect();
+        };
+        
+        input.addEventListener('blur', saveEdit);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveEdit();
+            }
+        });
+    }
+    
+    /**
+     * 刪除保存人員
+     */
+    deleteSaveStaff(index) {
+        if (APP_CONFIG.SETTINGS.staffList.length > 1) {
+            if (confirm(`確定要刪除「${APP_CONFIG.SETTINGS.staffList[index]}」嗎？`)) {
+                APP_CONFIG.SETTINGS.staffList.splice(index, 1);
+                this.renderSaveStaffList();
+                this.updateSaveStaffSelect();
+                this.saveSettings();
+            }
+        } else {
+            alert('至少要保留一位人員！');
+        }
+    }
+    
+    /**
+     * 渲染保存歷史
+     */
+    renderSaveHistory() {
+        if (!this.domElements.save.historyList) return;
+        
+        const listEl = this.domElements.save.historyList;
+        const countEl = this.domElements.save.historyCount;
+        
+        if (this.saveHistory.length === 0) {
+            listEl.innerHTML = '<p class="no-history">尚無保存記錄</p>';
+            countEl.textContent = '(0)';
+            return;
+        }
+        
+        countEl.textContent = `(${this.saveHistory.length})`;
+        
+        listEl.innerHTML = this.saveHistory.map((record, index) => `
+            <div class="history-record">
+                <div class="history-info">
+                    <div class="history-timestamp">${record.timestamp}</div>
+                    <div class="history-details">機號: ①${record.machine} | 人員: ${record.staff}</div>
+                </div>
+                <div class="history-actions">
+                    <button class="restore-btn" onclick="cashApp.restoreSaveRecord(${index})">復原</button>
+                    <button class="delete-history-btn" onclick="cashApp.deleteSaveRecord(${index})">刪除</button>
+                </div>
+            </div>
+        `).reverse().join('');
+    }
+    
+    /**
+     * 復原保存記錄
+     */
+    restoreSaveRecord(index) {
+        const record = this.saveHistory[index];
+        if (!record) return;
+        
+        if (confirm(`確定要復原到 ${record.timestamp} 的記錄嗎？\\n這將清除當前的輸入和結果。`)) {
+            // 復原輸入資料
+            this.restoreInputsFromRecord(record);
+            
+            // 復原計算結果
+            if (record.results) {
+                this.stateManager.updateResults(record.results);
+                if (record.exchangeHistory) {
+                    this.stateManager.state.exchangeHistory = [...record.exchangeHistory];
+                }
+                
+                // 更新 UI
+                updateUI(record.results);
+                setupResultExchangeTool(this.domElements);
+                setupCoinConsolidationTool(this.domElements);
+                this.domElements.resultContainer.classList.add('active');
+                this.domElements.resultContainer.style.display = 'block';
+            }
+            
+            // 復原設定
+            if (record.settings) {
+                Object.assign(APP_CONFIG.SETTINGS, record.settings);
+                if (typeof toggleDarkMode !== 'undefined') {
+                    toggleDarkMode(APP_CONFIG.SETTINGS.darkMode);
+                }
+                if (typeof toggleExtendedDenominations !== 'undefined') {
+                    toggleExtendedDenominations(APP_CONFIG.SETTINGS.showExtendedDenoms);
+                }
+                this.saveSettings();
+            }
+            
+            alert(`已復原到 ${record.timestamp} 的記錄！`);
+            this.domElements.modals.save.style.display = 'none';
+        }
+    }
+    
+    /**
+     * 從記錄復原輸入資料
+     */
+    restoreInputsFromRecord(record) {
+        if (!record.inputs) return;
+        
+        // 清空所有輸入
+        Object.values(this.domElements.amountInputs).forEach(input => {
+            if (input) input.value = '';
+        });
+        Object.values(this.domElements.bagInputs).forEach(input => {
+            if (input) input.value = '';
+        });
+        
+        // 復原輸入數據
+        Object.entries(record.inputs).forEach(([denom, data]) => {
+            const amountInput = this.domElements.amountInputs[denom];
+            const bagInput = this.domElements.bagInputs[denom];
+            
+            if (amountInput && data.amount) {
+                amountInput.value = formatNumber(data.amount);
+            }
+            if (bagInput && data.packages) {
+                bagInput.value = data.packages.toString();
+            }
+        });
+        
+        // 更新狀態
+        this.updateStateFromInputs();
+        this.validateAllInputs();
+    }
+    
+    /**
+     * 刪除保存記錄
+     */
+    deleteSaveRecord(index) {
+        const record = this.saveHistory[index];
+        if (!record) return;
+        
+        if (confirm(`確定要刪除 ${record.timestamp} 的記錄嗎？`)) {
+            this.saveHistory.splice(index, 1);
+            this.saveSaveHistory();
+            this.renderSaveHistory();
+        }
+    }
+    
     /**
      * 初始化新增功能
      */
@@ -1138,6 +1404,11 @@ class CashManagementApp {
         // 初始化驗證區塊
         if (typeof initVerificationBlock !== 'undefined') {
             initVerificationBlock();
+        }
+        
+        // 初始化額外計算功能
+        if (typeof initExtraCalc !== 'undefined') {
+            initExtraCalc();
         }
         
         // 初始化設定
