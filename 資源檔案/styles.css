@@ -1191,7 +1191,7 @@ th {
     cursor: pointer;
     padding: 0.2rem 0.5rem;
     border-radius: var(--radius);
-    margin-left: 1rem;
+    margin-left: auto;
     transition: all 0.3s;
 }
 

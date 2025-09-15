@@ -19,7 +19,7 @@ class CashManagementApp {
         // 初始化保存機台選擇
         this.currentSaveMachineNumber = null;
         
-        console.log("現金管理工具 v3.6 已初始化。");
+        console.log("現金管理工具 v3.7 已初始化。");
     }
     
     /**
@@ -175,13 +175,16 @@ class CashManagementApp {
     init() {
         // 綁定事件監聽器
         this.bindEventListeners();
-        
+
         // 載入儲存的狀態
         this.loadState();
-        
+
         // 初始化顏色選擇器
         initColorPickers(this.domElements);
-        
+
+        // 初始化新功能
+        this.initNewFeatures();
+
         // 設定狀態變更監聽器
         this.stateManager.addListener((action, state) => {
             this.handleStateChange(action, state);
@@ -222,7 +225,11 @@ class CashManagementApp {
         
         // === 摺疊面板 ===
         document.querySelectorAll('.collapsible-header').forEach(header => {
-            header.addEventListener('click', () => {
+            header.addEventListener('click', (e) => {
+                // 如果點擊的是鎖定按鈕，不要觸發折疊
+                if (e.target.classList.contains('lock-btn') || e.target.closest('.lock-btn')) {
+                    return;
+                }
                 const content = document.getElementById(header.id.replace('Header', 'Content'));
                 header.classList.toggle('collapsed');
                 if (content) content.classList.toggle('active');

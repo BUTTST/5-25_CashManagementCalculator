@@ -2,7 +2,7 @@
 
 // === 常數與配置 ===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v3.6.state',           // localStorage 儲存鍵值
+    STATE_KEY: 'cashTool.v3.7.state',           // localStorage 儲存鍵值
     PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
     LONG_PRESS_DURATION: 5000,                  // 長按重置的持續時間（毫秒）
     
@@ -651,22 +651,9 @@ function toggleExtraCalcLock() {
  * 初始化額外計算功能
  */
 function initExtraCalc() {
-    const header = document.getElementById('extraCalcHeader');
-    const container = document.getElementById('extraCalcContainer');
-    const icon = document.getElementById('extraCalcIcon');
+    const container = document.getElementById('extraCalcContent');
     const lockBtn = document.getElementById('lock-btn');
     const inputs = document.querySelectorAll('.extra-calc-input');
-    
-    // 折疊/展開功能
-    if (header && container && icon) {
-        header.addEventListener('click', (e) => {
-            // 確保點擊的不是鎖定按鈕
-            if (!e.target.closest('#lock-btn')) {
-                container.classList.toggle('collapsed');
-                icon.classList.toggle('collapsed');
-            }
-        });
-    }
     
     // 鎖定功能
     if (lockBtn) {

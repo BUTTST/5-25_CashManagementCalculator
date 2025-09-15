@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>現金管理計算工具 v3.6</title>
+    <title>現金管理計算工具 v3.7</title>
     
     <!-- 引入樣式表 -->
     <link rel="stylesheet" href="資源檔案/styles.css">
@@ -13,7 +13,7 @@
         <!-- 頁面標題與操作按鈕 -->
         <div class="header">
             <div class="header-top">
-                <h1>現金管理計算工具 v3.6</h1>
+                <h1>現金管理計算工具 v3.7</h1>
                 <div class="header-controls">
                     <button id="theme-toggle" class="control-btn" title="切換主題">
                         <span class="theme-icon">🌙</span>
@@ -204,14 +204,11 @@
             
             <!-- 代收(+) — PC(-) 額外計算 -->
             <div id="pc-collection-section" class="card">
-                <div class="extra-calc-header" id="extraCalcHeader" style="cursor: pointer;">
-                    <div class="extra-calc-header-title">
-                        代收(+) — PC(-) 額外計算
-                        <span class="extra-calc-header-icon" id="extraCalcIcon">▼</span>
-                    </div>
+                <h2 class="section-title collapsible-header" id="extraCalcHeader">
+                    代收(+) — PC(-) 額外計算
                     <button id="lock-btn" class="lock-btn" title="鎖定/解鎖輸入框">🔓</button>
-                </div>
-                <div class="extra-calc-container collapsed" id="extraCalcContainer">
+                </h2>
+                <div class="collapsible-content active" id="extraCalcContent">
                     <div class="extra-calc-row">
                         <div class="extra-calc-col">
                             <label for="report-total">報表總額</label>
