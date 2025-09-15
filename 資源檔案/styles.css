@@ -1181,6 +1181,17 @@ th {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    position: relative;
+}
+
+/* 確保標題完全置中 */
+.header-top h1 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
 .header-controls {

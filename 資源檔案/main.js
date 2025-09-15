@@ -1,32 +1,34 @@
-/* ?��?管�?計�?工具 - 主控?�器 */
+/* 現金管理計算工具 - 主控制器 */
 
-// === ?�用程�?主�???===
+// === 應用程式主類別 ===
 class CashManagementApp {
     constructor() {
-        // ?��??��??�管?�器
+        // 初始化狀態管理器
         this.stateManager = new StateManager();
         
-        // ?��???DOM ?��?管�?
+        // 初始化 DOM 元素管理
         this.domElements = this.initDOMElements();
         
-        // ?��?計�??�相??        this.longPressTimer = null;
+        // 長按計時器相關
+        this.longPressTimer = null;
         this.isLongPress = false;
         
-        // 保�??��?
+        // 保存相關
         this.saveHistory = [];
         
-        // ?��??��?存�??�選??        this.currentSaveMachineNumber = null;
+        // 初始化保存機台選擇
+        this.currentSaveMachineNumber = null;
         
-        console.log("?��?管�?工具 v3.9 已�?始�???);
+        console.log("現金管理工具 v3.9 已初始化。");
     }
     
     /**
-     * ?��???DOM ?��?引用
-     * @returns {Object} DOM ?��??��?
+     * 初始化 DOM 元素引用
+     * @returns {Object} DOM 元素集合
      */
     initDOMElements() {
         const dom = {
-            // 主�??�制?��?
+            // 主要控制按鈕
             calculateBtn: document.getElementById('calculate-btn'),
             clearBtn: document.getElementById('clear-btn'),
             clearBtnText: document.querySelector('#clear-btn .btn-text'),
@@ -34,12 +36,12 @@ class CashManagementApp {
             simulateBtn: document.getElementById('simulate-btn'),
             resultContainer: document.getElementById('result-container'),
             
-            // 輸入?��??��?
+            // 輸入元素集合
             amountInputs: {},
             bagInputs: {},
             errorMessages: {},
             
-            // 彈�??��?
+            // 彈窗元素
             modals: {
                 package: document.getElementById('package-modal'),
                 manual: document.getElementById('manual-modal'),
@@ -51,7 +53,7 @@ class CashManagementApp {
                 export: document.getElementById('export-modal')
             },
             
-            // ?�能?��?
+            // 功能按鈕
             buttons: {
                 showPackage: document.getElementById('show-package-info'),
                 showManual: document.getElementById('show-manual'),
@@ -64,7 +66,7 @@ class CashManagementApp {
                 export: document.getElementById('export-btn')
             },
             
-            // 總�??��?工具
+            // 總額換算工具
             exchange: {
                 amount: document.getElementById('exchange-amount'),
                 from: document.getElementById('exchange-from'),
@@ -80,14 +82,15 @@ class CashManagementApp {
                 toNewCount: document.getElementById('to-new-count')
             },
             
-            // 顏色?��???            color: {
+            // 顏色選擇器
+            color: {
                 pickers: {},
                 hexes: {},
                 resetBtn: document.getElementById('reset-colors'),
                 closeBtn: document.getElementById('close-color-modal')
             },
             
-            // 結�?微調工具
+            // 結果微調工具
             resultExchange: {
                 container: document.getElementById('resultExchangeContent'),
                 header: document.getElementById('resultExchangeHeader'),
@@ -102,7 +105,7 @@ class CashManagementApp {
                 log: document.getElementById('result-exchange-history-log')
             },
             
-            // ?��??�錢對�?工具
+            // 收納零錢對換工具
             coinConsolidation: {
                 fromDenom: document.getElementById('coin-consolidation-from-denom'),
                 fromCount: document.getElementById('coin-consolidation-from-count'),
@@ -112,7 +115,7 @@ class CashManagementApp {
                 performBtn: document.getElementById('perform-coin-consolidation-btn')
             },
             
-            // 設�??��?
+            // 設定相關
             settings: {
                 showExtendedDenoms: document.getElementById('show-extended-denoms'),
                 machine1: document.getElementById('machine-1'),
@@ -124,7 +127,7 @@ class CashManagementApp {
                 resetSettingsBtn: document.getElementById('reset-settings-btn')
             },
             
-            // 保�??��?
+            // 保存相關
             save: {
                 timestamp: document.getElementById('save-timestamp'),
                 machine1: document.getElementById('save-machine-1'),
@@ -135,7 +138,7 @@ class CashManagementApp {
                 gotoSettingsLink: document.getElementById('goto-settings-link')
             },
             
-            // 導出?��?
+            // 導出相關
             export: {
                 settingsBtn: document.getElementById('export-settings-btn'),
                 historyBtn: document.getElementById('export-history-btn'),
@@ -147,14 +150,14 @@ class CashManagementApp {
             }
         };
         
-        // ?��??�面額相?��? DOM ?��?（�??�擴展面額�?
+        // 初始化面額相關的 DOM 元素（包含擴展面額）
         [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
             const amountInput = document.getElementById(`amount${denom}`);
             const errorMessage = document.getElementById(`error${denom}`);
             const picker = document.getElementById(`pick-${denom}`);
             const hex = document.getElementById(`hex-${denom}`);
             
-            // ?�儲存�??��??��?
+            // 只儲存存在的元素
             if (amountInput) dom.amountInputs[denom] = amountInput;
             if (errorMessage) dom.errorMessages[denom] = errorMessage;
             if (picker) dom.color.pickers[denom] = picker;
@@ -169,47 +172,52 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??��??��?�?     */
+     * 初始化應用程式
+     */
     init() {
-        // 綁�?事件??��??        this.bindEventListeners();
+        // 綁定事件監聽器
+        this.bindEventListeners();
         
-        // 載入?��??��???        this.loadState();
+        // 載入儲存的狀態
+        this.loadState();
         
-        // ?��??��??�選?�器
+        // 初始化顏色選擇器
         initColorPickers(this.domElements);
 
-        // ?��??�新?�能
+        // 初始化新功能
         this.initNewFeatures();
         
-        // 載入保�?歷史並�?始�?設�?
+        // 載入保存歷史並初始化設定
         this.loadSaveHistory();
         this.initSettings();
         
-        // 設�??�?��??�監?�器
+        // 設定狀態變更監聽器
         this.stateManager.addListener((action, state) => {
             this.handleStateChange(action, state);
         });
     }
     
     /**
-     * 綁�??�?��?件監?�器
+     * 綁定所有事件監聽器
      */
     bindEventListeners() {
         const dom = this.domElements;
         
-        // === 主�??�能?��? ===
+        // === 主要功能按鈕 ===
         dom.clearBtn.addEventListener('click', () => this.handleClearClick());
         dom.calculateBtn.addEventListener('click', () => this.handleCalculate());
         dom.simulateBtn.addEventListener('click', () => this.simulateValues());
         
-        // === ?��??�置?�能 ===
-        // 注�?：mousedown?�touchstart不能設為passive，�??��?要preventDefault來阻止�?認�???        // ?�是?��??�止?��??�觸?�其他瀏覽?��?認�??��?如選?��?字、右?�選?��?�?        dom.clearBtn.addEventListener('mousedown', (e) => this.startHardResetTimer(e));
+        // === 長按重置功能 ===
+        // 注意：mousedown和touchstart不能設為passive，因為需要preventDefault來阻止默認行為
+        // 這是為了防止長按時觸發其他瀏覽器默認行為（如選擇文字、右鍵選單等）
+        dom.clearBtn.addEventListener('mousedown', (e) => this.startHardResetTimer(e));
         dom.clearBtn.addEventListener('touchstart', (e) => this.startHardResetTimer(e), { passive: false });
         dom.clearBtn.addEventListener('mouseup', () => this.cancelHardResetTimer());
         dom.clearBtn.addEventListener('mouseleave', () => this.cancelHardResetTimer());
         dom.clearBtn.addEventListener('touchend', () => this.cancelHardResetTimer());
         
-        // === 輸入欄�?事件 ===
+        // === 輸入欄位事件 ===
         Object.values(dom.amountInputs).forEach(input => {
             if (input) {
             input.addEventListener('input', (e) => this.handleAmountInput(e));
@@ -223,10 +231,11 @@ class CashManagementApp {
             }
         });
         
-        // === ?��??�板 ===
+        // === 摺疊面板 ===
         document.querySelectorAll('.collapsible-header').forEach(header => {
             header.addEventListener('click', (e) => {
-                // 如�?點�??�是?��??��?，�?要觸?��???                if (e.target.classList.contains('lock-btn') || e.target.closest('.lock-btn')) {
+                // 如果點擊的是鎖定按鈕，不要觸發折疊
+                if (e.target.classList.contains('lock-btn') || e.target.closest('.lock-btn')) {
                     return;
                 }
                 const content = document.getElementById(header.id.replace('Header', 'Content'));
@@ -235,7 +244,7 @@ class CashManagementApp {
             });
         });
         
-        // === 彈�??�制 ===
+        // === 彈窗控制 ===
         dom.buttons.showPackage.onclick = () => dom.modals.package.style.display = 'block';
         dom.buttons.showManual.onclick = () => dom.modals.manual.style.display = 'block';
         dom.buttons.showExchange.onclick = () => {
@@ -245,7 +254,7 @@ class CashManagementApp {
         dom.buttons.showColor.onclick = () => dom.modals.color.style.display = 'block';
         dom.buttons.showChangelog.onclick = () => dom.modals.changelog.style.display = 'block';
         
-        // === ?��??�能?��? ===
+        // === 新增功能按鈕 ===
         if (dom.buttons.themeToggle) {
             dom.buttons.themeToggle.onclick = () => this.handleThemeToggle();
         }
@@ -259,42 +268,42 @@ class CashManagementApp {
             dom.buttons.export.onclick = () => this.handleExportClick();
         }
         
-        // === 設�??�能事件綁�? ===
-        const blockMovementToggle = document.getElementById('enable-block-movement-toggle');
+        // === 設定功能事件綁定 ===
+        const blockMovementToggle = document.getElementById('enable-block-movement');
         if (blockMovementToggle) {
             blockMovementToggle.addEventListener('change', (e) => {
                 this.toggleBlockMovement(e.target.checked);
             });
         }
         
-        // 彈�??��??��?
+        // 彈窗關閉按鈕
         document.querySelectorAll('.modal .close').forEach(btn => {
             btn.onclick = () => {
                 Object.values(dom.modals).forEach(m => m.style.display = 'none');
             };
         });
         
-        // 點�?彈�??�景?��?
+        // 點擊彈窗背景關閉
         window.onclick = (e) => {
             if (e.target.classList.contains('modal')) {
                 e.target.style.display = 'none';
             }
         };
         
-        // === 總�??��?工具 ===
+        // === 總額換算工具 ===
         [dom.exchange.amount, dom.exchange.from, dom.exchange.to].forEach(el => {
             el.addEventListener('input', () => updateExchangeInfo(dom));
         });
         dom.exchange.confirm.addEventListener('click', () => this.performExchange());
         
-        // === 顏色?��???===
+        // === 顏色選擇器 ===
         Object.values(dom.color.pickers).forEach(picker => {
             picker.addEventListener('input', (e) => this.handleColorChange(e));
         });
         dom.color.resetBtn.addEventListener('click', () => resetColors(dom));
         dom.color.closeBtn.addEventListener('click', () => dom.modals.color.style.display = 'none');
         
-        // === 步進器?��? ===
+        // === 步進器按鈕 ===
         document.querySelectorAll('.stepper-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetInput = document.getElementById(e.currentTarget.dataset.target);
@@ -307,7 +316,7 @@ class CashManagementApp {
             });
         });
         
-        // === 結�?微調工具 ===
+        // === 結果微調工具 ===
         const rex = dom.resultExchange;
         rex.performBtn.addEventListener('click', () => this.performResultExchange());
         rex.undoBtn.addEventListener('click', () => this.undoResultExchange());
@@ -317,16 +326,16 @@ class CashManagementApp {
         });
         rex.log.addEventListener('click', (e) => this.handleHistoryLogClick(e));
         
-        // === ?��??�錢對�?工具 ===
+        // === 收納零錢對換工具 ===
         const cc = dom.coinConsolidation;
         cc.performBtn.addEventListener('click', () => this.performCoinConsolidation());
         [cc.fromDenom, cc.fromCount, cc.toDenom].forEach(el => {
             el.addEventListener('input', () => this.updateCoinConsolidationPreview());
         });
         
-        // === ?��??�能事件綁�? ===
+        // === 新增功能事件綁定 ===
         
-        // 設�??��?事件
+        // 設定相關事件
         if (dom.settings.showExtendedDenoms) {
             dom.settings.showExtendedDenoms.addEventListener('change', (e) => this.handleExtendedDenomsToggle(e));
         }
@@ -346,7 +355,7 @@ class CashManagementApp {
             dom.settings.resetSettingsBtn.addEventListener('click', () => this.handleResetSettings());
         }
         
-        // 保�??��?事件
+        // 保存相關事件
         if (dom.save.confirmBtn) {
             dom.save.confirmBtn.addEventListener('click', () => this.handleConfirmSave());
         }
@@ -367,7 +376,7 @@ class CashManagementApp {
             });
         }
         
-        // 導出?��?事件
+        // 導出相關事件
         if (dom.export.settingsBtn) {
             dom.export.settingsBtn.addEventListener('click', () => this.handleExportSettings());
         }
@@ -385,10 +394,10 @@ class CashManagementApp {
         }
     }
     
-    // === 事件?��??�數 ===
+    // === 事件處理函數 ===
     
     /**
-     * ?��?清除?��?點�?
+     * 處理清除按鈕點擊
      */
     handleClearClick() {
         if (!this.isLongPress) {
@@ -397,7 +406,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??��?輸入
+     * 處理金額輸入
      * @param {Event} e - 輸入事件
      */
     handleAmountInput(e) {
@@ -405,24 +414,28 @@ class CashManagementApp {
         const denomination = parseInt(input.dataset.denomination, 10);
         const rawValue = input.value.replace(/,/g, '');
         
-        // 檢查?�否?�張?�模�?        if (APP_CONFIG.COUNT_MODE_DENOMS.includes(denomination)) {
+        // 檢查是否為張數模式
+        if (APP_CONFIG.COUNT_MODE_DENOMS.includes(denomination)) {
             input.dataset.isCountMode = /^\d{1,2}$/.test(rawValue) ? 'true' : 'false';
         }
         
-        // ?��??�輸??        formatInputWithCommas(input);
+        // 格式化輸入
+        formatInputWithCommas(input);
         
-        // 驗�?並更?��???        this.validateAllInputs();
+        // 驗證並更新狀態
+        this.validateAllInputs();
         this.updateStateFromInputs();
     }
     
     /**
-     * ?��??��?輸入失焦
+     * 處理金額輸入失焦
      * @param {Event} e - 失焦事件
      */
     handleAmountBlur(e) {
         const input = e.target;
         
-        // 如�??�張?�模式�?轉�??��?�?        if (input.dataset.isCountMode === 'true') {
+        // 如果是張數模式，轉換為金額
+        if (input.dataset.isCountMode === 'true') {
             const denomination = parseInt(input.dataset.denomination, 10);
             const count = parseInputValue(input.value);
             input.value = formatNumber(count * denomination);
@@ -434,56 +447,69 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?�??�輸??     */
+     * 處理袋/捆輸入
+     */
     handleBagInput() {
         this.validateAllInputs();
         this.updateStateFromInputs();
     }
     
     /**
-     * ?��?計�??��?點�?
+     * 處理計算按鈕點擊
      */
     handleCalculate() {
-        console.log('?��?計�?...');
+        console.log('開始計算...');
         
         if (!this.validateAllInputs()) {
-            alert('?��??��?輸入?�誤，�?檢查紅色框�?示�?欄�?�?);
+            alert('部分金額輸入錯誤，請檢查紅色框標示的欄位！');
             return;
         }
         
         try {
-        // ?��?輸入資�?
+        // 收集輸入資料
         const inputs = collectInputs(this.domElements);
-            console.log('輸入資�?:', inputs);
+            console.log('輸入資料:', inputs);
         
-        // ?��?計�?
+        // 執行計算
         const results = calculateResults(inputs);
-            console.log('計�?結�?:', results);
+            console.log('計算結果:', results);
         
-        // ?�新?�??        this.stateManager.updateResults(results);
+        // 更新狀態
+        this.stateManager.updateResults(results);
         
-            // ?�新 UI - 注�?：�??��??�新UI?�設定工?��?確�??�?�正確傳??        updateUI(results);
+            // 更新 UI - 注意：必須先更新UI再設定工具，確保狀態正確傳遞
+        updateUI(results);
         setupResultExchangeTool(this.domElements);
-            // ?��?：setupCoinConsolidationTool?�要�??��??��?必�??�入完整?��??��?�?            setupCoinConsolidationTool(this.domElements, this.stateManager.getState());
+            // 重要：setupCoinConsolidationTool需要狀態資料，必須傳入完整的狀態對象
+            setupCoinConsolidationTool(this.domElements, this.stateManager.getState());
         
-            // 確�?結�??�塊顯�?            setTimeout(() => {
+            // 確保結果區塊和代收PC計算區塊顯示
+            setTimeout(() => {
         this.domElements.resultContainer.classList.add('active');
                 this.domElements.resultContainer.style.display = 'block';
-                console.log('結�??�塊已顯示');
+                
+                // 顯示代收PC計算區塊
+                const extraCalcSection = document.getElementById('extra-calc-section');
+                if (extraCalcSection) {
+                    extraCalcSection.style.display = 'block';
+                }
+                
+                console.log('結果區塊和代收PC計算區塊已顯示');
             }, 100);
             
         } catch (error) {
-            console.error('計�??��??��??�誤:', error);
-            alert('計�??��??��??�誤，�??�新?�試??);
+            console.error('計算過程發生錯誤:', error);
+            alert('計算過程發生錯誤，請重新嘗試。');
         }
     }
     
     /**
-     * 軟�??��??��??�輸?��?結�?�?     */
+     * 軟清除（僅清除輸入和結果）
+     */
     softClear() {
         this.stateManager.clearState();
         
-        // 清除輸入欄�?
+        // 清除輸入欄位
         Object.values(this.domElements.amountInputs).forEach(input => {
             if (input) input.value = '';
         });
@@ -491,21 +517,31 @@ class CashManagementApp {
             if (input) input.value = '';
         });
         
-        // 清除?�誤?�??        Object.values(this.domElements.errorMessages).forEach(el => {
+        // 清除錯誤狀態
+        Object.values(this.domElements.errorMessages).forEach(el => {
             if (el) el.classList.remove('active');
         });
         Object.values(this.domElements.amountInputs).forEach(el => {
             if (el) el.classList.remove('input-error');
         });
         
-        // ?�置?��??�??        this.domElements.calculateBtn.disabled = false;
+        // 重置按鈕狀態
+        this.domElements.calculateBtn.disabled = false;
         
-        // ?��?結�??�塊�?後�??�?��???- ?��?：恢復�??��??��?完整?�能
+        // 隱藏結果區塊及後續所有區域 - 重要：恢復清除按鈕的完整功能
         this.domElements.resultContainer.classList.remove('active');
         this.domElements.resultContainer.style.display = 'none';
-        console.log('結�??�塊�?後�??�?�已?��?');
         
-        // ?�置驗�??�??        document.querySelectorAll('.verify-checkbox').forEach(cb => {
+        // 隱藏代收PC計算區塊
+        const extraCalcSection = document.getElementById('extra-calc-section');
+        if (extraCalcSection) {
+            extraCalcSection.style.display = 'none';
+        }
+        
+        console.log('結果區塊、代收PC計算區塊及後續區域已隱藏');
+        
+        // 重置驗證狀態
+        document.querySelectorAll('.verify-checkbox').forEach(cb => {
             cb.checked = false;
         });
         if (typeof updateVerificationStatus !== 'undefined') {
@@ -514,18 +550,20 @@ class CashManagementApp {
     }
     
     /**
-     * 硬�?置�??�含顏色設�?�?     */
+     * 硬重置（包含顏色設定）
+     */
     hardReset() {
         this.softClear();
         resetColors(this.domElements);
-        alert('已徹底�?置工?�並清除?�?�儲存�?資�???);
+        alert('已徹底重置工具並清除所有儲存的資料。');
     }
     
     /**
-     * 驗�??�?�輸??     * @returns {boolean} ?�否?�?�輸?�都?��?
+     * 驗證所有輸入
+     * @returns {boolean} 是否所有輸入都有效
      */
     validateAllInputs() {
-        // 調用 core-logic.js 中�? validateAllInputs ?�數
+        // 調用 core-logic.js 中的 validateAllInputs 函數
         const isValid = window.validateAllInputs ? 
             window.validateAllInputs(this.domElements, {}) : true;
         
@@ -536,21 +574,23 @@ class CashManagementApp {
     }
     
     /**
-     * 從輸?�更?��???     */
+     * 從輸入更新狀態
+     */
     updateStateFromInputs() {
         updateStateFromInputs(this.stateManager, this.domElements);
     }
     
     /**
-     * 載入?��??��???     */
+     * 載入儲存的狀態
+     */
     loadState() {
         if (this.stateManager.loadState()) {
             const state = this.stateManager.getState();
             
-            // ?�復輸入欄�?
+            // 恢復輸入欄位
             restoreInputsFromState(state, this.domElements);
             
-            // ?�復結�?顯示
+            // 恢復結果顯示
             if (state.results) {
                 updateUI(state.results);
                 this.domElements.resultContainer.classList.add('active');
@@ -567,11 +607,12 @@ class CashManagementApp {
     }
     
     /**
-     * 模擬?�值輸??     */
+     * 模擬數值輸入
+     */
     simulateValues() {
         this.softClear();
         
-        // 設�?模擬?��?
+        // 設定模擬數據
         const simulateData = {
             1000: '16000',
             500: '17000',
@@ -582,13 +623,13 @@ class CashManagementApp {
             1: '51'
         };
         
-        // 如�??�用了擴展面額�?添�?模擬?��?
+        // 如果啟用了擴展面額，添加模擬數據
         if (APP_CONFIG.SETTINGS.showExtendedDenoms) {
             simulateData[2000] = '10000';
             simulateData[200] = '2400';
         }
         
-        // 填入模擬?��?
+        // 填入模擬數據
         Object.entries(simulateData).forEach(([denom, value]) => {
             const input = this.domElements.amountInputs[denom];
             if (input) {
@@ -596,7 +637,7 @@ class CashManagementApp {
             }
         });
         
-        // 設�?袋�??��?
+        // 設定袋裝數據
         if (this.domElements.bagInputs[50]) this.domElements.bagInputs[50].value = '1';
         if (this.domElements.bagInputs[1]) this.domElements.bagInputs[1].value = '1';
         
@@ -604,10 +645,10 @@ class CashManagementApp {
         this.validateAllInputs();
     }
     
-    // === 微調工具?��??�數 ===
+    // === 微調工具相關函數 ===
     
     /**
-     * ?��?結�?微調
+     * 執行結果微調
      */
     performResultExchange() {
         const rex = this.domElements.resultExchange;
@@ -619,34 +660,36 @@ class CashManagementApp {
         const swapPath = findValidSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
         
         if (!swapPath.possible) {
-            alert("?��??��?此交?��?請檢?�數?��??��???);
+            alert("無法執行此交換，請檢查數量與面額。");
             return;
         }
         
-        // 建�??��???        const newResult = JSON.parse(JSON.stringify(lastResult));
+        // 建立新結果
+        const newResult = JSON.parse(JSON.stringify(lastResult));
         const toCount = swapPath.countToReceive;
         
-        // ?��?交�?
+        // 執行交換
         newResult.distribution.pettyCash[fromDenom] -= fromCount;
         newResult.distribution.revenue[fromDenom] += fromCount;
         newResult.distribution.revenue[toDenom] -= toCount;
         newResult.distribution.pettyCash[toDenom] += toCount;
         
-        // 記�??��?
+        // 記錄操作
         newResult.lastAction = {
             type: 'main_swap',
-            text: `[?��?]${fromDenom}?�x${fromCount} ??[上繳]${toDenom}?�x${toCount}`
+            text: `[預留]${fromDenom}元x${fromCount} ⇄ [上繳]${toDenom}元x${toCount}`
         };
         
-        // ?�新?�??        this.stateManager.addExchangeHistory(newResult);
+        // 更新狀態
+        this.stateManager.addExchangeHistory(newResult);
         
-        // ?�新 UI
+        // 更新 UI
         updateUI(newResult, { petty: true, revenue: true });
         this.updateResultExchangePreview();
     }
     
     /**
-     * ?�銷結�?微調
+     * 撤銷結果微調
      */
     undoResultExchange() {
         if (this.stateManager.undoLastExchange()) {
@@ -658,7 +701,8 @@ class CashManagementApp {
     }
     
     /**
-     * ?�置?�?��??�微�?     */
+     * 重置所有結果微調
+     */
     resetResultExchanges() {
         if (this.stateManager.resetAllExchanges()) {
             const initialResult = this.stateManager.getLatestExchangeResult();
@@ -669,21 +713,21 @@ class CashManagementApp {
     }
     
     /**
-     * ?�新結�?微調?�覽
+     * 更新結果微調預覽
      */
     updateResultExchangePreview() {
         updateResultExchangePreview(this.domElements, this.stateManager.getState());
     }
     
     /**
-     * ?�新?��??�錢對�??�覽
+     * 更新收納零錢對換預覽
      */
     updateCoinConsolidationPreview() {
         updateCoinConsolidationPreview(this.domElements, this.stateManager.getState());
     }
     
     /**
-     * ?��??��??�錢對�?
+     * 執行收納零錢對換
      */
     performCoinConsolidation() {
         const cc = this.domElements.coinConsolidation;
@@ -695,35 +739,37 @@ class CashManagementApp {
         const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
         
         if (!swapPath.possible) {
-            alert("?��??��?此交?��?請檢?�數?��??��???);
+            alert("無法執行此交換，請檢查數量與面額。");
             return;
         }
         
-        // 建�??��???        const newResult = JSON.parse(JSON.stringify(lastResult));
+        // 建立新結果
+        const newResult = JSON.parse(JSON.stringify(lastResult));
         const toCount = swapPath.countToReceive;
         
-        // ?��?交�?
+        // 執行交換
         newResult.distribution.revenue[fromDenom] -= fromCount;
         newResult.distribution.pettyCash[fromDenom] += fromCount;
         newResult.distribution.pettyCash[toDenom] -= toCount;
         newResult.distribution.revenue[toDenom] += toCount;
         
-        // 記�??��?
+        // 記錄操作
         newResult.lastAction = {
             type: 'coin_consolidation',
-            text: `[上繳]${fromDenom}?�x${fromCount} ??[?��?]${toDenom}?�x${toCount}`
+            text: `[上繳]${fromDenom}元x${fromCount} ⇄ [打包]${toDenom}元x${toCount}`
         };
         
-        // ?�新?�??        this.stateManager.addExchangeHistory(newResult);
+        // 更新狀態
+        this.stateManager.addExchangeHistory(newResult);
         
-        // ?�新 UI
+        // 更新 UI
         updateUI(newResult, { revenue: true, packing: true });
         this.updateCoinConsolidationPreview();
     }
     
     /**
-     * ?��?歷史記�?點�?
-     * @param {Event} e - 點�?事件
+     * 處理歷史記錄點擊
+     * @param {Event} e - 點擊事件
      */
     handleHistoryLogClick(e) {
         const item = e.target.closest('.history-log-item');
@@ -734,7 +780,8 @@ class CashManagementApp {
     }
     
     /**
-     * ?�復?�歷?��???     * @param {number} index - 歷史記�?索�?
+     * 回復到歷史狀態
+     * @param {number} index - 歷史記錄索引
      */
     revertToHistoryState(index) {
         if (this.stateManager.revertToHistoryState(index)) {
@@ -745,10 +792,10 @@ class CashManagementApp {
         }
     }
     
-    // === ?��?工具?�數 ===
+    // === 其他工具函數 ===
     
     /**
-     * ?��?總�??��?
+     * 執行總額換算
      */
     performExchange() {
         const ex = this.domElements.exchange;
@@ -760,20 +807,21 @@ class CashManagementApp {
         const fromCurrentAmount = parseInputValue(fromInput.value);
         
         if (amount <= 0 || amount > fromCurrentAmount || amount % fromDenom !== 0) {
-            alert('請輸?��??��?轉�??��???);
+            alert('請輸入有效的轉換金額。');
             return;
         }
         
-        // ?��?轉�?
+        // 執行轉換
         fromInput.value = formatNumber(fromCurrentAmount - amount);
         toInput.value = formatNumber(parseInputValue(toInput.value) + amount);
         
-        // ?��?彈�?並更?��???        this.domElements.modals.exchange.style.display = 'none';
+        // 關閉彈窗並更新狀態
+        this.domElements.modals.exchange.style.display = 'none';
         this.updateStateFromInputs();
     }
     
     /**
-     * ?��?顏色變更
+     * 處理顏色變更
      * @param {Event} e - 顏色變更事件
      */
     handleColorChange(e) {
@@ -784,13 +832,15 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?硬�?置�??�器
+     * 開始硬重置計時器
      * @param {Event} e - 事件對象
      * 
-     * ?��?：此?�數?�要preventDefault來阻止瀏覽?��?認�???     * ?�此對�??��?件監?�器不能設為passive: true
+     * 重要：此函數需要preventDefault來阻止瀏覽器默認行為
+     * 因此對應的事件監聽器不能設為passive: true
      */
     startHardResetTimer(e) {
-        // ?�止默�?行為（�??��??��??�右?�選?��?�?        e.preventDefault();
+        // 阻止默認行為（如選擇文字、右鍵選單等）
+        e.preventDefault();
         this.isLongPress = false;
         
         const progress = this.domElements.clearBtnProgress;
@@ -805,7 +855,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?硬�?置�??�器
+     * 取消硬重置計時器
      */
     cancelHardResetTimer() {
         clearTimeout(this.longPressTimer);
@@ -816,7 +866,7 @@ class CashManagementApp {
         
         progress.style.transition = 'width 0.2s';
         progress.style.width = '0%';
-        text.textContent = '清除?��?;
+        text.textContent = '清除數值';
         
         setTimeout(() => {
             this.isLongPress = false;
@@ -824,10 +874,13 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??�?��???     * @param {string} action - 變更?��?
-     * @param {Object} state - ?��???     */
+     * 處理狀態變更
+     * @param {string} action - 變更動作
+     * @param {Object} state - 新狀態
+     */
     handleStateChange(action, state) {
-        // ?��?不�??��??��??��?作執行相?��???        switch (action) {
+        // 根據不同的狀態變更動作執行相應處理
+        switch (action) {
             case 'exchange':
             case 'undo':
             case 'reset':
@@ -835,14 +888,15 @@ class CashManagementApp {
                 renderResultExchangeHistory(this.domElements, state);
                 break;
             default:
-                // ?��??�?��??�暫?��??�要特殊�???                break;
+                // 其他狀態變更暫時不需要特殊處理
+                break;
         }
     }
     
-    // === ?��??�能事件?��? ===
+    // === 新增功能事件處理 ===
     
     /**
-     * ?��?主�??��?
+     * 處理主題切換
      */
     handleThemeToggle() {
         const isDark = !APP_CONFIG.SETTINGS.darkMode;
@@ -851,7 +905,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?設�??��?點�?
+     * 處理設定按鈕點擊
      */
     handleSettingsClick() {
         this.updateSettingsModal();
@@ -859,7 +913,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?保�??��?點�?
+     * 處理保存按鈕點擊
      */
     handleSaveClick() {
         const now = new Date();
@@ -867,7 +921,7 @@ class CashManagementApp {
         
         this.domElements.save.timestamp.textContent = timestamp;
         
-        // ?��??��??��?人員?��?
+        // 初始化機號和人員選擇
         this.currentSaveMachineNumber = APP_CONFIG.SETTINGS.machineNumber;
         this.updateSaveMachineButtons();
         this.updateSaveStaffSelect();
@@ -876,7 +930,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?導出?��?點�?
+     * 處理導出按鈕點擊
      */
     handleExportClick() {
         if (this.domElements.export.result) {
@@ -886,7 +940,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?�新設�?彈�?
+     * 更新設定彈窗
      */
     updateSettingsModal() {
         if (this.domElements.settings.showExtendedDenoms) {
@@ -902,19 +956,21 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??��??��??��?
+     * 處理擴展面額切換
      */
     handleExtendedDenomsToggle(e) {
         const show = e.target.checked;
         
-        // 如�??��?且�??�值�?警示使用??        if (!show && this.hasExtendedDenomsValues()) {
-            const confirmed = confirm('?��?顯示將�?�?2000 ??200 ?��??�輸?�值�??�否繼�?�?);
+        // 如果關閉且有數值，警示使用者
+        if (!show && this.hasExtendedDenomsValues()) {
+            const confirmed = confirm('關閉顯示將清空 2000 和 200 面額的輸入值，是否繼續？');
             if (!confirmed) {
                 e.target.checked = true;
                 return;
             }
             
-            // 清空?��?            if (this.domElements.amountInputs[2000]) {
+            // 清空數值
+            if (this.domElements.amountInputs[2000]) {
                 this.domElements.amountInputs[2000].value = '';
             }
             if (this.domElements.amountInputs[200]) {
@@ -929,7 +985,8 @@ class CashManagementApp {
     }
     
     /**
-     * 檢查?�否?�擴展面額�??��?     */
+     * 檢查是否有擴展面額的數值
+     */
     hasExtendedDenomsValues() {
         const val2000 = this.domElements.amountInputs[2000] ? parseInputValue(this.domElements.amountInputs[2000].value) : 0;
         const val200 = this.domElements.amountInputs[200] ? parseInputValue(this.domElements.amountInputs[200].value) : 0;
@@ -937,7 +994,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?機台?��?
+     * 處理機台選擇
      */
     handleMachineSelect(machineNumber) {
         APP_CONFIG.SETTINGS.machineNumber = machineNumber;
@@ -953,7 +1010,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??��?人員
+     * 處理新增人員
      */
     handleAddStaff() {
         const nameInput = this.domElements.settings.newStaffName;
@@ -969,7 +1026,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??�除人員
+     * 處理刪除人員
      */
     handleRemoveStaff(index) {
         if (APP_CONFIG.SETTINGS.staffList.length > 1) {
@@ -980,27 +1037,27 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?保�?設�?
+     * 處理保存設定
      */
     handleSaveSettings() {
         this.saveSettings();
-        alert('設�?已�?存�?');
+        alert('設定已保存！');
         this.domElements.modals.settings.style.display = 'none';
     }
     
     /**
-     * ?��??�置設�?
+     * 處理重置設定
      */
     handleResetSettings() {
-        if (confirm('確�?要恢復�??�設定為?�設?��?�?)) {
+        if (confirm('確定要恢復所有設定為預設值嗎？')) {
             this.resetSettings();
             this.updateSettingsModal();
-            alert('設�?已�?置�?');
+            alert('設定已重置！');
         }
     }
     
     /**
-     * ?��?確�?保�?
+     * 處理確認保存
      */
     handleConfirmSave() {
         const timestamp = this.domElements.save.timestamp.textContent;
@@ -1009,7 +1066,7 @@ class CashManagementApp {
         const staff = APP_CONFIG.SETTINGS.staffList[staffIndex];
         
         if (!this.stateManager.getState().results) {
-            alert('請�??��?計�??��?存�?');
+            alert('請先進行計算再保存！');
             return;
         }
         
@@ -1027,83 +1084,85 @@ class CashManagementApp {
         this.saveHistory.push(saveData);
         this.saveSaveHistory();
         
-        // ?�新設�?中�?保�?記�??�覽
+        // 更新設定中的保存記錄預覽
         this.updateSettingsSavePreview();
         
-        alert(`記�?已�?存�?\\n?��?: ${timestamp}\\n機�?: ??{machine}\\n人員: ${staff}`);
+        alert(`記錄已保存！\\n時間: ${timestamp}\\n機號: ①${machine}\\n人員: ${staff}`);
         this.renderSaveHistory();
         
-        // ?��?：確保�?存�??��??��??�更??        console.log('保�?記�?已更?��??��?記�??��?:', this.saveHistory.length);
+        // 重要：確保保存記錄功能完整更新
+        console.log('保存記錄已更新，當前記錄數量:', this.saveHistory.length);
         
         this.domElements.modals.save.style.display = 'none';
     }
     
     /**
-     * ?��??��?保�?
+     * 處理取消保存
      */
     handleCancelSave() {
         this.domElements.modals.save.style.display = 'none';
     }
     
     /**
-     * ?��?導出設�?
+     * 處理導出設定
      */
     handleExportSettings() {
         const settingsData = {
             settings: { ...APP_CONFIG.SETTINGS },
             colors: this.getCurrentColors(),
-            version: '3.4',
+            version: '3.9',
             exportTime: new Date().toISOString()
         };
         
-        this.showExportResult(JSON.stringify(settingsData, null, 2), '設�?資�?');
+        this.showExportResult(JSON.stringify(settingsData, null, 2), '設定資料');
     }
     
     /**
-     * ?��?導出歷史
+     * 處理導出歷史
      */
     handleExportHistory() {
         const historyData = {
             saveHistory: this.saveHistory,
-            version: '3.4',
+            version: '3.9',
             exportTime: new Date().toISOString()
         };
         
-        this.showExportResult(JSON.stringify(historyData, null, 2), '歷史資�?');
+        this.showExportResult(JSON.stringify(historyData, null, 2), '歷史資料');
     }
     
     /**
-     * ?��?導出?�??     */
+     * 處理導出所有
+     */
     handleExportAll() {
         const allData = {
             settings: { ...APP_CONFIG.SETTINGS },
             colors: this.getCurrentColors(),
             saveHistory: this.saveHistory,
             currentState: this.stateManager.getState(),
-            version: '3.4',
+            version: '3.9',
             exportTime: new Date().toISOString()
         };
         
-        this.showExportResult(JSON.stringify(allData, null, 2), '完整資�?');
+        this.showExportResult(JSON.stringify(allData, null, 2), '完整資料');
     }
     
     /**
-     * ?��?複製導出
+     * 處理複製導出
      */
     handleCopyExport() {
         const text = this.domElements.export.text.value;
         navigator.clipboard.writeText(text).then(() => {
-            alert('已�?製到?�貼?��?');
+            alert('已複製到剪貼板！');
         }).catch(() => {
-            // ?�用?��?
+            // 備用方案
             this.domElements.export.text.select();
             document.execCommand('copy');
-            alert('已�?製到?�貼?��?');
+            alert('已複製到剪貼板！');
         });
     }
     
     /**
-     * ?��?下�?導出
+     * 處理下載導出
      */
     handleDownloadExport() {
         const text = this.domElements.export.text.value;
@@ -1119,7 +1178,7 @@ class CashManagementApp {
     }
     
     /**
-     * 顯示導出結�?
+     * 顯示導出結果
      */
     showExportResult(data, type) {
         this.domElements.export.text.value = data;
@@ -1128,14 +1187,14 @@ class CashManagementApp {
     }
     
     /**
-     * ?�置設�?
+     * 重置設定
      */
     resetSettings() {
         APP_CONFIG.SETTINGS = {
             showExtendedDenoms: false,
             darkMode: false,
             machineNumber: 1,
-            staffList: ['1??, '2??, '3??]
+            staffList: ['1號', '2號', '3號']
         };
         
         if (typeof toggleDarkMode !== 'undefined') {
@@ -1148,7 +1207,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��??��?顏色
+     * 取得當前顏色
      */
     getCurrentColors() {
         const colors = {};
@@ -1159,10 +1218,10 @@ class CashManagementApp {
         return colors;
     }
     
-    // === 保�??�能?��? ===
+    // === 保存功能相關 ===
     
     /**
-     * ?��?保�?機台?��?
+     * 處理保存機台選擇
      */
     handleSaveMachineSelect(machineNumber) {
         this.currentSaveMachineNumber = machineNumber;
@@ -1170,7 +1229,8 @@ class CashManagementApp {
     }
     
     /**
-     * ?�新保�?機台?��??�??     */
+     * 更新保存機台按鈕狀態
+     */
     updateSaveMachineButtons() {
         const machine = this.currentSaveMachineNumber || APP_CONFIG.SETTINGS.machineNumber;
         if (this.domElements.save.machine1) {
@@ -1182,22 +1242,7 @@ class CashManagementApp {
     }
     
     /**
-     * ?��?保�??��?人員
-     */
-    handleSaveAddStaff() {
-        // ?�段?�輯已被移至設�?彈�???handleAddStaff
-        // 保�?彈�?不�??��??��?人員?�能
-    }
-    
-    /**
-     * 渲�?保�?人員清單
-     */
-    renderSaveStaffList() {
-        // 此�??�已不�??�要�??�為保�?彈�?不顯示可編輯?�表
-    }
-    
-    /**
-     * ?�新保�?人員?��?
+     * 更新保存人員選擇
      */
     updateSaveStaffSelect() {
         if (!this.domElements.save.staffSelect) return;
@@ -1209,161 +1254,36 @@ class CashManagementApp {
     }
     
     /**
-     * 編輯保�?人員?�稱
+     * 初始化新增功能
      */
-    editSaveStaffName(index) {
-        // 此�??�已移至設�?彈�?
-    }
-    
-    /**
-     * ?�除保�?人員
-     */
-    deleteSaveStaff(index) {
-        // 此�??�已移至設�?彈�???handleRemoveStaff
-    }
-    
-    /**
-     * 渲�?保�?歷史
-     */
-    renderSaveHistory() {
-        if (!this.domElements.save.historyList) return;
-        
-        const listEl = this.domElements.save.historyList;
-        const countEl = this.domElements.save.historyCount;
-        
-        if (this.saveHistory.length === 0) {
-            listEl.innerHTML = '<p class="no-history">尚無保�?記�?</p>';
-            countEl.textContent = '(0)';
-            return;
-        }
-        
-        countEl.textContent = `(${this.saveHistory.length})`;
-        
-        listEl.innerHTML = this.saveHistory.map((record, index) => `
-            <div class="history-record">
-                <div class="history-info">
-                    <div class="history-timestamp">${record.timestamp}</div>
-                    <div class="history-details">機�?: ??{record.machine} | 人員: ${record.staff}</div>
-                </div>
-                <div class="history-actions">
-                    <button class="restore-btn" onclick="cashApp.restoreSaveRecord(${index})">復�?</button>
-                    <button class="delete-history-btn" onclick="cashApp.deleteSaveRecord(${index})">?�除</button>
-                </div>
-            </div>
-        `).reverse().join('');
-    }
-    
-    /**
-     * 復�?保�?記�?
-     */
-    restoreSaveRecord(index) {
-        const record = this.saveHistory[index];
-        if (!record) return;
-        
-        if (confirm(`確�?要復?�到 ${record.timestamp} ?��??��?？\\n?��?清除?��??�輸?��?結�??�`)) {
-            // 復�?輸入資�?
-            this.restoreInputsFromRecord(record);
-            
-            // 復�?計�?結�?
-            if (record.results) {
-                this.stateManager.updateResults(record.results);
-                if (record.exchangeHistory) {
-                    this.stateManager.state.exchangeHistory = [...record.exchangeHistory];
-                }
-                
-                // ?�新 UI
-                updateUI(record.results);
-                setupResultExchangeTool(this.domElements);
-                setupCoinConsolidationTool(this.domElements);
-                this.domElements.resultContainer.classList.add('active');
-                this.domElements.resultContainer.style.display = 'block';
-            }
-            
-            // 復�?設�?
-            if (record.settings) {
-                Object.assign(APP_CONFIG.SETTINGS, record.settings);
-                if (typeof toggleDarkMode !== 'undefined') {
-                    toggleDarkMode(APP_CONFIG.SETTINGS.darkMode);
-                }
-                if (typeof toggleExtendedDenominations !== 'undefined') {
-                    toggleExtendedDenominations(APP_CONFIG.SETTINGS.showExtendedDenoms);
-                }
-                this.saveSettings();
-            }
-            
-            alert(`已復?�到 ${record.timestamp} ?��??��?`);
-            this.domElements.modals.save.style.display = 'none';
-        }
-    }
-    
-    /**
-     * 從�??�復?�輸?��???     */
-    restoreInputsFromRecord(record) {
-        if (!record.inputs) return;
-        
-        // 清空?�?�輸??        Object.values(this.domElements.amountInputs).forEach(input => {
-            if (input) input.value = '';
-        });
-        Object.values(this.domElements.bagInputs).forEach(input => {
-            if (input) input.value = '';
-        });
-        
-        // 復�?輸入?��?
-        Object.entries(record.inputs).forEach(([denom, data]) => {
-            const amountInput = this.domElements.amountInputs[denom];
-            const bagInput = this.domElements.bagInputs[denom];
-            
-            if (amountInput && data.amount) {
-                amountInput.value = formatNumber(data.amount);
-            }
-            if (bagInput && data.packages) {
-                bagInput.value = data.packages.toString();
-            }
-        });
-        
-        // ?�新?�??        this.updateStateFromInputs();
-        this.validateAllInputs();
-    }
-    
-    /**
-     * ?�除保�?記�?
-     */
-    deleteSaveRecord(index) {
-        const record = this.saveHistory[index];
-        if (!record) return;
-        
-        if (confirm(`確�?要刪??${record.timestamp} ?��??��?？`)) {
-            this.saveHistory.splice(index, 1);
-            this.saveSaveHistory();
-            this.renderSaveHistory();
-        }
-    }
-    
-    /**
-     * ?��??�新增�???     */
     initNewFeatures() {
-        // ?��??�区?�移?��???        if (typeof initializeMovableBlocks !== 'undefined') {
+        // 初始化区块移动功能
+        if (typeof initializeMovableBlocks !== 'undefined') {
             initializeMovableBlocks();
         }
         
-        // ?��??��?證�?�?        if (typeof initVerificationBlock !== 'undefined') {
+        // 初始化驗證區塊
+        if (typeof initVerificationBlock !== 'undefined') {
             initVerificationBlock();
         }
         
-        // ?��??��?外�?算�???        if (typeof initExtraCalc !== 'undefined') {
+        // 初始化額外計算功能
+        if (typeof initExtraCalc !== 'undefined') {
             initExtraCalc();
         }
         
-        // ?��??�設�?        this.loadSettings();
+        // 初始化設定
+        this.loadSettings();
         
-        // 載入保�?歷史
+        // 載入保存歷史
         this.loadSaveHistory();
         
-        // ?��??�人?��???        this.renderStaffList();
+        // 初始化人員清單
+        this.renderStaffList();
     }
     
     /**
-     * 載入設�?
+     * 載入設定
      */
     loadSettings() {
         const saved = localStorage.getItem('cashTool.settings');
@@ -1372,7 +1292,7 @@ class CashManagementApp {
                 const settings = JSON.parse(saved);
                 Object.assign(APP_CONFIG.SETTINGS, settings);
                 
-                // ?�用設�?
+                // 應用設定
                 if (typeof toggleDarkMode !== 'undefined') {
                     toggleDarkMode(APP_CONFIG.SETTINGS.darkMode);
                 }
@@ -1380,20 +1300,20 @@ class CashManagementApp {
                     toggleExtendedDenominations(APP_CONFIG.SETTINGS.showExtendedDenoms);
                 }
             } catch (error) {
-                console.error('載入設�?失�?:', error);
+                console.error('載入設定失敗:', error);
             }
         }
     }
     
     /**
-     * 保�?設�?
+     * 保存設定
      */
     saveSettings() {
         localStorage.setItem('cashTool.settings', JSON.stringify(APP_CONFIG.SETTINGS));
     }
     
     /**
-     * 渲�?人員清單
+     * 渲染人員清單
      */
     renderStaffList() {
         if (!this.domElements.settings || !this.domElements.settings.staffList) return;
@@ -1402,13 +1322,13 @@ class CashManagementApp {
         listEl.innerHTML = APP_CONFIG.SETTINGS.staffList.map((staff, index) => `
             <div class="staff-item">
                 <span>${staff}</span>
-                <button onclick="cashApp.handleRemoveStaff(${index})" class="btn btn-clear" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">?�除</button>
+                <button onclick="cashApp.handleRemoveStaff(${index})" class="btn btn-clear" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">刪除</button>
             </div>
         `).join('');
     }
     
     /**
-     * 載入保�?歷史
+     * 載入保存歷史
      */
     loadSaveHistory() {
         const saved = localStorage.getItem('cashTool.saveHistory');
@@ -1416,16 +1336,17 @@ class CashManagementApp {
             try {
                 this.saveHistory = JSON.parse(saved);
             } catch (error) {
-                console.error('載入保�?歷史失�?:', error);
+                console.error('載入保存歷史失敗:', error);
                 this.saveHistory = [];
             }
         }
-        // ?�新設�?中�?保�?記�??�覽
+        // 更新設定中的保存記錄預覽
         this.updateSettingsSavePreview();
     }
     
     /**
-     * ?��??�塊移?��???     * @param {boolean} enabled - ?�否?�用
+     * 切換區塊移動功能
+     * @param {boolean} enabled - 是否啟用
      */
     toggleBlockMovement(enabled) {
         const moveButtons = document.querySelectorAll('.move-buttons');
@@ -1433,71 +1354,74 @@ class CashManagementApp {
             buttons.style.display = enabled ? 'flex' : 'none';
         });
         
-        // 保�?設�???localStorage
+        // 保存設定到 localStorage
         localStorage.setItem('cashTool.blockMovementEnabled', enabled);
-        console.log(`?�塊移?��??�已${enabled ? '?�用' : '?�用'}`);
+        console.log(`區塊移動功能已${enabled ? '啟用' : '停用'}`);
     }
     
     /**
-     * ?�新設�?中�?保�?記�??�覽 - ?��?：確保�?存�??��??��??�可??     */
+     * 更新設定中的保存記錄預覽 - 重要：確保保存記錄功能完整可用
+     */
     updateSettingsSavePreview() {
         const countEl = document.getElementById('settings-save-count');
         const previewEl = document.getElementById('settings-save-preview');
         
         if (!countEl || !previewEl) {
-            console.warn('?��??��?存�??��?覽�?�?);
+            console.warn('找不到保存記錄預覽元素');
             return;
         }
         
-        console.log('?�新保�?記�??�覽，當?��??�數??', this.saveHistory.length);
+        console.log('更新保存記錄預覽，當前記錄數量:', this.saveHistory.length);
         
         countEl.textContent = `(${this.saveHistory.length})`;
         
         if (this.saveHistory.length === 0) {
-            previewEl.innerHTML = '<p class="no-saves">尚無保�?記�?</p>';
+            previewEl.innerHTML = '<p class="no-saves">尚無保存記錄</p>';
         } else {
-            const recentSaves = this.saveHistory.slice(-5).reverse(); // 顯示?��?筆�??�?��??��?
+            const recentSaves = this.saveHistory.slice(-5).reverse(); // 顯示最近5筆，最新的在上
             previewEl.innerHTML = recentSaves.map(save => `
                 <div class="save-preview-item">
                     <div>
                         <div class="save-preview-time">${save.timestamp}</div>
-                        <div class="save-preview-info">機�?${save.machine || save.machineNumber} | ${save.staff || save.staffName}</div>
+                        <div class="save-preview-info">機號${save.machine || save.machineNumber} | ${save.staff || save.staffName}</div>
                     </div>
                 </div>
             `).join('');
         }
         
-        console.log('保�?記�??�覽已更??);
+        console.log('保存記錄預覽已更新');
     }
     
     /**
-     * 保�?保�?歷史
+     * 保存保存歷史
      */
     saveSaveHistory() {
         localStorage.setItem('cashTool.saveHistory', JSON.stringify(this.saveHistory));
     }
     
     /**
-     * ?��??�設定�???     */
+     * 初始化設定功能
+     */
     initSettings() {
-        // 載入?�塊移?��??�設�?        const blockMovementEnabled = localStorage.getItem('cashTool.blockMovementEnabled');
-        const toggle = document.getElementById('enable-block-movement-toggle');
+        // 載入區塊移動功能設定
+        const blockMovementEnabled = localStorage.getItem('cashTool.blockMovementEnabled');
+        const toggle = document.getElementById('enable-block-movement');
         
         if (toggle) {
-            const enabled = blockMovementEnabled !== 'false'; // ?�設?�true
+            const enabled = blockMovementEnabled !== 'false'; // 預設為true
             toggle.checked = enabled;
             this.toggleBlockMovement(enabled);
         }
     }
 }
 
-// === ?�用程�??��? ===
+// === 應用程式啟動 ===
 document.addEventListener('DOMContentLoaded', function() {
-    // 建�?並�?始�??�用程�?
+    // 建立並初始化應用程式
     const app = new CashManagementApp();
     app.init();
     
-    // 將�??��?式實例�?載到?��?（�?供調試使?��?
+    // 將應用程式實例掛載到全域（僅供調試使用）
     if (typeof window !== 'undefined') {
         window.cashApp = app;
     }

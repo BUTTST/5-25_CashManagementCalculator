@@ -1,25 +1,25 @@
-/* ?��?管�?計�?工具 - ?�?�管?�模�?*/
+/* 現金管理計算工具 - 狀態管理模組 */
 
-// === ?�?�管?��???===
+// === 狀態管理類別 ===
 
 /**
- * ?�用程�??�?�管?�器
+ * 應用程式狀態管理器
  */
 class StateManager {
     constructor(stateKey = APP_CONFIG.STATE_KEY) {
         this.stateKey = stateKey;
         this.state = {
-            inputs: {},           // 使用?�輸?��???
-            results: null,        // 計�?結�?
-            exchangeHistory: [],  // 微調歷史記�?
-            version: '3.6'        // ?�本??
+            inputs: {},           // 使用者輸入資料
+            results: null,        // 計算結果
+            exchangeHistory: [],  // 微調歷史記錄
+            version: '3.9'        // 版本號
         };
-        this.listeners = [];      // ?�?��??�監?�器
+        this.listeners = [];      // 狀態變更監聽器
     }
     
     /**
-     * �?localStorage 載入?�??
-     * @returns {boolean} ?�否?��?載入
+     * 從 localStorage 載入狀態
+     * @returns {boolean} 是否成功載入
      */
     loadState() {
         try {
@@ -28,163 +28,158 @@ class StateManager {
                 const parsedState = JSON.parse(savedState);
                 this.state = { ...this.state, ...parsedState };
                 this.notifyListeners('load', this.state);
+                console.log('狀態載入成功:', this.state);
                 return true;
             }
         } catch (error) {
-            console.error('?��?載入?�??', error);
-            this.clearState();
+            console.error('載入狀態失敗:', error);
+            localStorage.removeItem(this.stateKey);
         }
         return false;
     }
     
     /**
-     * ?��??�?�到 localStorage
-     * @returns {boolean} ?�否?��??��?
+     * 保存狀態到 localStorage
      */
     saveState() {
         try {
             localStorage.setItem(this.stateKey, JSON.stringify(this.state));
-            this.notifyListeners('save', this.state);
-            return true;
+            console.log('狀態已保存');
         } catch (error) {
-            console.error('?��??��??�??', error);
-            return false;
+            console.error('保存狀態失敗:', error);
         }
     }
     
     /**
-     * 清除?�??
-     */
-    clearState() {
-        this.state = {
-            inputs: {},
-            results: null,
-            exchangeHistory: [],
-            version: '3.6'
-        };
-        localStorage.removeItem(this.stateKey);
-        this.notifyListeners('clear', this.state);
-    }
-    
-    /**
-     * ?�新輸入資�?
-     * @param {Object} inputs - ?��?輸入資�?
-     */
-    updateInputs(inputs) {
-        this.state.inputs = { ...inputs };
-        this.saveState();
-        this.notifyListeners('inputs', this.state);
-    }
-    
-    /**
-     * ?�新計�?結�?
-     * @param {Object} results - 計�?結�?
-     */
-    updateResults(results) {
-        this.state.results = results;
-        // ?�置微調歷史，�??��??��??��?始�???
-        this.state.exchangeHistory = [JSON.parse(JSON.stringify(results))];
-        this.saveState();
-        this.notifyListeners('results', this.state);
-    }
-    
-    /**
-     * 添�?微調歷史記�?
-     * @param {Object} newResult - ?��?結�??�??
-     */
-    addExchangeHistory(newResult) {
-        // 添�??��??��?
-        if (newResult.lastAction) {
-            newResult.lastAction.time = Date.now();
-        }
-        
-        this.state.exchangeHistory.push(JSON.parse(JSON.stringify(newResult)));
-        this.state.results = newResult; // ?�新?��?結�?
-        this.saveState();
-        this.notifyListeners('exchange', this.state);
-    }
-    
-    /**
-     * ?�銷?�後�?次微�?
-     * @returns {boolean} ?�否?��??�銷
-     */
-    undoLastExchange() {
-        if (this.state.exchangeHistory.length <= 1) {
-            return false; // ?��??�銷?��??�??
-        }
-        
-        this.state.exchangeHistory.pop();
-        this.state.results = this.state.exchangeHistory[this.state.exchangeHistory.length - 1];
-        this.saveState();
-        this.notifyListeners('undo', this.state);
-        return true;
-    }
-    
-    /**
-     * ?�置?�?�微�?
-     * @returns {boolean} ?�否?��??�置
-     */
-    resetAllExchanges() {
-        if (this.state.exchangeHistory.length <= 1) {
-            return false; // 沒�?微調?�要�?�?
-        }
-        
-        // ?��??��?始�???
-        this.state.exchangeHistory = [this.state.exchangeHistory[0]];
-        this.state.results = this.state.exchangeHistory[0];
-        this.saveState();
-        this.notifyListeners('reset', this.state);
-        return true;
-    }
-    
-    /**
-     * ?�復?��?定�?歷史?�??
-     * @param {number} index - 歷史記�?索�?
-     * @returns {boolean} ?�否?��??�復
-     */
-    revertToHistoryState(index) {
-        if (index < 0 || index >= this.state.exchangeHistory.length) {
-            return false;
-        }
-        
-        // ?�斷歷史記�??��?定索�?
-        this.state.exchangeHistory = this.state.exchangeHistory.slice(0, index + 1);
-        this.state.results = this.state.exchangeHistory[index];
-        this.saveState();
-        this.notifyListeners('revert', this.state);
-        return true;
-    }
-    
-    /**
-     * ?��??��??�??
-     * @returns {Object} ?��??�??
+     * 取得當前狀態
+     * @returns {Object} 當前狀態對象
      */
     getState() {
         return { ...this.state };
     }
     
     /**
-     * ?��??��?結�?
-     * @returns {Object|null} ?��?計�?結�?
+     * 更新輸入資料
+     * @param {Object} inputs - 輸入資料
      */
-    getCurrentResults() {
-        return this.state.results;
+    updateInputs(inputs) {
+        this.state.inputs = { ...inputs };
+        this.saveState();
+        this.notifyListeners('input', this.state);
     }
     
     /**
-     * ?��??�?��?微調結�?
-     * @returns {Object|null} ?�?��?微調結�?
+     * 更新計算結果
+     * @param {Object} results - 計算結果
+     */
+    updateResults(results) {
+        this.state.results = { ...results };
+        this.state.exchangeHistory = [JSON.parse(JSON.stringify(results))];
+        this.saveState();
+        this.notifyListeners('calculate', this.state);
+    }
+    
+    /**
+     * 清除所有狀態
+     */
+    clearState() {
+        this.state = {
+            inputs: {},
+            results: null,
+            exchangeHistory: [],
+            version: this.state.version
+        };
+        this.saveState();
+        this.notifyListeners('clear', this.state);
+    }
+    
+    /**
+     * 添加微調歷史記錄
+     * @param {Object} result - 微調後的結果
+     */
+    addExchangeHistory(result) {
+        // 添加時間戳記
+        if (result.lastAction) {
+            result.lastAction.time = new Date().toISOString();
+        }
+        
+        this.state.exchangeHistory.push(JSON.parse(JSON.stringify(result)));
+        this.state.results = { ...result };
+        this.saveState();
+        this.notifyListeners('exchange', this.state);
+    }
+    
+    /**
+     * 撤銷最後一次微調
+     * @returns {boolean} 是否成功撤銷
+     */
+    undoLastExchange() {
+        if (this.state.exchangeHistory.length <= 1) {
+            return false;
+        }
+        
+        this.state.exchangeHistory.pop();
+        this.state.results = { ...this.state.exchangeHistory[this.state.exchangeHistory.length - 1] };
+        this.saveState();
+        this.notifyListeners('undo', this.state);
+        return true;
+    }
+    
+    /**
+     * 重置所有微調
+     * @returns {boolean} 是否成功重置
+     */
+    resetAllExchanges() {
+        if (this.state.exchangeHistory.length <= 1) {
+            return false;
+        }
+        
+        this.state.exchangeHistory = [this.state.exchangeHistory[0]];
+        this.state.results = { ...this.state.exchangeHistory[0] };
+        this.saveState();
+        this.notifyListeners('reset', this.state);
+        return true;
+    }
+    
+    /**
+     * 回復到指定的歷史狀態
+     * @param {number} index - 歷史記錄索引
+     * @returns {boolean} 是否成功回復
+     */
+    revertToHistoryState(index) {
+        if (index < 0 || index >= this.state.exchangeHistory.length) {
+            return false;
+        }
+        
+        this.state.exchangeHistory = this.state.exchangeHistory.slice(0, index + 1);
+        this.state.results = { ...this.state.exchangeHistory[index] };
+        this.saveState();
+        this.notifyListeners('revert', this.state);
+        return true;
+    }
+    
+    /**
+     * 取得最新的交換結果
+     * @returns {Object} 最新的結果對象
      */
     getLatestExchangeResult() {
         if (this.state.exchangeHistory.length > 0) {
-            return this.state.exchangeHistory[this.state.exchangeHistory.length - 1];
+            return { ...this.state.exchangeHistory[this.state.exchangeHistory.length - 1] };
         }
-        return null;
+        return this.state.results ? { ...this.state.results } : null;
     }
     
     /**
-     * 添�??�?��??�監?�器
-     * @param {Function} listener - ??��?�函??
+     * 取得交換歷史記錄
+     * @returns {Array} 歷史記錄陣列
+     */
+    getExchangeHistory() {
+        return [...this.state.exchangeHistory];
+    }
+    
+    /**
+     * 添加狀態變更監聽器
+     * @param {Function} listener - 監聽器函數
      */
     addListener(listener) {
         if (typeof listener === 'function') {
@@ -193,8 +188,8 @@ class StateManager {
     }
     
     /**
-     * 移除?�?��??�監?�器
-     * @param {Function} listener - 要移?��???��?�函??
+     * 移除狀態變更監聽器
+     * @param {Function} listener - 要移除的監聽器函數
      */
     removeListener(listener) {
         const index = this.listeners.indexOf(listener);
@@ -204,279 +199,234 @@ class StateManager {
     }
     
     /**
-     * ?�知?�?�監?�器?�?��???
-     * @param {string} action - 變更?��?類�?
-     * @param {Object} state - ?��???
-     * @private
+     * 通知所有監聽器
+     * @param {string} action - 動作類型
+     * @param {Object} state - 狀態對象
      */
     notifyListeners(action, state) {
         this.listeners.forEach(listener => {
             try {
                 listener(action, state);
             } catch (error) {
-                console.error('?�?�監?�器?��??�誤:', error);
+                console.error('監聽器執行錯誤:', error);
             }
         });
     }
     
     /**
-     * ?�出?�?�為 JSON
-     * @returns {string} JSON ?��??��??��???
+     * 匯出狀態為 JSON
+     * @returns {string} JSON 字串
      */
     exportState() {
         return JSON.stringify(this.state, null, 2);
     }
     
     /**
-     * �?JSON ?�入?�??
-     * @param {string} jsonState - JSON ?��??��??��???
-     * @returns {boolean} ?�否?��??�入
+     * 從 JSON 匯入狀態
+     * @param {string} jsonString - JSON 字串
+     * @returns {boolean} 是否成功匯入
      */
-    importState(jsonState) {
+    importState(jsonString) {
         try {
-            const importedState = JSON.parse(jsonState);
+            const importedState = JSON.parse(jsonString);
             
-            // 驗�??�?��?�?
+            // 驗證匯入的狀態結構
             if (this.validateStateStructure(importedState)) {
-                this.state = importedState;
+                this.state = { ...this.state, ...importedState };
                 this.saveState();
                 this.notifyListeners('import', this.state);
+                console.log('狀態匯入成功');
                 return true;
             } else {
-                console.error('?�入?��??��?構無??);
+                console.error('匯入的狀態結構無效');
                 return false;
             }
         } catch (error) {
-            console.error('?�入?�?��??��??�誤:', error);
+            console.error('匯入狀態失敗:', error);
             return false;
         }
     }
     
     /**
-     * 驗�??�?��?構�??��???
-     * @param {Object} state - 要�?證�??�??
-     * @returns {boolean} ?�否?��?
-     * @private
+     * 驗證狀態結構
+     * @param {Object} state - 要驗證的狀態對象
+     * @returns {boolean} 是否有效
      */
     validateStateStructure(state) {
-        // ?�本結�?檢查
         if (!state || typeof state !== 'object') {
             return false;
         }
         
-        // 檢查必�?屬�?
-        if (!state.hasOwnProperty('inputs') || 
-            !state.hasOwnProperty('results') || 
-            !state.hasOwnProperty('exchangeHistory')) {
+        // 檢查必要的屬性
+        const requiredProperties = ['inputs', 'results', 'exchangeHistory'];
+        for (const prop of requiredProperties) {
+            if (!(prop in state)) {
+                return false;
+            }
+        }
+        
+        // 檢查 inputs 是否為對象
+        if (typeof state.inputs !== 'object') {
             return false;
         }
         
-        // 檢查 inputs 結�?
-        if (state.inputs && typeof state.inputs === 'object') {
-            for (const [denom, data] of Object.entries(state.inputs)) {
-                if (!APP_CONFIG.DENOMINATIONS.includes(parseInt(denom, 10))) {
-                    return false;
-                }
-                if (!data.hasOwnProperty('amount') || !data.hasOwnProperty('packages')) {
-                    return false;
-                }
-            }
-        }
-        
-        // 檢查 exchangeHistory 結�?
-        if (state.exchangeHistory && Array.isArray(state.exchangeHistory)) {
-            for (const result of state.exchangeHistory) {
-                if (!result.hasOwnProperty('distribution') || 
-                    !result.hasOwnProperty('totalAmount')) {
-                    return false;
-                }
-            }
+        // 檢查 exchangeHistory 是否為陣列
+        if (!Array.isArray(state.exchangeHistory)) {
+            return false;
         }
         
         return true;
     }
     
     /**
-     * ?��??�?�統計�?�?
-     * @returns {Object} 統�?資�?
+     * 取得狀態統計資訊
+     * @returns {Object} 統計資訊
      */
     getStateStats() {
         return {
+            version: this.state.version,
             hasInputs: Object.keys(this.state.inputs).length > 0,
             hasResults: this.state.results !== null,
-            exchangeCount: this.state.exchangeHistory.length,
-            lastSaved: localStorage.getItem(this.stateKey + '_timestamp') || '?�知',
-            stateSize: JSON.stringify(this.state).length
+            exchangeHistoryLength: this.state.exchangeHistory.length,
+            lastModified: this.getLastModifiedTime(),
+            storageSize: new Blob([JSON.stringify(this.state)]).size
         };
     }
-}
-
-// === 輸入?�?�管?�函??===
-
-/**
- * �?DOM 輸入?��??�新?�??
- * @param {StateManager} stateManager - ?�?�管?�器
- * @param {Object} domInputs - DOM 輸入?��??��?
- */
-function updateStateFromInputs(stateManager, domInputs) {
-    const inputs = {};
     
-    // 使用?��??��??�表，�??�擴展面�?
-    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
-        const amountInput = domInputs.amountInputs[denom];
-        const bagInput = domInputs.bagInputs[denom];
-        
-        if (amountInput) {
-            inputs[denom] = {
-                amount: parseInputValue(amountInput.value || '0'),
-                packages: parseInputValue(bagInput ? bagInput.value : '0')
-            };
-        }
-    });
-    
-    stateManager.updateInputs(inputs);
-}
-
-/**
- * 從�??�恢�?DOM 輸入?��?
- * @param {Object} state - ?�用程�??�??
- * @param {Object} domInputs - DOM 輸入?��??��?
- */
-function restoreInputsFromState(state, domInputs) {
-    if (!state.inputs) return;
-    
-    // 使用?�?�支?��??��?，�??�擴展面�?
-    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
-        const inputData = state.inputs[denom];
-        const amountInput = domInputs.amountInputs[denom];
-        const bagInput = domInputs.bagInputs[denom];
-        
-        if (inputData && amountInput) {
-            amountInput.value = formatNumber(inputData.amount || 0);
-            
-            if (bagInput && inputData.packages) {
-                bagInput.value = inputData.packages.toString();
+    /**
+     * 取得最後修改時間
+     * @returns {string|null} ISO 時間字串或 null
+     */
+    getLastModifiedTime() {
+        if (this.state.exchangeHistory.length > 0) {
+            const lastHistory = this.state.exchangeHistory[this.state.exchangeHistory.length - 1];
+            if (lastHistory.lastAction && lastHistory.lastAction.time) {
+                return lastHistory.lastAction.time;
             }
         }
-    });
-}
-
-// === 快照管�? ===
-
-/**
- * 建�??�?�快??
- * @param {Object} state - 要快?��??�??
- * @returns {Object} ?�?�快??
- */
-function createStateSnapshot(state) {
-    return {
-        timestamp: Date.now(),
-        state: JSON.parse(JSON.stringify(state)),
-        checksum: generateStateChecksum(state)
-    };
-}
-
-/**
- * ?��??�?�檢?�碼
- * @param {Object} state - ?�?�物�?
- * @returns {string} 檢查�?
- * @private
- */
-function generateStateChecksum(state) {
-    // 簡單?�檢?�碼?��?（實?��??�中?�使?�更強�??��?演�?法�?
-    const stateString = JSON.stringify(state);
-    let hash = 0;
-    
-    for (let i = 0; i < stateString.length; i++) {
-        const char = stateString.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // 轉�???32-bit ?�數
+        return null;
     }
     
-    return hash.toString(16);
-}
-
-/**
- * 驗�??�?�快?��??��?
- * @param {Object} snapshot - ?�?�快??
- * @returns {boolean} ?�否完整
- */
-function validateSnapshot(snapshot) {
-    if (!snapshot || !snapshot.state || !snapshot.checksum) {
+    /**
+     * 清理過時的歷史記錄
+     * @param {number} maxHistory - 保留的最大歷史記錄數量
+     */
+    cleanupHistory(maxHistory = 50) {
+        if (this.state.exchangeHistory.length > maxHistory) {
+            // 保留第一條記錄（初始狀態）和最近的記錄
+            const firstRecord = this.state.exchangeHistory[0];
+            const recentRecords = this.state.exchangeHistory.slice(-maxHistory + 1);
+            this.state.exchangeHistory = [firstRecord, ...recentRecords];
+            this.saveState();
+            this.notifyListeners('cleanup', this.state);
+            console.log(`歷史記錄已清理，保留 ${maxHistory} 條記錄`);
+        }
+    }
+    
+    /**
+     * 建立狀態快照
+     * @param {string} name - 快照名稱
+     * @returns {Object} 快照對象
+     */
+    createSnapshot(name = '') {
+        return {
+            name: name || `快照_${new Date().toISOString()}`,
+            timestamp: new Date().toISOString(),
+            state: JSON.parse(JSON.stringify(this.state))
+        };
+    }
+    
+    /**
+     * 從快照恢復狀態
+     * @param {Object} snapshot - 快照對象
+     * @returns {boolean} 是否成功恢復
+     */
+    restoreFromSnapshot(snapshot) {
+        if (!snapshot || !snapshot.state) {
+            return false;
+        }
+        
+        try {
+            if (this.validateStateStructure(snapshot.state)) {
+                this.state = { ...snapshot.state };
+                this.saveState();
+                this.notifyListeners('restore', this.state);
+                console.log(`已從快照 "${snapshot.name}" 恢復狀態`);
+                return true;
+            }
+        } catch (error) {
+            console.error('從快照恢復失敗:', error);
+        }
+        
         return false;
     }
     
-    const currentChecksum = generateStateChecksum(snapshot.state);
-    return currentChecksum === snapshot.checksum;
+    /**
+     * 重設狀態管理器
+     */
+    reset() {
+        this.clearState();
+        this.listeners = [];
+        localStorage.removeItem(this.stateKey);
+        console.log('狀態管理器已重設');
+    }
 }
 
-// === ?�?�遷移函??===
+// === 全域狀態管理實用函數 ===
 
 /**
- * ?�移?��??��??�到?��???
- * @param {Object} oldState - ?��??��???
- * @returns {Object} ?�移後�??�??
- */
-function migrateState(oldState) {
-    // 檢查?�否?�要遷�?
-    if (!oldState || oldState.version === APP_CONFIG.STATE_KEY) {
-        return oldState;
-    }
-    
-    let migratedState = { ...oldState };
-    
-    // 添�??�本標�?
-    migratedState.version = APP_CONFIG.STATE_KEY;
-    
-    // 確�?必�?屬性�???
-    if (!migratedState.inputs) {
-        migratedState.inputs = {};
-    }
-    
-    if (!migratedState.exchangeHistory) {
-        migratedState.exchangeHistory = [];
-    }
-    
-    // ?�移輸入資�??��?（�??��?要�?
-    APP_CONFIG.DENOMINATIONS.forEach(denom => {
-        if (!migratedState.inputs[denom]) {
-            migratedState.inputs[denom] = { amount: 0, packages: 0 };
-        }
-    });
-    
-    return migratedState;
-}
-
-// === 工�??�數 ===
-
-/**
- * 建�??�?�管?�器實�?
- * @param {string} stateKey - ?�?�儲存鍵??
- * @returns {StateManager} ?�?�管?�器實�?
+ * 建立新的狀態管理器實例
+ * @param {string} stateKey - localStorage 鍵值
+ * @returns {StateManager} 狀態管理器實例
  */
 function createStateManager(stateKey) {
     return new StateManager(stateKey);
 }
 
-// === ?�出?�數 ===
-if (typeof module !== 'undefined' && module.exports) {
-    // Node.js ?��?
-    module.exports = {
-        StateManager,
-        updateStateFromInputs,
-        restoreInputsFromState,
-        createStateSnapshot,
-        validateSnapshot,
-        migrateState,
-        createStateManager
-    };
-} else {
-    // ?�覽?�環境�?將函?�暴?�到?��?作用??
-    window.StateManager = StateManager;
-    window.updateStateFromInputs = updateStateFromInputs;
-    window.restoreInputsFromState = restoreInputsFromState;
-    window.createStateSnapshot = createStateSnapshot;
-    window.validateSnapshot = validateSnapshot;
-    window.migrateState = migrateState;
-    window.createStateManager = createStateManager;
+/**
+ * 深度複製對象（避免狀態污染）
+ * @param {Object} obj - 要複製的對象
+ * @returns {Object} 複製後的對象
+ */
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    
+    if (obj instanceof Date) {
+        return new Date(obj.getTime());
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => deepClone(item));
+    }
+    
+    const cloned = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            cloned[key] = deepClone(obj[key]);
+        }
+    }
+    
+    return cloned;
+}
+
+/**
+ * 比較兩個狀態對象是否相等
+ * @param {Object} state1 - 狀態對象1
+ * @param {Object} state2 - 狀態對象2
+ * @returns {boolean} 是否相等
+ */
+function compareStates(state1, state2) {
+    return JSON.stringify(state1) === JSON.stringify(state2);
+}
+
+/**
+ * 合併狀態對象
+ * @param {Object} currentState - 當前狀態
+ * @param {Object} newState - 新狀態
+ * @returns {Object} 合併後的狀態
+ */
+function mergeStates(currentState, newState) {
+    return { ...currentState, ...newState };
 }

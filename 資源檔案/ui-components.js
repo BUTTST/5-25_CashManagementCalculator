@@ -1,51 +1,68 @@
-/* ?¾é?ç®¡ç?è¨ˆç?å·¥å…· - UI çµ„ä»¶æ¨¡ç? */
+/* ç¾é‡‘ç®¡ç†è¨ˆç®—å·¥å…· - UI çµ„ä»¶æ¨¡çµ„ */
 
-// === UI ?´æ–°?‡æ¸²?“å‡½??===
+// === UI æ›´æ–°èˆ‡æ¸²æŸ“å‡½æ•¸ ===
 
 /**
- * ?´æ–°?´å€‹ä½¿?¨è€…ä??? * @param {Object} results - è¨ˆç?çµæ?
- * @param {Object} highlights - é«˜äº®?ç¤º?ç½®
+ * æ›´æ–°æ•´å€‹ä½¿ç”¨è€…ä»‹é¢
+ * @param {Object} results - è¨ˆç®—çµæœ
+ * @param {Object} highlights - é«˜äº®é¡¯ç¤ºè¨­ç½®
  */
 function updateUI(results, highlights = {}) {
-    // ?´æ–°ç¸½è¦½?€å¡?    updateSummarySection(results);
+    // æ›´æ–°ç¸½è¦½å€å¡Š
+    updateSummarySection(results);
     
-    // ?´æ–°?Ÿæ”¶ä¸Šç¹³?€å¡?    updateRevenueSection(results);
+    // æ›´æ–°ç‡Ÿæ”¶ä¸Šç¹³å€å¡Š
+    updateRevenueSection(results);
     
-    // ?´æ–°?ç??¶ç”¨?‘å?å¡?    updatePettyCashSection(results);
+    // æ›´æ–°é ç•™é›¶ç”¨é‡‘å€å¡Š
+    updatePettyCashSection(results);
     
-    // ?´æ–°?¶éŒ¢?•ç??€å¡?    updateSmallCoinsSection(results);
+    // æ›´æ–°é›¶éŒ¢è™•ç†å€å¡Š
+    updateSmallCoinsSection(results);
     
-    // ?´æ–°ç¡¬å¹£?“å??€å¡?    updateCoinPackSection(results);
+    // æ›´æ–°ç¡¬å¹£æ‰“åŒ…å€å¡Š
+    updateCoinPackSection(results);
     
-    // ?•ç?é«˜äº®?ç¤º
+    // æ›´æ–°PCçµ±è¨ˆå€å¡Š
+    updatePCCollectionSection(results);
+    
+    // è™•ç†é«˜äº®é¡¯ç¤º
     handleHighlights(highlights);
 }
 
 /**
- * ?´æ–°ç¸½è¦½?€å¡? * @param {Object} results - è¨ˆç?çµæ?
+ * æ›´æ–°ç¸½è¦½å€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
  */
 function updateSummarySection(results) {
-    // ?´æ–°?„é?ç¸½è¦½?¸æ?
+    // æ›´æ–°å››å€‹ç¸½è¦½æ•¸å€¼
     document.getElementById('total-amount').textContent = formatMoney(results.totalAmount);
     document.getElementById('summary-small-coins').textContent = formatMoney(results.movedCoinsAmount);
     document.getElementById('petty-cash-actual').textContent = formatMoney(results.actualPettyCash);
     document.getElementById('summary-revenue').textContent = formatMoney(results.revenueAmount);
     
-    // ?¹æ?é¤˜é?å·®ç•°è¨­å??¯èª¤?€??    const pettyCashBox = document.getElementById('petty-cash-box');
-    pettyCashBox.classList.toggle('error', results.balanceGap !== 0);
+    // é ç•™é›¶ç”¨é‡‘ç‹€æ…‹æ¨™ç¤º
+    const pettyCashBox = document.getElementById('petty-cash-box');
+    if (pettyCashBox) {
+        pettyCashBox.classList.toggle('error', results.balanceGap !== 0);
+    }
 }
 
 /**
- * ?´æ–°?Ÿæ”¶ä¸Šç¹³?€å¡? * @param {Object} results - è¨ˆç?çµæ?
+ * æ›´æ–°ç‡Ÿæ”¶ä¸Šç¹³å€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
  */
 function updateRevenueSection(results) {
+    const supportedDenoms = getSupportedDenominations();
+    
     let revenueNotesHTML = '';
     let revenueCoinsHTML = '';
     
-    // ?†åˆ¥?•ç?ç´™é??Œç¡¬å¹?    getSupportedDenominations().forEach(denom => {
+    // åˆ†é¡é¡¯ç¤ºç´™éˆ”å’Œç¡¬å¹£
+    supportedDenoms.forEach(denom => {
         const count = results.distribution.revenue[denom];
-        if (count > 0) {
-            const html = createDenomItemHTML(denom, count);
+        if (count > 0) { 
+            const html = createDenomItemHTML(denom, count); 
             if (denom >= 100) {
                 revenueNotesHTML += html;
             } else {
@@ -54,28 +71,26 @@ function updateRevenueSection(results) {
         }
     });
     
-    // ?´æ–° DOM ?ƒç?
-    document.getElementById('revenue-notes').innerHTML = revenueNotesHTML || '<p class="item">??/p>';
-    document.getElementById('revenue-coins').innerHTML = revenueCoinsHTML || '<p class="item">??/p>';
+    document.getElementById('revenue-notes').innerHTML = revenueNotesHTML || '<p class="item">ç„¡</p>';
+    document.getElementById('revenue-coins').innerHTML = revenueCoinsHTML || '<p class="item">ç„¡</p>';
     document.getElementById('revenue-amount').textContent = formatMoney(results.revenueAmount);
 }
 
 /**
- * ?´æ–°?ç??¶ç”¨?‘å?å¡? * @param {Object} results - è¨ˆç?çµæ?
+ * æ›´æ–°é ç•™é›¶ç”¨é‡‘å€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
  */
 function updatePettyCashSection(results) {
+    const supportedDenoms = getSupportedDenominations();
+    
     let pettyNotesHTML = '';
     let pettyCoinsHTML = '';
     
-    // ?†åˆ¥?•ç?ç´™é??Œç¡¬å¹???’é™¤?…ç??¶é¢é¡ï?
-    getSupportedDenominations().forEach(denom => {
-        // è·³é??…ç??¶é¢é¡?        if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
-            return;
-        }
-        
+    // åˆ†é¡é¡¯ç¤ºç´™éˆ”å’Œç¡¬å¹£
+    supportedDenoms.forEach(denom => {
         const count = results.distribution.pettyCash[denom];
-        if (count > 0) {
-            const html = createDenomItemHTML(denom, count);
+        if (count > 0) { 
+            const html = createDenomItemHTML(denom, count); 
             if (denom >= 100) {
                 pettyNotesHTML += html;
             } else {
@@ -84,494 +99,296 @@ function updatePettyCashSection(results) {
         }
     });
     
-    // ?´æ–° DOM ?ƒç?
-    document.getElementById('paper-money-detail').innerHTML = pettyNotesHTML || '<p class="item">??/p>';
-    document.getElementById('kept-coins-detail').innerHTML = pettyCoinsHTML || '<p class="item">??/p>';
+    document.getElementById('paper-money-detail').innerHTML = pettyNotesHTML || '<p class="item">ç„¡</p>';
+    document.getElementById('kept-coins-detail').innerHTML = pettyCoinsHTML || '<p class="item">ç„¡</p>';
     document.getElementById('petty-cash-final').textContent = formatMoney(results.actualPettyCash);
     
-    // ?•ç?é¤˜é?è­¦å?
-    updateBalanceWarning(results);
-}
-
-/**
- * ?´æ–°é¤˜é?è­¦å??€å¡? * @param {Object} results - è¨ˆç?çµæ?
- */
-function updateBalanceWarning(results) {
+    // è™•ç†è­¦å‘Šè¨Šæ¯
     const warningEl = document.getElementById('balance-warning');
-    
     if (results.balanceGap !== 0) {
-        const warningText = `?ç??¶ç”¨?‘è??®æ??¸å·® <strong>${formatMoney(results.balanceGap)}</strong>`;
-        document.getElementById('balance-warning-text').innerHTML = warningText;
+        document.getElementById('balance-warning-text').innerHTML = `é ç•™é›¶ç”¨é‡‘èˆ‡ç›®æ¨™ç›¸å·® <strong>${formatMoney(Math.abs(results.balanceGap))}</strong>`;
         warningEl.style.display = 'block';
-    } else {
-        warningEl.style.display = 'none';
+    } else { 
+        warningEl.style.display = 'none'; 
     }
 }
 
 /**
- * ?´æ–°?¶éŒ¢?•ç??€å¡? * @param {Object} results - è¨ˆç?çµæ?
+ * æ›´æ–°é›¶éŒ¢è™•ç†å€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
  */
 function updateSmallCoinsSection(results) {
-    // è¨ˆç?ç¡¬å¹£ç¸½é?
-    const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
-        (sum, d) => sum + (results.initialInputs[d] ? results.initialInputs[d].totalAmount : 0), 0
-    );
+    // è¨ˆç®—ç¡¬å¹£ç¸½é¡
+    const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce((sum, d) => 
+        sum + results.initialInputs[d].totalAmount, 0);
     
-    // ?´æ–°?ºæœ¬è³‡è?
     document.getElementById('total-coins').textContent = formatMoney(totalCoinsAmount);
     document.getElementById('remainder-coins').textContent = formatMoney(results.movedCoinsAmount);
     document.getElementById('moved-coins').textContent = formatMoney(results.movedCoinsAmount);
     
-    // ?¢ç??¶éŒ¢?†è§£è©³æ?
-    const coinBreakdownHTML = generateCoinBreakdownHTML(results);
+    // æ›´æ–°ç¡¬å¹£åˆ†è§£è©³æƒ…
+    let coinBreakdownHTML = '';
+    if (results.movedCoinsAmount > 0) {
+        const parts = [];
+        APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => { 
+            if (results.movedCoinsBreakdown[denom] > 0) {
+                parts.push(`<span class="denom-icon d${denom}" style="width:24px;height:24px;line-height:24px;font-size:0.8rem;margin:0 2px;">${denom}</span>x${results.movedCoinsBreakdown[denom]}`); 
+            }
+        });
+        coinBreakdownHTML = `<div style="text-align:center;">${formatMoney(results.movedCoinsAmount)} = ${parts.join(' + ')}</div>`;
+    } else { 
+        coinBreakdownHTML = '<div style="text-align:center;">ç„¡é›¶éŒ¢ç§»å…¥ç‡Ÿæ”¶</div>'; 
+    }
     document.getElementById('coin-breakdown').innerHTML = coinBreakdownHTML;
 }
 
 /**
- * ?¢ç??¶éŒ¢?†è§£??HTML
- * @param {Object} results - è¨ˆç?çµæ?
- * @returns {string} HTML å­—ä¸²
- */
-function generateCoinBreakdownHTML(results) {
-    if (results.movedCoinsAmount > 0) {
-        const parts = [];
-        APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => {
-            if (results.movedCoinsBreakdown[denom] > 0) {
-                const iconHTML = `<span class="denom-icon d${denom}" style="width:24px;height:24px;line-height:24px;font-size:0.8rem;margin:0 2px;">${denom}</span>`;
-                parts.push(`${iconHTML}x${results.movedCoinsBreakdown[denom]}`);
-            }
-        });
-        return `<div style="text-align:center;">${formatMoney(results.movedCoinsAmount)} = ${parts.join(' + ')}</div>`;
-    } else {
-        return '<div style="text-align:center;">?¡é›¶?¢ç§»?¥ç???/div>';
-    }
-}
-
-/**
- * ?´æ–°ç¡¬å¹£?“å??€å¡? * @param {Object} results - è¨ˆç?çµæ?
+ * æ›´æ–°ç¡¬å¹£æ‰“åŒ…å€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
  */
 function updateCoinPackSection(results) {
     let coinPackHTML = '';
     
-    // ?•ç??„ç¡¬å¹?¢é¡ç?????¸é?
     APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => {
         const packageInfo = calculatePackages(results.distribution.pettyCash[denom], denom);
-        if (packageInfo.loose > 0) {
-            coinPackHTML += createDenomItemHTML(denom, packageInfo.loose, true);
+        if (packageInfo.loose > 0) { 
+            coinPackHTML += createDenomItemHTML(denom, packageInfo.loose, true); 
         }
     });
     
-    // ?´æ–° DOM ?ƒç?
-    const packBlock = document.getElementById('coin-pack-block');
-    packBlock.innerHTML = coinPackHTML || '<p class="item">?¡æ•£è£ç¡¬å¹?/p>';
+    document.getElementById('coin-pack-block').innerHTML = coinPackHTML || '<p class="item">ç„¡æ•£è£ç¡¬å¹£</p>';
 }
 
-
 /**
- * ?´æ–°é©—è??€å¡Šç???- ?è?ï¼šæ­¤?½æ•¸è² è²¬?³æ??´æ–°é»æ ¸?€?‹é¡¯ç¤? */
-function updateVerificationStatus() {
-    const checkboxes = document.querySelectorAll('.verify-checkbox');
-    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-    const totalCount = checkboxes.length;
+ * æ›´æ–°PCçµ±è¨ˆå€å¡Š
+ * @param {Object} results - è¨ˆç®—çµæœ
+ */
+function updatePCCollectionSection(results) {
+    const supportedDenoms = getSupportedDenominations();
     
-    console.log(`é©—è??€?‹æ›´?? ${checkedCount}/${totalCount} ?…ç›®å·²å??`);
-    
-    const countElement = document.getElementById('verification-count');
-    if (countElement) {
-        countElement.textContent = `${checkedCount}/${totalCount}`;
-    }
-    
-    // ?´æ–°?€?‹é¡¯ç¤?    const statusElement = document.getElementById('verification-status');
-    if (statusElement) {
-        const statusText = statusElement.querySelector('.status-text');
-        
-        if (checkedCount === totalCount) {
-            statusElement.style.background = 'rgba(52, 168, 83, 0.1)';
-            statusElement.style.borderColor = 'rgba(52, 168, 83, 0.3)';
-            if (statusText) statusText.style.color = 'var(--secondary)';
-            console.log('?€?‰é?è­‰é??®å·²å®Œæ?');
-        } else {
-            statusElement.style.background = 'rgba(13, 71, 161, 0.1)';
-            statusElement.style.borderColor = 'rgba(13, 71, 161, 0.2)';
-            if (statusText) statusText.style.color = 'var(--primary)';
+    // è¨ˆç®—ç´™éˆ”å¼µæ•¸ï¼ˆåŒ…æ‹¬é ç•™é‡‘å’Œç‡Ÿæ”¶ï¼‰
+    let noteCount = 0;
+    supportedDenoms.forEach(denom => {
+        if (denom >= 100) {
+            noteCount += results.distribution.pettyCash[denom] + results.distribution.revenue[denom];
         }
-    } else {
-        console.warn('?¾ä??°é?è­‰ç??‹å?ç´?);
-    }
+    });
+    
+    // è¨ˆç®—ç¡¬å¹£æšæ•¸ï¼ˆåŒ…æ‹¬é ç•™é‡‘å’Œç‡Ÿæ”¶ï¼‰
+    let coinCount = 0;
+    APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => {
+        coinCount += results.distribution.pettyCash[denom] + results.distribution.revenue[denom];
+    });
+    
+    // æ›´æ–°é¡¯ç¤º
+    const noteCountEl = document.getElementById('pc-note-count');
+    const coinCountEl = document.getElementById('pc-coin-count');
+    const revenueAmountEl = document.getElementById('pc-revenue-amount');
+    const pettyAmountEl = document.getElementById('pc-petty-amount');
+    
+    if (noteCountEl) noteCountEl.textContent = `${noteCount} å¼µ`;
+    if (coinCountEl) coinCountEl.textContent = `${coinCount} æš`;
+    if (revenueAmountEl) revenueAmountEl.textContent = formatMoney(results.revenueAmount);
+    if (pettyAmountEl) pettyAmountEl.textContent = formatMoney(results.actualPettyCash);
 }
 
 /**
- * å»ºç??¢é??…ç›®??HTML
- * @param {number} denom - ?¢é?
- * @param {number} count - ?¸é?
- * @param {boolean} isPackView - ?¯å¦?ºæ??…æª¢è¦? * @returns {string} HTML å­—ä¸²
+ * å»ºç«‹é¢é¡é …ç›®çš„ HTML
+ * @param {number} denom - é¢é¡
+ * @param {number} count - æ•¸é‡
+ * @param {boolean} isPackView - æ˜¯å¦ç‚ºæ‰“åŒ…æª¢è¦–
+ * @returns {string} HTML å­—ä¸²
  */
 function createDenomItemHTML(denom, count, isPackView = false) {
     const amount = count * denom;
     
     if (isPackView) {
-        // ?“å?æª¢è?ï¼šé¡¯ç¤ºæ•£è£ç¡¬å¹?        return `
-            <li class="item">
-                <div class="denom-icon d${denom}">${denom}</div>
-                <div class="coin-pack-value-container">
-                    <span class="highlight-amount-pack">${formatNumber(amount)}</span>
-                    <span class="coin-pack-loose-count">(${count}??</span>
-                </div>
-            </li>
-        `;
+        return `<li class="item"><div class="denom-icon d${denom}">${denom}</div><div class="coin-pack-value-container"><span class="highlight-amount-pack">${formatNumber(amount)}</span><span class="coin-pack-loose-count">(${count}æš)</span></div></li>`;
     }
     
-    // ä¸€?¬æª¢è¦–ï?é¡¯ç¤º?‘é??Œå?è£è?è¨?    const packageInfo = calculatePackages(count, denom);
+    const packageInfo = calculatePackages(count, denom);
     let metaText = '';
     
-    if (denom >= 100) {
-        // ç´™é??…è?è³‡è?
-        metaText = packageInfo.packages > 0 ? 
-            `${packageInfo.packages}?†` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}å¼µ` : '') : 
-            `${count}å¼µ`;
-    } else {
-        // ç¡¬å¹£?…è?è³‡è?
-        metaText = packageInfo.packages > 0 ? 
-            `${packageInfo.packages}è¢‹` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}?š` : '') : 
-            `${count}?š`;
+    if (denom >= 100) { 
+        metaText = packageInfo.packages > 0 ? `${packageInfo.packages}æ†` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}å¼µ` : '') : `${count}å¼µ`; 
+    } else { 
+        metaText = packageInfo.packages > 0 ? `${packageInfo.packages}è¢‹` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}æš` : '') : `${count}æš`; 
     }
     
-    return `
-        <li class="item">
-            <div class="denom-icon d${denom}">${denom}</div>
-            <div class="item-content">
-                <div class="amount money-amount-${denom}">${formatMoney(amount)}</div>
-            </div>
-            <div class="meta">${metaText}</div>
-        </li>
-    `;
+    return `<li class="item"><div class="denom-icon d${denom}">${denom}</div><div class="item-content"><div class="amount money-amount-${denom}">${formatMoney(amount)}</div></div><div class="meta">${metaText}</div></li>`;
 }
 
 /**
- * ?•ç?é«˜äº®?ç¤º?ˆæ?
- * @param {Object} highlights - é«˜äº®?ç½®
+ * è™•ç†é«˜äº®é¡¯ç¤ºæ•ˆæœ
+ * @param {Object} highlights - é«˜äº®è¨­ç½®
  */
 function handleHighlights(highlights) {
-    if (highlights.revenue) {
-        flashElement(document.getElementById('revenue-card'));
-    }
-    if (highlights.petty) {
-        flashElement(document.getElementById('petty-cash-card'));
-    }
-    if (highlights.packing) {
-        flashElement(document.getElementById('coin-pack-card'));
-    }
+    if (highlights.revenue) flashElement(document.getElementById('revenue-section'));
+    if (highlights.petty) flashElement(document.getElementById('petty-cash-section'));
+    if (highlights.packing) flashElement(document.getElementById('coin-pack-section'));
 }
 
 /**
- * ?ƒç??ƒç?ä»¥æ?ç¤ºæ›´?? * @param {HTMLElement} el - è¦é??ç??ƒç?
+ * é–ƒçˆå‹•ç•«æ•ˆæœ
+ * @param {HTMLElement} el - è¦é–ƒçˆçš„å…ƒç´ 
  */
 function flashElement(el) {
     if (!el) return;
-    
-    // ?ˆç§»?¤å??«é??¥ï?è§¸ç™¼?æ?ï¼Œå?æ·»å?
     el.classList.remove('update-highlight');
-    void el.offsetWidth; // å¼·åˆ¶?æ?
+    void el.offsetWidth; // è§¸ç™¼é‡ç¹ª
     el.classList.add('update-highlight');
 }
 
-// === å¾®èª¿å·¥å…· UI ?½æ•¸ ===
+// === å¾®èª¿å·¥å…· UI å‡½æ•¸ ===
 
 /**
- * è¨­å?çµæ?å¾®èª¿å·¥å…·
- * @param {Object} domElements - DOM ?ƒç??†å?
+ * è¨­å®šçµæœå¾®èª¿å·¥å…·
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
  */
 function setupResultExchangeTool(domElements) {
     const rex = domElements.resultExchange;
+    const supportedDenoms = getSupportedDenominations();
     
-    // å»ºç??¢é??¸é?ï¼ˆæ??¤å??Ÿæ”¶?¢é?ï¼?    const availableDenoms = APP_CONFIG.DENOMINATIONS.filter(denom => 
-        !APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)
-    );
-    
-    const optionsHTML = availableDenoms
-        .map(denom => {
-            const className = APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom) ? 
-                (APP_CONFIG.SETTINGS.showExtendedDenoms ? 'extended-option show' : 'extended-option') :
-                '';
-            const style = APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom) && !APP_CONFIG.SETTINGS.showExtendedDenoms ? 
-                'style="display: none;"' : '';
-            return `<option value="${denom}" class="${className}" ${style}>${denom}??/option>`;
-        })
-        .join('');
-    
+    let optionsHTML = supportedDenoms.map(denom => `<option value="${denom}">${denom}å…ƒ</option>`).join('');
     rex.fromDenom.innerHTML = optionsHTML;
     rex.toDenom.innerHTML = optionsHTML;
     
-    // è¨­å??è¨­??    rex.fromDenom.value = '100';
+    rex.fromDenom.value = '100';
     rex.toDenom.value = '50';
     rex.fromCount.value = '';
     
-    // æª¢æŸ¥?¯å¦?‰ç??‹å?èª¿ç”¨?è¦½?´æ–°
-    if (window.cashApp && window.cashApp.stateManager) {
-        const state = window.cashApp.stateManager.getState();
-        if (state.exchangeHistory && state.exchangeHistory.length > 0) {
-            updateResultExchangePreview(domElements, state);
-            renderResultExchangeHistory(domElements, state);
-        }
-    }
+    updateResultExchangePreview(domElements, {});
 }
 
 /**
- * ?´æ–°çµæ?å¾®èª¿?è¦½
- * @param {Object} domElements - DOM ?ƒç??†å?
- * @param {Object} state - ?‰ç”¨ç¨‹å??€?? */
+ * è¨­å®šæ”¶ç´é›¶éŒ¢å°æ›å·¥å…·
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
+ * @param {Object} state - ç•¶å‰ç‹€æ…‹
+ */
+function setupCoinConsolidationTool(domElements, state) {
+    const cc = domElements.coinConsolidation;
+    
+    let optionsHTML = APP_CONFIG.COIN_DENOMINATIONS.map(denom => `<option value="${denom}">${denom}å…ƒ</option>`).join('');
+    cc.fromDenom.innerHTML = optionsHTML;
+    cc.toDenom.innerHTML = optionsHTML;
+    
+    cc.fromDenom.value = '5';
+    cc.toDenom.value = '10';
+    cc.fromCount.value = '';
+    
+    updateCoinConsolidationPreview(domElements, state);
+}
+
+/**
+ * æ›´æ–°çµæœå¾®èª¿é è¦½
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
+ * @param {Object} state - ç•¶å‰ç‹€æ…‹
+ */
 function updateResultExchangePreview(domElements, state) {
     const rex = domElements.resultExchange;
-    const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
     
+    if (!state.exchangeHistory || state.exchangeHistory.length === 0) return;
+    
+    const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
     if (!currentResults) return;
     
     const fromDenom = parseInt(rex.fromDenom.value, 10);
     const toDenom = parseInt(rex.toDenom.value, 10);
     const fromCountInput = parseInt(rex.fromCount.value, 10) || 0;
     
-    // é¡¯ç¤º?¯ç”¨?¸é?
     const fromPettyCount = currentResults.distribution.pettyCash[fromDenom] || 0;
-    rex.fromPreview.innerHTML = `?¯ç”¨: ${fromPettyCount} å¼??š`;
+    rex.fromPreview.innerHTML = `å¯ç”¨: ${fromPettyCount} å¼µ/æš`;
     
     const toRevenueCount = currentResults.distribution.revenue[toDenom] || 0;
-    rex.toPreview.innerHTML = `?¯ç”¨: ${toRevenueCount} å¼??š`;
+    rex.toPreview.innerHTML = `å¯ç”¨: ${toRevenueCount} å¼µ/æš`;
     
-    // æª¢æŸ¥äº¤æ??¯è???    const swapPath = findValidSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
-    
+    const swapPath = findValidSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
     if (fromCountInput > 0) {
         if (swapPath.possible) {
-            rex.toPreview.innerHTML += `<br><span class="swap-path possible">???¯æ???${swapPath.countToReceive} å¼???/span>`;
+            rex.toPreview.innerHTML += `<br><span class="swap-path possible">âœ” å¯æ›å…¥ ${swapPath.countToReceive} å¼µ/æš</span>`;
         } else {
-            rex.toPreview.innerHTML += `<br><span class="swap-path impossible">???¡æ?å®Œæ?æ­¤äº¤??/span>`;
+            rex.toPreview.innerHTML += `<br><span class="swap-path impossible">âœ– ç„¡æ³•å®Œæˆæ­¤äº¤æ›</span>`;
         }
     }
     
-    // ?§åˆ¶?‰é??€??    rex.performBtn.disabled = !swapPath.possible;
+    rex.performBtn.disabled = !swapPath.possible || fromCountInput <= 0;
 }
 
 /**
- * è¨­å??¶ç??¶éŒ¢å°æ?å·¥å…·
- * @param {Object} domElements - DOM ?ƒç??†å?
- * @param {Object} state - ?‰ç”¨ç¨‹å??€?‹ï?å¿…é??³å…¥ä»¥é¿?undefined?¯èª¤ï¼? */
-function setupCoinConsolidationTool(domElements, state) {
-    const cc = domElements.coinConsolidation;
-    
-    // å»ºç?ç¡¬å¹£?¢é??¸é?
-    const optionsHTML = APP_CONFIG.COIN_DENOMINATIONS
-        .map(denom => `<option value="${denom}">${denom}??/option>`)
-        .join('');
-    
-    cc.fromDenom.innerHTML = optionsHTML;
-    cc.toDenom.innerHTML = optionsHTML;
-    
-    // è¨­å??è¨­??    cc.fromDenom.value = '5';
-    cc.toDenom.value = '10';
-    cc.fromCount.value = '';
-    
-    // ?è?ï¼šå??ˆå‚³?¥ç??‹å?è±¡ä»¥?¿å?exchangeHistory?ªå?ç¾©éŒ¯èª?    if (state && state.exchangeHistory && state.exchangeHistory.length > 0) {
-        updateCoinConsolidationPreview(domElements, state);
-    }
-}
-
-/**
- * ?´æ–°?¶ç??¶éŒ¢å°æ??è¦½
- * @param {Object} domElements - DOM ?ƒç??†å?
- * @param {Object} state - ?‰ç”¨ç¨‹å??€?? */
+ * æ›´æ–°æ”¶ç´é›¶éŒ¢å°æ›é è¦½
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
+ * @param {Object} state - ç•¶å‰ç‹€æ…‹
+ */
 function updateCoinConsolidationPreview(domElements, state) {
     const cc = domElements.coinConsolidation;
+    
+    if (!state.exchangeHistory || state.exchangeHistory.length === 0) return;
+    
     const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
-    
     if (!currentResults) return;
-    
+
     const fromDenom = parseInt(cc.fromDenom.value, 10);
     const toDenom = parseInt(cc.toDenom.value, 10);
     const fromCountInput = parseInt(cc.fromCount.value, 10) || 0;
     
-    // é¡¯ç¤ºä¸Šç¹³?€?¯ç”¨?¸é?
     const fromRevenueCount = currentResults.distribution.revenue[fromDenom] || 0;
-    cc.fromPreview.innerHTML = `?¯ç”¨: ${fromRevenueCount} ?š`;
-    
-    // é¡¯ç¤º?“å??€?¯ç”¨?¸é?ï¼ˆæ•£è£ï?
+    cc.fromPreview.innerHTML = `å¯ç”¨: ${fromRevenueCount} æš`;
+
     const toPackingCount = calculatePackages(currentResults.distribution.pettyCash[toDenom] || 0, toDenom).loose;
-    cc.toPreview.innerHTML = `?¯ç”¨: ${toPackingCount} ?š`;
+    cc.toPreview.innerHTML = `å¯ç”¨: ${toPackingCount} æš`;
     
-    // æª¢æŸ¥äº¤æ??¯è???    const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
-    
+    const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
+
     if (fromCountInput > 0) {
         if (swapPath.possible) {
-            cc.toPreview.innerHTML += `<br><span class="swap-path possible">???¯æ???${swapPath.countToReceive} ??/span>`;
+            cc.toPreview.innerHTML += `<br><span class="swap-path possible">âœ” å¯æ›å…¥ ${swapPath.countToReceive} æš</span>`;
         } else {
-            cc.toPreview.innerHTML += `<br><span class="swap-path impossible">???¡æ?å®Œæ?æ­¤äº¤??/span>`;
+            cc.toPreview.innerHTML += `<br><span class="swap-path impossible">âœ– ç„¡æ³•å®Œæˆæ­¤äº¤æ›</span>`;
         }
     }
     
-    // ?§åˆ¶?‰é??€??    cc.performBtn.disabled = !swapPath.possible;
+    cc.performBtn.disabled = !swapPath.possible || fromCountInput <= 0;
 }
 
 /**
- * æ¸²æ?çµæ?å¾®èª¿æ­·å²è¨˜é?
- * @param {Object} domElements - DOM ?ƒç??†å?
- * @param {Object} state - ?‰ç”¨ç¨‹å??€?? */
+ * æ¸²æŸ“çµæœå¾®èª¿æ­·å²è¨˜éŒ„
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
+ * @param {Object} state - ç•¶å‰ç‹€æ…‹
+ */
 function renderResultExchangeHistory(domElements, state) {
     const logEl = domElements.resultExchange.log;
     
-    if (!state.exchangeHistory || state.exchangeHistory.length <= 1) {
-        logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">å°šç„¡å¾®èª¿ç´€??/p>';
-        return;
+    if (!state.exchangeHistory || state.exchangeHistory.length <= 1) { 
+        logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">å°šç„¡å¾®èª¿ç´€éŒ„</p>'; 
+        return; 
     }
     
     let html = '';
     const activeIndex = state.exchangeHistory.length - 1;
     
     state.exchangeHistory.forEach((item, index) => {
-        if (index > 0) { // è·³é??å??€??            const timestamp = item.lastAction && item.lastAction.time ? 
-                new Date(item.lastAction.time).toLocaleTimeString('zh-TW', { hour12: false }) : 
-                '?ªçŸ¥?‚é?';
+        if (index > 0) {
+            const actionText = item.lastAction ? item.lastAction.text : 'æœªçŸ¥æ“ä½œ';
+            const timeText = item.lastAction && item.lastAction.time ? 
+                new Date(item.lastAction.time).toLocaleTimeString('zh-TW', { hour12: false }) : '';
             
-            const actionText = `
-                <span class="history-timestamp">${timestamp}</span> 
-                <span class="history-action">${item.lastAction ? item.lastAction.text : '?ªçŸ¥?ä?'}</span>
-            `;
-            
-            const activeClass = index === activeIndex ? 'active' : '';
-            html += `<div class="history-log-item ${activeClass}" data-index="${index}">${actionText}</div>`;
-        }
-    });
-    
-    logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">å°šç„¡å¾®èª¿ç´€??/p>';
-}
-
-// === é¡è‰²ç®¡ç??½æ•¸ ===
-
-/**
- * ?å??–é??²é¸?‡å™¨
- * @param {Object} domElements - DOM ?ƒç??†å?
- */
-function initColorPickers(domElements) {
-    [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
-        const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
-        const currentColor = getComputedStyle(document.documentElement)
-            .getPropertyValue(varName).trim() || APP_CONFIG.DEFAULT_COLORS[denom];
-        
-        const picker = domElements.color.pickers[denom];
-        const hexDisplay = domElements.color.hexes[denom];
-        
-        if (picker && hexDisplay) {
-            picker.value = currentColor;
-            hexDisplay.textContent = currentColor.toUpperCase();
-        }
-        
-        // ?§åˆ¶?´å??¢é??„é??²é¸?‡å™¨é¡¯ç¤º
-        if (APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom)) {
-            const colorElement = document.getElementById(`color-picker-${denom}`);
-            if (colorElement) {
-                colorElement.classList.toggle('show', APP_CONFIG.SETTINGS.showExtendedDenoms);
+            let displayText = actionText;
+            if (timeText) {
+                displayText = `<span class="history-timestamp">${timeText}</span> <span class="history-action">${actionText}</span>`;
             }
+            
+            html += `<div class="history-log-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">${displayText}</div>`;
         }
     });
+    
+    logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">å°šç„¡å¾®èª¿ç´€éŒ„</p>';
 }
 
-/**
- * å¥—ç”¨é¡è‰²??CSS è®Šæ•¸
- * @param {number} denom - ?¢é?
- * @param {string} color - é¡è‰²?? */
-function applyColor(denom, color) {
-    const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
-    document.documentElement.style.setProperty(varName, color);
-}
+// === ç¸½é¡æ›ç®—å·¥å…· UI å‡½æ•¸ ===
 
 /**
- * ?ç½®?€?‰é??²ç‚º?è¨­?? * @param {Object} domElements - DOM ?ƒç??†å?
- */
-function resetColors(domElements) {
-    Object.entries(APP_CONFIG.DEFAULT_COLORS).forEach(([denom, color]) => {
-        applyColor(parseInt(denom, 10), color);
-    });
-    
-    if (domElements) {
-        initColorPickers(domElements);
-    }
-}
-
-/**
- * ?‡æ??´å??¢é?é¡¯ç¤º
- * @param {boolean} show - ?¯å¦é¡¯ç¤º
- */
-function toggleExtendedDenominations(show) {
-    // ?´æ–°è¨­å?
-    APP_CONFIG.SETTINGS.showExtendedDenoms = show;
-    
-    // ?´æ–°è¼¸å…¥æ¬„ä?
-    document.querySelectorAll('.extended-denom').forEach(el => {
-        el.classList.toggle('show', show);
-    });
-    
-    // ?´æ–°?¸é?
-    document.querySelectorAll('.extended-option').forEach(el => {
-        el.classList.toggle('show', show);
-        el.style.display = show ? 'block' : 'none';
-    });
-    
-    // ?´æ–°é¡è‰²?¸æ???    document.querySelectorAll('.extended-color').forEach(el => {
-        el.classList.toggle('show', show);
-    });
-    
-    // ?´æ–°?¢é??›ç?å·¥å…·
-    updateExchangeOptions();
-}
-
-/**
- * ?´æ–°?›ç?å·¥å…·?„é¸?? */
-function updateExchangeOptions() {
-    const selects = document.querySelectorAll('#exchange-from, #exchange-to');
-    selects.forEach(select => {
-        const options = select.querySelectorAll('.extended-option');
-        options.forEach(option => {
-            option.style.display = APP_CONFIG.SETTINGS.showExtendedDenoms ? 'block' : 'none';
-        });
-    });
-}
-
-/**
- * ?‡æ??—è‰²æ¨¡å?
- * @param {boolean} isDark - ?¯å¦?ºæ??²æ¨¡å¼? */
-function toggleDarkMode(isDark) {
-    APP_CONFIG.SETTINGS.darkMode = isDark;
-    document.body.classList.toggle('dark-mode', isDark);
-    
-    // ?´æ–°?‰é??–ç¤º
-    const themeIcon = document.querySelector('#theme-toggle .theme-icon');
-    if (themeIcon) {
-        themeIcon.textContent = isDark ? '??' : '??';
-    }
-}
-
-/**
- * ?å??–é?è­‰å?å¡?- ?è?ï¼šç¢ºä¿å³?‚æ›´?°å??½æ­£å¸¸é?ä½? */
-function initVerificationBlock() {
-    const checkboxes = document.querySelectorAll('.verify-checkbox');
-    console.log(`?¾åˆ° ${checkboxes.length} ?‹é?è­‰æ ¸?–æ–¹å¡Š`);
-    
-    checkboxes.forEach((checkbox, index) => {
-        // ç§»é™¤?Šç?äº‹ä»¶??½?¨ï?å¦‚æ?å­˜åœ¨ï¼?        checkbox.removeEventListener('change', updateVerificationStatus);
-        
-        // æ·»å??°ç?äº‹ä»¶??½??        checkbox.addEventListener('change', (e) => {
-            console.log(`?¸å??¹å? ${index + 1} ?€?‹è???`, e.target.checked);
-            updateVerificationStatus();
-        });
-        
-        // ç¢ºä??å??€?‹æ­£ç¢?        checkbox.checked = false;
-    });
-    
-    // ?å??–ç??‹é¡¯ç¤?    updateVerificationStatus();
-    console.log('é©—è??€å¡Šå?å§‹å?å®Œæ?');
-}
-
-// === ç¸½é??›ç?å·¥å…· ===
-
-/**
- * ?å??–ç¸½é¡æ?ç®—å?çª? * @param {Object} domElements - DOM ?ƒç??†å?
+ * åˆå§‹åŒ–ç¸½é¡æ›ç®—å½ˆçª—
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
  */
 function initExchangeModal(domElements) {
     const ex = domElements.exchange;
@@ -580,8 +397,8 @@ function initExchangeModal(domElements) {
 }
 
 /**
- * ?´æ–°ç¸½é??›ç?è³‡è?
- * @param {Object} domElements - DOM ?ƒç??†å?
+ * æ›´æ–°æ›ç®—è³‡è¨Šé¡¯ç¤º
+ * @param {Object} domElements - DOM å…ƒç´ é›†åˆ
  */
 function updateExchangeInfo(domElements) {
     const ex = domElements.exchange;
@@ -589,19 +406,21 @@ function updateExchangeInfo(domElements) {
     const fromDenom = parseInt(ex.from.value, 10);
     const toDenom = parseInt(ex.to.value, 10);
     
-    // ?–å??¶å??‘é?
-    const fromCurrentAmount = parseInputValue(domElements.amountInputs[fromDenom].value);
+    const fromInput = domElements.amountInputs[fromDenom];
+    const toInput = domElements.amountInputs[toDenom];
+    
+    if (!fromInput || !toInput) return;
+    
+    const fromCurrentAmount = parseInputValue(fromInput.value);
     const fromCurrentCount = Math.floor(fromCurrentAmount / fromDenom);
-    const toCurrentAmount = parseInputValue(domElements.amountInputs[toDenom].value);
+    const toCurrentAmount = parseInputValue(toInput.value);
     const toCurrentCount = Math.floor(toCurrentAmount / toDenom);
     
-    // ?´æ–°?¶å?è³‡è?
     ex.fromCurrentAmount.textContent = formatNumber(fromCurrentAmount);
     ex.fromCurrentCount.textContent = fromCurrentCount;
     ex.toCurrentAmount.textContent = formatNumber(toCurrentAmount);
     ex.toCurrentCount.textContent = toCurrentCount;
     
-    // è¨ˆç?è½‰æ?å¾Œç??‘é?
     let fromNewAmount = fromCurrentAmount;
     let toNewAmount = toCurrentAmount;
     
@@ -610,60 +429,72 @@ function updateExchangeInfo(domElements) {
         toNewAmount += amount;
     }
     
-    // ?´æ–°è½‰æ?å¾Œè?è¨?    ex.fromNewAmount.textContent = formatNumber(fromNewAmount);
+    ex.fromNewAmount.textContent = formatNumber(fromNewAmount);
     ex.fromNewCount.textContent = Math.floor(fromNewAmount / fromDenom);
     ex.toNewAmount.textContent = formatNumber(toNewAmount);
     ex.toNewCount.textContent = Math.floor(toNewAmount / toDenom);
 }
 
-// === ?¯å‡º?½æ•¸ ===
-if (typeof module !== 'undefined' && module.exports) {
-    // Node.js ?°å?
-    module.exports = {
-        updateUI,
-        updateSummarySection,
-        updateRevenueSection,
-        updatePettyCashSection,
-        updateSmallCoinsSection,
-        updateCoinPackSection,
-        createDenomItemHTML,
-        flashElement,
-        setupResultExchangeTool,
-        updateResultExchangePreview,
-        setupCoinConsolidationTool,
-        updateCoinConsolidationPreview,
-        renderResultExchangeHistory,
-        initColorPickers,
-        applyColor,
-        resetColors,
-        initExchangeModal,
-        updateExchangeInfo,
-        toggleExtendedDenominations,
-        toggleDarkMode,
-        initVerificationBlock,
-        updateVerificationStatus
-    };
-} else {
-    // ?è¦½?¨ç’°å¢ƒï?å°‡å‡½?¸æš´?²åˆ°?¨å?ä½œç”¨??    window.updateUI = updateUI;
-    window.updateSummarySection = updateSummarySection;
-    window.updateRevenueSection = updateRevenueSection;
-    window.updatePettyCashSection = updatePettyCashSection;
-    window.updateSmallCoinsSection = updateSmallCoinsSection;
-    window.updateCoinPackSection = updateCoinPackSection;
-    window.createDenomItemHTML = createDenomItemHTML;
-    window.flashElement = flashElement;
-    window.setupResultExchangeTool = setupResultExchangeTool;
-    window.updateResultExchangePreview = updateResultExchangePreview;
-    window.setupCoinConsolidationTool = setupCoinConsolidationTool;
-    window.updateCoinConsolidationPreview = updateCoinConsolidationPreview;
-    window.renderResultExchangeHistory = renderResultExchangeHistory;
-    window.initColorPickers = initColorPickers;
-    window.applyColor = applyColor;
-    window.resetColors = resetColors;
-    window.initExchangeModal = initExchangeModal;
-    window.updateExchangeInfo = updateExchangeInfo;
-    window.toggleExtendedDenominations = toggleExtendedDenominations;
-    window.toggleDarkMode = toggleDarkMode;
-    window.initVerificationBlock = initVerificationBlock;
-    window.updateVerificationStatus = updateVerificationStatus;
+// === å…¶ä»– UI å·¥å…·å‡½æ•¸ ===
+
+/**
+ * é¡¯ç¤ºè¼‰å…¥ç‹€æ…‹
+ * @param {boolean} show - æ˜¯å¦é¡¯ç¤ºè¼‰å…¥ç‹€æ…‹
+ */
+function showLoadingState(show) {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = show ? 'flex' : 'none';
+    }
+}
+
+/**
+ * é¡¯ç¤ºéŒ¯èª¤è¨Šæ¯
+ * @param {string} message - éŒ¯èª¤è¨Šæ¯
+ */
+function showErrorMessage(message) {
+    alert(`éŒ¯èª¤ï¼š${message}`);
+}
+
+/**
+ * é¡¯ç¤ºæˆåŠŸè¨Šæ¯
+ * @param {string} message - æˆåŠŸè¨Šæ¯
+ */
+function showSuccessMessage(message) {
+    // å¯ä»¥ç”¨æ›´å„ªé›…çš„é€šçŸ¥æ–¹å¼æ›¿ä»£ alert
+    alert(`æˆåŠŸï¼š${message}`);
+}
+
+/**
+ * å»ºç«‹é€šçŸ¥å½ˆå‡ºæ¡†
+ * @param {string} message - è¨Šæ¯å…§å®¹
+ * @param {string} type - è¨Šæ¯é¡å‹ ('success', 'error', 'info')
+ */
+function createNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // è‡ªå‹•æ¶ˆå¤±
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+/**
+ * æ»¾å‹•åˆ°æŒ‡å®šå…ƒç´ 
+ * @param {HTMLElement} element - ç›®æ¨™å…ƒç´ 
+ */
+function scrollToElement(element) {
+    if (element) {
+        element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
 }
