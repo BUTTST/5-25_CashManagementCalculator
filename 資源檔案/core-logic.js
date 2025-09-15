@@ -1,52 +1,37 @@
-/* 現金管理計算工具 - 核心邏輯模組 */
+/* ?��?管�?計�?工具 - ?��??�輯模�? */
 
-// === 常數與配置 ===
+// === 常數?��?�?===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v3.7.state',           // localStorage 儲存鍵值
-    PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
-    LONG_PRESS_DURATION: 5000,                  // 長按重置的持續時間（毫秒）
+    STATE_KEY: 'cashTool.v3.9.state',           // localStorage ?��??��?    PETTY_CASH_TARGET: 20000,                   // ?��??�用?�目標�?�?    LONG_PRESS_DURATION: 5000,                  // ?��??�置?��?續�??��?毫�?�?    
+    // ?��?規�?：�?義�??��??��?裝方�?    PACKAGING_RULES: { 
+        'bundle2000': { value: 20000, count: 10 },  // 2000?��?10張�??��??��?0000??        'bundle200': { value: 4000, count: 20 },    // 200?��?20張�??��??��?000??        'bundle100': { value: 2000, count: 20 },    // 100?��?20張�??��??��?000??        'bag50': { value: 2000, count: 40 },        // 50?��?40?��?袋�??��?000??        'bag10': { value: 500, count: 50 },         // 10?��?50?��?袋�??��?00??        'bag5': { value: 250, count: 50 },          // 5?��?50?��?袋�??��?50??        'bag1': { value: 100, count: 100 }          // 1?��?100?��?袋�??��?00??    },
     
-    // 包裝規則：定義各面額的包裝方式
-    PACKAGING_RULES: { 
-        'bundle2000': { value: 20000, count: 10 },  // 2000元：10張一捆，價值20000元
-        'bundle200': { value: 4000, count: 20 },    // 200元：20張一捆，價值4000元
-        'bundle100': { value: 2000, count: 20 },    // 100元：20張一捆，價值2000元
-        'bag50': { value: 2000, count: 40 },        // 50元：40枚一袋，價值2000元
-        'bag10': { value: 500, count: 50 },         // 10元：50枚一袋，價值500元
-        'bag5': { value: 250, count: 50 },          // 5元：50枚一袋，價值250元
-        'bag1': { value: 100, count: 100 }          // 1元：100枚一袋，價值100元
-    },
-    
-    // 面額配置
-    BASE_DENOMINATIONS: [1000, 500, 100, 50, 10, 5, 1],  // 基礎支援的面額
-    EXTENDED_DENOMINATIONS: [2000, 200],                  // 擴展面額（可選）
-    COIN_DENOMINATIONS: [50, 10, 5, 1],                   // 硬幣面額
-    COUNT_MODE_DENOMS: [2000, 1000, 500, 200, 100],       // 支援張數快輸模式的面額
-    REVENUE_ONLY_DENOMS: [2000, 200],                     // 僅能放在營收的面額
-    
-    // 應用程式設定
+    // ?��??�置
+    BASE_DENOMINATIONS: [1000, 500, 100, 50, 10, 5, 1],  // ?��??�援?�面�?    EXTENDED_DENOMINATIONS: [2000, 200],                  // ?��??��?（可?��?
+    COIN_DENOMINATIONS: [50, 10, 5, 1],                   // 硬幣?��?
+    COUNT_MODE_DENOMS: [2000, 1000, 500, 200, 100],       // ?�援張數快輸模�??�面�?    REVENUE_ONLY_DENOMS: [2000, 200],                     // ?�能?�在?�收?�面�?    
+    // ?�用程�?設�?
     SETTINGS: {
-        showExtendedDenoms: false,  // 是否顯示2000和200面額
-        darkMode: false,            // 深色模式
-        machineNumber: 1,           // 機號
-        staffList: ['1號', '2號', '3號']  // 人員清單
+        showExtendedDenoms: false,  // ?�否顯示2000??00?��?
+        darkMode: false,            // 深色模�?
+        machineNumber: 1,           // 機�?
+        staffList: ['1??, '2??, '3??]  // 人員清單
     },
     
-    // 預設顏色主題
+    // ?�設顏色主�?
     DEFAULT_COLORS: { 
         2000: '#8e24aa',    // 紫色
-        1000: '#3D93F0',    // 藍色
+        1000: '#3D93F0',    // ?�色
         500: '#C6A27B',     // 棕色
         200: '#ff7043',     // 橙色
         100: '#DE4545',     // 紅色
-        50: '#DAA520',      // 金色
+        50: '#DAA520',      // ?�色
         10: '#453A3A',      // 深灰
-        5: '#A3A3A3',       // 灰色
-        1: '#790C0C'        // 深紅
+        5: '#A3A3A3',       // ?�色
+        1: '#790C0C'        // 深�?
     },
     
-    // 可移動區塊配置
-    MOVABLE_BLOCKS: [
+    // ?�移?��?塊�?�?    MOVABLE_BLOCKS: [
         'summary-section',
         'pc-collection-section', 
         'revenue-section',
@@ -59,8 +44,7 @@ const APP_CONFIG = {
     ]
 };
 
-// 動態計算支援的面額（根據設定）
-function getSupportedDenominations() {
+// ?��?計�??�援?�面額�??��?設�?�?function getSupportedDenominations() {
     let denoms = [...APP_CONFIG.BASE_DENOMINATIONS];
     if (APP_CONFIG.SETTINGS.showExtendedDenoms) {
         denoms = [...APP_CONFIG.EXTENDED_DENOMINATIONS, ...denoms];
@@ -69,39 +53,38 @@ function getSupportedDenominations() {
     return denoms;
 }
 
-// 更新 DENOMINATIONS 屬性以支援動態設定
+// ?�新 DENOMINATIONS 屬性以?�援?��?設�?
 Object.defineProperty(APP_CONFIG, 'DENOMINATIONS', {
     get: function() {
         return getSupportedDenominations();
     }
 });
 
-// === 核心計算函數 ===
+// === ?��?計�??�數 ===
 
 /**
- * 收集所有輸入資料並進行加總計算
- * @param {Object} domInputs - DOM 輸入元素集合
- * @returns {Object} 處理後的輸入資料
+ * ?��??�?�輸?��??�並?��??�總計�?
+ * @param {Object} domInputs - DOM 輸入?��??��?
+ * @returns {Object} ?��?後�?輸入資�?
  */
 function collectInputs(domInputs) {
     const inputs = {};
     
     getSupportedDenominations().forEach(denom => {
-        // 檢查DOM元素是否存在
+        // 檢查DOM?��??�否存在
         const amountInput = domInputs.amountInputs[denom];
         if (!amountInput) {
             inputs[denom] = { totalAmount: 0, count: 0 };
             return;
         }
         
-        // 取得金額輸入值
-        const amount = parseInputValue(amountInput.value);
+        // ?��??��?輸入??        const amount = parseInputValue(amountInput.value);
         
-        // 取得包裝輸入值（袋/捆數量）
+        // ?��??��?輸入?��?�??�數?��?
         const bagInput = domInputs.bagInputs[denom];
         const packages = bagInput ? parseInputValue(bagInput.value) : 0;
         
-        // 計算包裝金額
+        // 計�??��??��?
         let packageAmount = 0;
         if (packages > 0 && bagInput) {
             const packageKey = `${bagInput.dataset.packageType}${denom}`;
@@ -110,7 +93,7 @@ function collectInputs(domInputs) {
             }
         }
         
-        // 計算總金額和數量
+        // 計�?總�?額�??��?
         const totalAmount = amount + packageAmount;
         inputs[denom] = { 
             totalAmount, 
@@ -122,35 +105,29 @@ function collectInputs(domInputs) {
 }
 
 /**
- * 執行核心計算邏輯
- * @param {Object} inputs - 輸入資料
- * @returns {Object} 完整的計算結果
- */
+ * ?��??��?計�??�輯
+ * @param {Object} inputs - 輸入資�?
+ * @returns {Object} 完整?��?算�??? */
 function calculateResults(inputs) {
     const results = {};
     
-    // 保存原始輸入資料
+    // 保�??��?輸入資�?
     results.initialInputs = JSON.parse(JSON.stringify(inputs));
     
-    // 計算總金額（使用動態面額列表）
-    results.totalAmount = getSupportedDenominations().reduce(
+    // 計�?總�?額�?使用?��??��??�表�?    results.totalAmount = getSupportedDenominations().reduce(
         (sum, denom) => sum + (inputs[denom] ? inputs[denom].totalAmount : 0), 0
     );
     
-    // === 零錢處理邏輯 ===
-    // 計算所有硬幣的總金額
-    const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
+    // === ?�錢?��??�輯 ===
+    // 計�??�?�硬�??總�?�?    const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
         (sum, denom) => sum + (inputs[denom] ? inputs[denom].totalAmount : 0), 0
     );
     
-    // 計算需要移入營收的零頭（不足100元的部分）
-    results.movedCoinsAmount = totalCoinsAmount % 100;
+    // 計�??�要移?��??��??�頭（�?�?00?��??��?�?    results.movedCoinsAmount = totalCoinsAmount % 100;
     
-    // 計算保留的硬幣金額（可湊成百元的部分）
-    results.keptCoinsAmount = totalCoinsAmount - results.movedCoinsAmount;
+    // 計�?保�??�硬�??額�??��??�百?��??��?�?    results.keptCoinsAmount = totalCoinsAmount - results.movedCoinsAmount;
     
-    // 計算零錢的詳細分解
-    results.movedCoinsBreakdown = getCoinsBreakdown(
+    // 計�??�錢?�詳細�?�?    results.movedCoinsBreakdown = getCoinsBreakdown(
         results.movedCoinsAmount, 
         {
             50: inputs[50] ? inputs[50].totalAmount : 0,
@@ -160,14 +137,14 @@ function calculateResults(inputs) {
         }
     );
     
-    // === 預留零用金分配邏輯 ===
-    // 計算還需要多少現金才能達到目標預留金
+    // === ?��??�用?��??��?�?===
+    // 計�??��?要�?少現?��??��??�目標�??��?
     const remainingCashNeeded = APP_CONFIG.PETTY_CASH_TARGET - results.keptCoinsAmount;
     
     let pettyCashPaperDetails = { used100: 0, used500: 0, amount: 0 };
     
     if (remainingCashNeeded > 0) {
-        // 使用最佳組合演算法找出紙鈔分配方案
+        // 使用?�佳�??��?算�??�出紙�??��??��?
         const combo = findOptimalCombination(
             remainingCashNeeded, 
             inputs[100] ? inputs[100].count : 0, 
@@ -175,15 +152,14 @@ function calculateResults(inputs) {
         );
         
         if (combo.found) {
-            // 找到完美組合
+            // ?�到完�?組�?
             pettyCashPaperDetails = { 
                 used100: combo.used100, 
                 used500: combo.used500, 
                 amount: combo.amount100 + combo.amount500 
             };
         } else {
-            // 無法完美湊齊，使用貪心策略
-            const available500 = inputs[500] ? inputs[500].count : 0;
+            // ?��?完�?湊�?，使?�貪心�???            const available500 = inputs[500] ? inputs[500].count : 0;
             const available100 = inputs[100] ? inputs[100].count : 0;
             
             const used500 = Math.min(available500, Math.floor(remainingCashNeeded / 500));
@@ -198,16 +174,15 @@ function calculateResults(inputs) {
         }
     }
     
-    // 計算實際預留零用金總額
-    results.actualPettyCash = results.keptCoinsAmount + pettyCashPaperDetails.amount;
+    // 計�?實�??��??�用?�總�?    results.actualPettyCash = results.keptCoinsAmount + pettyCashPaperDetails.amount;
     
-    // 計算營收上繳金額
+    // 計�??�收上繳?��?
     results.revenueAmount = results.totalAmount - results.actualPettyCash;
     
-    // 計算與目標的差額
+    // 計�??�目標�?差�?
     results.balanceGap = APP_CONFIG.PETTY_CASH_TARGET - results.actualPettyCash;
     
-    // === 各面額分配結果 ===
+    // === ?�面額�??��???===
     results.distribution = { pettyCash: {}, revenue: {} };
     
     getSupportedDenominations().forEach(denom => {
@@ -219,17 +194,17 @@ function calculateResults(inputs) {
         
         let pettyCashCount = 0;
         
-        // 僅營收面額不放在預留金中
+        // ?��??�面額�??�在?��??�中
         if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
             pettyCashCount = 0;
         } else {
-            // 根據面額類型分配數量
-            if (denom === 100) {
-                pettyCashCount = pettyCashPaperDetails.used100;
-            } else if (denom === 500) {
-                pettyCashCount = pettyCashPaperDetails.used500;
-            } else if (APP_CONFIG.COIN_DENOMINATIONS.includes(denom)) {
-                // 硬幣：總數減去移入營收的數量
+        // ?��??��?類�??��??��?
+        if (denom === 100) {
+            pettyCashCount = pettyCashPaperDetails.used100;
+        } else if (denom === 500) {
+            pettyCashCount = pettyCashPaperDetails.used500;
+        } else if (APP_CONFIG.COIN_DENOMINATIONS.includes(denom)) {
+            // 硬幣：總?��??�移?��??��??��?
                 const totalCount = inputs[denom] ? inputs[denom].count : 0;
                 pettyCashCount = totalCount - (results.movedCoinsBreakdown[denom] || 0);
             }
@@ -244,25 +219,21 @@ function calculateResults(inputs) {
 }
 
 /**
- * 找出最佳的100元和500元組合來湊出指定金額
- * 策略：優先使用100元，再用500元輔助
- * @param {number} remainingCashNeeded - 需要湊出的金額
- * @param {number} available100Count - 可用的100元張數
- * @param {number} available500Count - 可用的500元張數
- * @returns {Object} 組合結果
+ * ?�出?�佳�?100?��?500?��??��?湊出?��??��?
+ * 策略：優?�使??00?��??�用500?��??? * @param {number} remainingCashNeeded - ?�要�??��??��?
+ * @param {number} available100Count - ?�用??00?�張?? * @param {number} available500Count - ?�用??00?�張?? * @returns {Object} 組�?結�?
  */
 function findOptimalCombination(remainingCashNeeded, available100Count, available500Count) {
-    // 從最多100元開始嘗試，逐步減少
+    // 從�?�?00?��?始�?試�??�步減�?
     for (let i = available100Count; i >= 0; i--) {
         const amount100 = i * 100;
         const remainingFor500 = remainingCashNeeded - amount100;
         
-        // 檢查剩餘金額是否能被500整除
+        // 檢查?��??��??�否?�被500?�除
         if (remainingFor500 >= 0 && remainingFor500 % 500 === 0) {
             const needed500Count = remainingFor500 / 500;
             
-            // 檢查是否有足夠的500元
-            if (needed500Count <= available500Count) {
+            // 檢查?�否?�足夠�?500??            if (needed500Count <= available500Count) {
                 return { 
                     found: true, 
                     used100: i, 
@@ -278,16 +249,14 @@ function findOptimalCombination(remainingCashNeeded, available100Count, availabl
 }
 
 /**
- * 使用貪心演算法將指定金額分解為硬幣
- * @param {number} targetAmount - 目標金額
- * @param {Object} availableAmounts - 各面額可用金額
- * @returns {Object} 分解結果
+ * 使用貪�?演�?法�??��??��??�解?�硬�? * @param {number} targetAmount - ?��??��?
+ * @param {Object} availableAmounts - ?�面額可?��?�? * @returns {Object} ?�解結�?
  */
 function getCoinsBreakdown(targetAmount, availableAmounts) {
     let remaining = targetAmount;
     const result = { 50: 0, 10: 0, 5: 0, 1: 0 };
     
-    // 從大面額開始分解
+    // 從大?��??��??�解
     for (const denom of APP_CONFIG.COIN_DENOMINATIONS) {
         const availableCount = Math.floor(availableAmounts[denom] / denom);
         const neededCount = Math.floor(remaining / denom);
@@ -303,21 +272,19 @@ function getCoinsBreakdown(targetAmount, availableAmounts) {
 }
 
 /**
- * 計算包裝資訊（整包數和散裝數）
- * @param {number} totalCount - 總數量
- * @param {number} denomination - 面額
- * @returns {Object} 包裝資訊
+ * 計�??��?資�?（整?�數?�散裝數�? * @param {number} totalCount - 總數?? * @param {number} denomination - ?��?
+ * @returns {Object} ?��?資�?
  */
 function calculatePackages(totalCount, denomination) {
     let packageKey = '';
     
-    // 確定包裝類型
+    // 確�??��?類�?
     if (denomination === 100) {
         packageKey = 'bundle100';
     } else if (denomination <= 50) {
         packageKey = `bag${denomination}`;
     } else {
-        // 不支援包裝的面額
+        // 不支?��?裝�??��?
         return { 
             packages: 0, 
             loose: totalCount, 
@@ -334,8 +301,7 @@ function calculatePackages(totalCount, denomination) {
         };
     }
     
-    // 計算整包數和散裝數
-    const packages = Math.floor(totalCount / rule.count);
+    // 計�??��??��??????    const packages = Math.floor(totalCount / rule.count);
     const loose = totalCount % rule.count;
     
     return { 
@@ -345,13 +311,12 @@ function calculatePackages(totalCount, denomination) {
     };
 }
 
-// === 輸入驗證函數 ===
+// === 輸入驗�??�數 ===
 
 /**
- * 驗證所有輸入的有效性
- * @param {Object} domInputs - DOM 輸入元素
- * @param {Object} inputs - 處理後的輸入資料
- * @returns {boolean} 是否所有輸入都有效
+ * 驗�??�?�輸?��??��??? * @param {Object} domInputs - DOM 輸入?��?
+ * @param {Object} inputs - ?��?後�?輸入資�?
+ * @returns {boolean} ?�否?�?�輸?�都?��?
  */
 function validateAllInputs(domInputs, inputs) {
     let allValid = true;
@@ -362,14 +327,14 @@ function validateAllInputs(domInputs, inputs) {
         const inputEl = domInputs.amountInputs[denom];
         const errorEl = domInputs.errorMessages[denom];
         
-        // 跳過不存在的DOM元素
+        // 跳�?不�??��?DOM?��?
         if (!inputEl || !errorEl) continue;
         
-        // 檢查總額是否為面額的倍數
+        // 檢查總�??�否?�面額�??�數
         if (totalAmount % denom !== 0) {
             allValid = false;
             inputEl.classList.add('input-error');
-            errorEl.textContent = `總額必須是 ${denom} 的倍數`;
+            errorEl.textContent = `總�?必�???${denom} ?�倍數`;
             errorEl.classList.add('active');
         } else {
             inputEl.classList.remove('input-error');
@@ -380,32 +345,28 @@ function validateAllInputs(domInputs, inputs) {
     return allValid;
 }
 
-// === 微調工具邏輯 ===
+// === 微調工具?�輯 ===
 
 /**
- * 尋找有效的交換路徑（預留金 ⇄ 營收）
- * @param {number} fromDenom - 轉出面額
- * @param {number} toDenom - 轉入面額
- * @param {number} fromCount - 轉出數量
- * @param {Object} distribution - 當前分配狀況
- * @returns {Object} 交換可行性結果
- */
+ * 尋找?��??�交?�路徑�??��??????�收�? * @param {number} fromDenom - 轉出?��?
+ * @param {number} toDenom - 轉入?��?
+ * @param {number} fromCount - 轉出?��?
+ * @param {Object} distribution - ?��??��??��? * @returns {Object} 交�??��??��??? */
 function findValidSwapPath(fromDenom, toDenom, fromCount, distribution) {
-    // 基本驗證
+    // ?�本驗�?
     if (fromCount <= 0 || fromDenom === toDenom) {
         return { possible: false };
     }
     
     const amountToSwap = fromCount * fromDenom;
     
-    // 檢查是否能整除
-    if (amountToSwap % toDenom !== 0) {
+    // 檢查?�否?�整??    if (amountToSwap % toDenom !== 0) {
         return { possible: false };
     }
     
     const toCount = amountToSwap / toDenom;
     
-    // 檢查庫存是否足夠
+    // 檢查庫�??�否足�?
     if (distribution.pettyCash[fromDenom] >= fromCount && 
         distribution.revenue[toDenom] >= toCount) {
         return { possible: true, countToReceive: toCount };
@@ -415,32 +376,27 @@ function findValidSwapPath(fromDenom, toDenom, fromCount, distribution) {
 }
 
 /**
- * 尋找有效的硬幣交換路徑（上繳區 ⇄ 打包區）
- * @param {number} fromDenom - 轉出面額
- * @param {number} toDenom - 轉入面額
- * @param {number} fromCount - 轉出數量
- * @param {Object} distribution - 當前分配狀況
- * @returns {Object} 交換可行性結果
- */
+ * 尋找?��??�硬�?��?�路徑�?上繳?� ???��??��? * @param {number} fromDenom - 轉出?��?
+ * @param {number} toDenom - 轉入?��?
+ * @param {number} fromCount - 轉出?��?
+ * @param {Object} distribution - ?��??��??��? * @returns {Object} 交�??��??��??? */
 function findValidCoinSwapPath(fromDenom, toDenom, fromCount, distribution) {
-    // 基本驗證
+    // ?�本驗�?
     if (fromCount <= 0 || fromDenom === toDenom) {
         return { possible: false };
     }
     
     const amountToSwap = fromCount * fromDenom;
     
-    // 檢查是否能整除
-    if (amountToSwap % toDenom !== 0) {
+    // 檢查?�否?�整??    if (amountToSwap % toDenom !== 0) {
         return { possible: false };
     }
     
     const toCount = amountToSwap / toDenom;
     
-    // 檢查上繳區是否有足夠數量
-    const revenueHasEnough = distribution.revenue[fromDenom] >= fromCount;
+    // 檢查上繳?�?�否?�足夠數??    const revenueHasEnough = distribution.revenue[fromDenom] >= fromCount;
     
-    // 檢查打包區是否有足夠的散裝硬幣
+    // 檢查?��??�?�否?�足夠�????硬幣
     const packingHasEnough = calculatePackages(distribution.pettyCash[toDenom], toDenom).loose >= toCount;
     
     if (revenueHasEnough && packingHasEnough) {
@@ -450,59 +406,53 @@ function findValidCoinSwapPath(fromDenom, toDenom, fromCount, distribution) {
     return { possible: false };
 }
 
-// === 工具函數 ===
+// === 工具?�數 ===
 
 /**
- * 解析輸入值，移除逗號並轉換為數字
+ * �??輸入?��?移除?��?並�??�為?��?
  * @param {string} input - 輸入字串
- * @returns {number} 解析後的數字
+ * @returns {number} �??後�??��?
  */
 function parseInputValue(input) {
     return parseInt(String(input).replace(/,/g, ''), 10) || 0;
 }
 
 /**
- * 格式化數字，添加千分位逗號
- * @param {number} number - 要格式化的數字
- * @returns {string} 格式化後的字串
- */
+ * ?��??�數字�?添�??��?位逗�?
+ * @param {number} number - 要格式�??�數�? * @returns {string} ?��??��??��?�? */
 function formatNumber(number) {
     const num = parseFloat(String(number).replace(/,/g, ''));
     return isNaN(num) ? '' : new Intl.NumberFormat('zh-TW').format(num);
 }
 
 /**
- * 格式化金額，添加貨幣單位
- * @param {number} number - 金額數字
- * @returns {string} 格式化後的金額字串
- */
+ * ?��??��?額�?添�?貨幣?��?
+ * @param {number} number - ?��??��?
+ * @returns {string} ?��??��??��?額�?�? */
 function formatMoney(number) {
-    return new Intl.NumberFormat('zh-TW').format(number || 0) + ' 元';
+    return new Intl.NumberFormat('zh-TW').format(number || 0) + ' ??;
 }
 
 /**
- * 為輸入框添加千分位逗號格式化
- * @param {HTMLInputElement} input - 輸入元素
+ * ?�輸?��?添�??��?位逗�??��??? * @param {HTMLInputElement} input - 輸入?��?
  */
 function formatInputWithCommas(input) {
     const cursorPos = input.selectionStart;
     const originalLength = input.value.length;
     
-    // 格式化數值
-    input.value = formatNumber(input.value.replace(/[^\d]/g, ''));
+    // ?��??�數??    input.value = formatNumber(input.value.replace(/[^\d]/g, ''));
     
-    // 調整游標位置
+    // 調整游�?位置
     const newLength = input.value.length;
     const newCursorPos = cursorPos + (newLength - originalLength);
     input.setSelectionRange(newCursorPos, newCursorPos);
 }
 
-// === 區塊移動功能 ===
+// === ?�塊移?��???===
 
 /**
- * 移動區塊位置
- * @param {string} blockId - 區塊 ID
- * @param {string} direction - 移動方向 ('up' | 'down')
+ * 移�??�塊�?�? * @param {string} blockId - ?��?ID
+ * @param {string} direction - 移�??��? ('up' | 'down')
  */
 function moveBlock(blockId, direction) {
     const container = document.getElementById('result-container');
@@ -528,41 +478,38 @@ function moveBlock(blockId, direction) {
 }
 
 /**
- * 為區塊添加移動按鈕
- * @param {HTMLElement} block - 區塊元素
- */
+ * ?��?塊添?�移?��??? * @param {HTMLElement} block - ?�塊�?�? */
 function addMoveButtons(block) {
     if (!block || block.classList.contains('has-move-buttons')) return;
     
     const header = block.querySelector('.section-title');
     if (!header) return;
     
-    // 檢查是否已經有移動按鈕
-    if (header.querySelector('.move-buttons')) return;
+    // 檢查?�否已�??�移?��???    if (header.querySelector('.move-buttons')) return;
     
     const moveButtonsContainer = document.createElement('div');
     moveButtonsContainer.className = 'move-buttons';
     moveButtonsContainer.innerHTML = `
-        <button class="move-btn move-up" data-block-id="${block.id}" data-direction="up" title="向上移動">
-            <span class="move-icon">▲</span>
+        <button class="move-btn move-up" data-block-id="${block.id}" data-direction="up" title="?��?移�?">
+            <span class="move-icon">??/span>
         </button>
-        <button class="move-btn move-down" data-block-id="${block.id}" data-direction="down" title="向下移動">
-            <span class="move-icon">▼</span>
+        <button class="move-btn move-down" data-block-id="${block.id}" data-direction="down" title="?��?移�?">
+            <span class="move-icon">??/span>
         </button>
     `;
     
     header.appendChild(moveButtonsContainer);
     block.classList.add('has-move-buttons');
     
-    // 綁定點擊事件
+    // 綁�?點�?事件
     moveButtonsContainer.addEventListener('click', (e) => {
-        e.stopPropagation(); // 防止觸發摺疊功能
+        e.stopPropagation(); // ?�止觸發?��??�能
         const btn = e.target.closest('.move-btn');
         if (btn) {
             const blockId = btn.dataset.blockId;
             const direction = btn.dataset.direction;
             if (moveBlock(blockId, direction)) {
-                // 移動成功後的視覺回饋
+                // 移�??��?後�?視覺?��?
                 block.style.transform = 'scale(1.02)';
                 setTimeout(() => {
                     block.style.transform = '';
@@ -573,7 +520,7 @@ function addMoveButtons(block) {
 }
 
 /**
- * 初始化所有可移動區塊的移動按鈕
+ * ?��??��??�可移�??�塊�?移�??��?
  */
 function initializeMovableBlocks() {
     APP_CONFIG.MOVABLE_BLOCKS.forEach(blockId => {
@@ -584,10 +531,10 @@ function initializeMovableBlocks() {
     });
 }
 
-// === 額外計算功能 ===
+// === 額�?計�??�能 ===
 
 /**
- * 匯入全部總金額到額外計算的總金額欄位
+ * ?�入?�部總�?額到額�?計�??�總?��?欄�?
  */
 function importTotalAmount() {
     const totalEl = document.getElementById('total-amount');
@@ -597,13 +544,13 @@ function importTotalAmount() {
     const collectAmountInput = document.getElementById('collect-amount');
     if (collectAmountInput) {
         collectAmountInput.value = formatNumber(num);
-        // 觸發計算更新
+        // 觸發計�??�新
         updateExtraCalc();
     }
 }
 
 /**
- * 更新額外計算結果
+ * ?�新額�?計�?結�?
  */
 function updateExtraCalc() {
     const reportInput = document.getElementById('report-total');
@@ -617,14 +564,21 @@ function updateExtraCalc() {
     const collectAmount = parseInputValue(collectInput.value);
     const pcAmount = parseInputValue(pcInput.value);
     
-    // 計算差額：(總金額 - 報表總額) - PC金額
-    const diff = (collectAmount - reportTotal) - pcAmount;
-    resultEl.textContent = `計算結果：${formatMoney(diff)}`;
+    // 修正計�??�輯�?    // 1. 帳表總�??��??�總?��??��?位數?��?reportTotal - collectAmount
+    // 2. PC?�部?��??��?pcAmount - collectAmount
+    // 3. ?�終�??�考慮?��?輸入?�可?��?    let result = 0;
+    
+    // �?��計�?：總?��?超出?�表總�??�部?��?�?��表示多收�?    const collectionDiff = collectAmount - reportTotal;
+    
+    // PC計�?：PC?��??�總?��??�差額�?負數表示?�要�?帳表??���?    const pcDiff = pcAmount - collectAmount;
+    
+    // 綜�?計�?結�?
+    result = collectionDiff + pcDiff;
+    resultEl.textContent = `計�?結�?�?{formatMoney(result)}`;
 }
 
 /**
- * 切換額外計算區塊的鎖定狀態
- */
+ * ?��?額�?計�??�塊�??��??�?? */
 function toggleExtraCalcLock() {
     const lockBtn = document.getElementById('lock-btn');
     const inputs = document.querySelectorAll('.extra-calc-input');
@@ -634,47 +588,51 @@ function toggleExtraCalcLock() {
     const isLocked = lockBtn.classList.contains('locked');
     
     lockBtn.classList.toggle('locked');
-    lockBtn.textContent = isLocked ? '🔓' : '🔒';
-    lockBtn.title = isLocked ? '鎖定/解鎖輸入框' : '點擊解鎖輸入框';
+    lockBtn.textContent = isLocked ? '??' : '??';
+    lockBtn.title = isLocked ? '?��?/�??輸入�? : '點�?�??輸入�?;
     
     inputs.forEach(input => {
         input.disabled = !isLocked;
     });
     
-    // 如果解鎖，立即更新計算結果
-    if (isLocked) {
+    // 如�?�??，�??�更?��?算�???    if (isLocked) {
         updateExtraCalc();
     }
 }
 
 /**
- * 初始化額外計算功能
- */
+ * ?��??��?外�?算�??? */
 function initExtraCalc() {
     const container = document.getElementById('extraCalcContent');
     const lockBtn = document.getElementById('lock-btn');
     const inputs = document.querySelectorAll('.extra-calc-input');
     
-    // 鎖定功能
+    // ?��??�能 - ?��?：確保�?件監?�器�?��綁�?
     if (lockBtn) {
-        lockBtn.addEventListener('click', toggleExtraCalcLock);
+        // 移除?�能存在?��???��??        lockBtn.removeEventListener('click', toggleExtraCalcLock);
+        // 添�??��???��??        lockBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleExtraCalcLock();
+        });
+        console.log('?��??��?事件??��?�已綁�?');
+    } else {
+        console.warn('?��??��?定�??��?�?);
     }
     
-    // 輸入框事件
-    inputs.forEach(input => {
+    // 輸入框�?�?    inputs.forEach(input => {
         input.addEventListener('input', () => {
             formatInputWithCommas(input);
             updateExtraCalc();
         });
     });
     
-    // 初始化狀態
-    updateExtraCalc();
+    // ?��??��???    updateExtraCalc();
 }
 
-// === 匯出核心函數 ===
+// === ?�出?��??�數 ===
 if (typeof module !== 'undefined' && module.exports) {
-    // Node.js 環境
+    // Node.js ?��?
     module.exports = {
         APP_CONFIG,
         getSupportedDenominations,
@@ -699,8 +657,7 @@ if (typeof module !== 'undefined' && module.exports) {
         initExtraCalc
     };
 } else {
-    // 瀏覽器環境：將函數暴露到全局作用域
-    window.APP_CONFIG = APP_CONFIG;
+    // ?�覽?�環境�?將函?�暴?�到?��?作用??    window.APP_CONFIG = APP_CONFIG;
     window.getSupportedDenominations = getSupportedDenominations;
     window.collectInputs = collectInputs;
     window.calculateResults = calculateResults;

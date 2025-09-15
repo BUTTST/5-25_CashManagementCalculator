@@ -1,58 +1,48 @@
-/* 現金管理計算工具 - UI 組件模組 */
+/* ?��?管�?計�?工具 - UI 組件模�? */
 
-// === UI 更新與渲染函數 ===
+// === UI ?�新?�渲?�函??===
 
 /**
- * 更新整個使用者介面
- * @param {Object} results - 計算結果
- * @param {Object} highlights - 高亮提示配置
+ * ?�新?�個使?�者�??? * @param {Object} results - 計�?結�?
+ * @param {Object} highlights - 高亮?�示?�置
  */
 function updateUI(results, highlights = {}) {
-    // 更新總覽區塊
-    updateSummarySection(results);
+    // ?�新總覽?��?    updateSummarySection(results);
     
-    // 更新營收上繳區塊
-    updateRevenueSection(results);
+    // ?�新?�收上繳?��?    updateRevenueSection(results);
     
-    // 更新預留零用金區塊
-    updatePettyCashSection(results);
+    // ?�新?��??�用?��?�?    updatePettyCashSection(results);
     
-    // 更新零錢處理區塊
-    updateSmallCoinsSection(results);
+    // ?�新?�錢?��??��?    updateSmallCoinsSection(results);
     
-    // 更新硬幣打包區塊
-    updateCoinPackSection(results);
+    // ?�新硬幣?��??��?    updateCoinPackSection(results);
     
-    // 處理高亮提示
+    // ?��?高亮?�示
     handleHighlights(highlights);
 }
 
 /**
- * 更新總覽區塊
- * @param {Object} results - 計算結果
+ * ?�新總覽?��? * @param {Object} results - 計�?結�?
  */
 function updateSummarySection(results) {
-    // 更新各項總覽數據
+    // ?�新?��?總覽?��?
     document.getElementById('total-amount').textContent = formatMoney(results.totalAmount);
     document.getElementById('summary-small-coins').textContent = formatMoney(results.movedCoinsAmount);
     document.getElementById('petty-cash-actual').textContent = formatMoney(results.actualPettyCash);
     document.getElementById('summary-revenue').textContent = formatMoney(results.revenueAmount);
     
-    // 根據餘額差異設定錯誤狀態
-    const pettyCashBox = document.getElementById('petty-cash-box');
+    // ?��?餘�?差異設�??�誤?�??    const pettyCashBox = document.getElementById('petty-cash-box');
     pettyCashBox.classList.toggle('error', results.balanceGap !== 0);
 }
 
 /**
- * 更新營收上繳區塊
- * @param {Object} results - 計算結果
+ * ?�新?�收上繳?��? * @param {Object} results - 計�?結�?
  */
 function updateRevenueSection(results) {
     let revenueNotesHTML = '';
     let revenueCoinsHTML = '';
     
-    // 分別處理紙鈔和硬幣
-    getSupportedDenominations().forEach(denom => {
+    // ?�別?��?紙�??�硬�?    getSupportedDenominations().forEach(denom => {
         const count = results.distribution.revenue[denom];
         if (count > 0) {
             const html = createDenomItemHTML(denom, count);
@@ -64,24 +54,22 @@ function updateRevenueSection(results) {
         }
     });
     
-    // 更新 DOM 元素
-    document.getElementById('revenue-notes').innerHTML = revenueNotesHTML || '<p class="item">無</p>';
-    document.getElementById('revenue-coins').innerHTML = revenueCoinsHTML || '<p class="item">無</p>';
+    // ?�新 DOM ?��?
+    document.getElementById('revenue-notes').innerHTML = revenueNotesHTML || '<p class="item">??/p>';
+    document.getElementById('revenue-coins').innerHTML = revenueCoinsHTML || '<p class="item">??/p>';
     document.getElementById('revenue-amount').textContent = formatMoney(results.revenueAmount);
 }
 
 /**
- * 更新預留零用金區塊
- * @param {Object} results - 計算結果
+ * ?�新?��??�用?��?�? * @param {Object} results - 計�?結�?
  */
 function updatePettyCashSection(results) {
     let pettyNotesHTML = '';
     let pettyCoinsHTML = '';
     
-    // 分別處理紙鈔和硬幣（排除僅營收面額）
+    // ?�別?��?紙�??�硬�???�除?��??�面額�?
     getSupportedDenominations().forEach(denom => {
-        // 跳過僅營收面額
-        if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
+        // 跳�??��??�面�?        if (APP_CONFIG.REVENUE_ONLY_DENOMS && APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)) {
             return;
         }
         
@@ -96,24 +84,23 @@ function updatePettyCashSection(results) {
         }
     });
     
-    // 更新 DOM 元素
-    document.getElementById('paper-money-detail').innerHTML = pettyNotesHTML || '<p class="item">無</p>';
-    document.getElementById('kept-coins-detail').innerHTML = pettyCoinsHTML || '<p class="item">無</p>';
+    // ?�新 DOM ?��?
+    document.getElementById('paper-money-detail').innerHTML = pettyNotesHTML || '<p class="item">??/p>';
+    document.getElementById('kept-coins-detail').innerHTML = pettyCoinsHTML || '<p class="item">??/p>';
     document.getElementById('petty-cash-final').textContent = formatMoney(results.actualPettyCash);
     
-    // 處理餘額警告
+    // ?��?餘�?警�?
     updateBalanceWarning(results);
 }
 
 /**
- * 更新餘額警告區塊
- * @param {Object} results - 計算結果
+ * ?�新餘�?警�??��? * @param {Object} results - 計�?結�?
  */
 function updateBalanceWarning(results) {
     const warningEl = document.getElementById('balance-warning');
     
     if (results.balanceGap !== 0) {
-        const warningText = `預留零用金與目標相差 <strong>${formatMoney(results.balanceGap)}</strong>`;
+        const warningText = `?��??�用?��??��??�差 <strong>${formatMoney(results.balanceGap)}</strong>`;
         document.getElementById('balance-warning-text').innerHTML = warningText;
         warningEl.style.display = 'block';
     } else {
@@ -122,28 +109,27 @@ function updateBalanceWarning(results) {
 }
 
 /**
- * 更新零錢處理區塊
- * @param {Object} results - 計算結果
+ * ?�新?�錢?��??��? * @param {Object} results - 計�?結�?
  */
 function updateSmallCoinsSection(results) {
-    // 計算硬幣總額
+    // 計�?硬幣總�?
     const totalCoinsAmount = APP_CONFIG.COIN_DENOMINATIONS.reduce(
         (sum, d) => sum + (results.initialInputs[d] ? results.initialInputs[d].totalAmount : 0), 0
     );
     
-    // 更新基本資訊
+    // ?�新?�本資�?
     document.getElementById('total-coins').textContent = formatMoney(totalCoinsAmount);
     document.getElementById('remainder-coins').textContent = formatMoney(results.movedCoinsAmount);
     document.getElementById('moved-coins').textContent = formatMoney(results.movedCoinsAmount);
     
-    // 產生零錢分解詳情
+    // ?��??�錢?�解詳�?
     const coinBreakdownHTML = generateCoinBreakdownHTML(results);
     document.getElementById('coin-breakdown').innerHTML = coinBreakdownHTML;
 }
 
 /**
- * 產生零錢分解的 HTML
- * @param {Object} results - 計算結果
+ * ?��??�錢?�解??HTML
+ * @param {Object} results - 計�?結�?
  * @returns {string} HTML 字串
  */
 function generateCoinBreakdownHTML(results) {
@@ -157,18 +143,17 @@ function generateCoinBreakdownHTML(results) {
         });
         return `<div style="text-align:center;">${formatMoney(results.movedCoinsAmount)} = ${parts.join(' + ')}</div>`;
     } else {
-        return '<div style="text-align:center;">無零錢移入營收</div>';
+        return '<div style="text-align:center;">?�零?�移?��???/div>';
     }
 }
 
 /**
- * 更新硬幣打包區塊
- * @param {Object} results - 計算結果
+ * ?�新硬幣?��??��? * @param {Object} results - 計�?結�?
  */
 function updateCoinPackSection(results) {
     let coinPackHTML = '';
     
-    // 處理各硬幣面額的散裝數量
+    // ?��??�硬�?��額�?????��?
     APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => {
         const packageInfo = calculatePackages(results.distribution.pettyCash[denom], denom);
         if (packageInfo.loose > 0) {
@@ -176,72 +161,79 @@ function updateCoinPackSection(results) {
         }
     });
     
-    // 更新 DOM 元素
+    // ?�新 DOM ?��?
     const packBlock = document.getElementById('coin-pack-block');
-    packBlock.innerHTML = coinPackHTML || '<p class="item">無散裝硬幣</p>';
+    packBlock.innerHTML = coinPackHTML || '<p class="item">?�散裝硬�?/p>';
 }
 
 
 /**
- * 更新驗證區塊狀態
- */
+ * ?�新驗�??�塊�???- ?��?：此?�數負責?��??�新點核?�?�顯�? */
 function updateVerificationStatus() {
     const checkboxes = document.querySelectorAll('.verify-checkbox');
     const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
     const totalCount = checkboxes.length;
     
-    document.getElementById('verification-count').textContent = `${checkedCount}/${totalCount}`;
+    console.log(`驗�??�?�更?? ${checkedCount}/${totalCount} ?�目已�??�`);
     
-    // 更新狀態顯示
-    const statusElement = document.getElementById('verification-status');
-    if (checkedCount === totalCount) {
-        statusElement.style.background = 'rgba(52, 168, 83, 0.1)';
-        statusElement.style.borderColor = 'rgba(52, 168, 83, 0.3)';
-        statusElement.querySelector('.status-text').style.color = 'var(--secondary)';
+    const countElement = document.getElementById('verification-count');
+    if (countElement) {
+        countElement.textContent = `${checkedCount}/${totalCount}`;
+    }
+    
+    // ?�新?�?�顯�?    const statusElement = document.getElementById('verification-status');
+    if (statusElement) {
+        const statusText = statusElement.querySelector('.status-text');
+        
+        if (checkedCount === totalCount) {
+            statusElement.style.background = 'rgba(52, 168, 83, 0.1)';
+            statusElement.style.borderColor = 'rgba(52, 168, 83, 0.3)';
+            if (statusText) statusText.style.color = 'var(--secondary)';
+            console.log('?�?��?證�??�已完�?');
+        } else {
+            statusElement.style.background = 'rgba(13, 71, 161, 0.1)';
+            statusElement.style.borderColor = 'rgba(13, 71, 161, 0.2)';
+            if (statusText) statusText.style.color = 'var(--primary)';
+        }
     } else {
-        statusElement.style.background = 'rgba(13, 71, 161, 0.1)';
-        statusElement.style.borderColor = 'rgba(13, 71, 161, 0.2)';
-        statusElement.querySelector('.status-text').style.color = 'var(--primary)';
+        console.warn('?��??��?證�??��?�?);
     }
 }
 
 /**
- * 建立面額項目的 HTML
- * @param {number} denom - 面額
- * @param {number} count - 數量
- * @param {boolean} isPackView - 是否為打包檢視
- * @returns {string} HTML 字串
+ * 建�??��??�目??HTML
+ * @param {number} denom - ?��?
+ * @param {number} count - ?��?
+ * @param {boolean} isPackView - ?�否?��??�檢�? * @returns {string} HTML 字串
  */
 function createDenomItemHTML(denom, count, isPackView = false) {
     const amount = count * denom;
     
     if (isPackView) {
-        // 打包檢視：顯示散裝硬幣
-        return `
+        // ?��?檢�?：顯示散裝硬�?        return `
             <li class="item">
                 <div class="denom-icon d${denom}">${denom}</div>
                 <div class="coin-pack-value-container">
                     <span class="highlight-amount-pack">${formatNumber(amount)}</span>
-                    <span class="coin-pack-loose-count">(${count}枚)</span>
+                    <span class="coin-pack-loose-count">(${count}??</span>
                 </div>
             </li>
         `;
     }
     
-    // 一般檢視：顯示金額和包裝資訊
-    const packageInfo = calculatePackages(count, denom);
+    // 一?�檢視�?顯示?��??��?裝�?�?    const packageInfo = calculatePackages(count, denom);
     let metaText = '';
     
     if (denom >= 100) {
-        // 紙鈔包裝資訊
+        // 紙�??��?資�?
         metaText = packageInfo.packages > 0 ? 
-            `${packageInfo.packages}捆` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}張` : '') : 
+            `${packageInfo.packages}?�` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}張` : '') : 
             `${count}張`;
     } else {
-        // 硬幣包裝資訊
+        // 硬幣?��?資�?
         metaText = packageInfo.packages > 0 ? 
-            `${packageInfo.packages}袋` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}枚` : '') : 
-            `${count}枚`;
+            `${packageInfo.packages}袋` + (packageInfo.loose > 0 ? ` + ${packageInfo.loose}?�` : '') : 
+            `${count}?�`;
     }
     
     return `
@@ -256,8 +248,8 @@ function createDenomItemHTML(denom, count, isPackView = false) {
 }
 
 /**
- * 處理高亮提示效果
- * @param {Object} highlights - 高亮配置
+ * ?��?高亮?�示?��?
+ * @param {Object} highlights - 高亮?�置
  */
 function handleHighlights(highlights) {
     if (highlights.revenue) {
@@ -272,29 +264,27 @@ function handleHighlights(highlights) {
 }
 
 /**
- * 閃爍元素以提示更新
- * @param {HTMLElement} el - 要閃爍的元素
+ * ?��??��?以�?示更?? * @param {HTMLElement} el - 要�??��??��?
  */
 function flashElement(el) {
     if (!el) return;
     
-    // 先移除動畫類別，觸發重排，再添加
+    // ?�移?��??��??��?觸發?��?，�?添�?
     el.classList.remove('update-highlight');
-    void el.offsetWidth; // 強制重排
+    void el.offsetWidth; // 強制?��?
     el.classList.add('update-highlight');
 }
 
-// === 微調工具 UI 函數 ===
+// === 微調工具 UI ?�數 ===
 
 /**
- * 設定結果微調工具
- * @param {Object} domElements - DOM 元素集合
+ * 設�?結�?微調工具
+ * @param {Object} domElements - DOM ?��??��?
  */
 function setupResultExchangeTool(domElements) {
     const rex = domElements.resultExchange;
     
-    // 建立面額選項（排除僅營收面額）
-    const availableDenoms = APP_CONFIG.DENOMINATIONS.filter(denom => 
+    // 建�??��??��?（�??��??�收?��?�?    const availableDenoms = APP_CONFIG.DENOMINATIONS.filter(denom => 
         !APP_CONFIG.REVENUE_ONLY_DENOMS.includes(denom)
     );
     
@@ -305,19 +295,18 @@ function setupResultExchangeTool(domElements) {
                 '';
             const style = APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom) && !APP_CONFIG.SETTINGS.showExtendedDenoms ? 
                 'style="display: none;"' : '';
-            return `<option value="${denom}" class="${className}" ${style}>${denom}元</option>`;
+            return `<option value="${denom}" class="${className}" ${style}>${denom}??/option>`;
         })
         .join('');
     
     rex.fromDenom.innerHTML = optionsHTML;
     rex.toDenom.innerHTML = optionsHTML;
     
-    // 設定預設值
-    rex.fromDenom.value = '100';
+    // 設�??�設??    rex.fromDenom.value = '100';
     rex.toDenom.value = '50';
     rex.fromCount.value = '';
     
-    // 檢查是否有狀態再調用預覽更新
+    // 檢查?�否?��??��?調用?�覽?�新
     if (window.cashApp && window.cashApp.stateManager) {
         const state = window.cashApp.stateManager.getState();
         if (state.exchangeHistory && state.exchangeHistory.length > 0) {
@@ -328,10 +317,9 @@ function setupResultExchangeTool(domElements) {
 }
 
 /**
- * 更新結果微調預覽
- * @param {Object} domElements - DOM 元素集合
- * @param {Object} state - 應用程式狀態
- */
+ * ?�新結�?微調?�覽
+ * @param {Object} domElements - DOM ?��??��?
+ * @param {Object} state - ?�用程�??�?? */
 function updateResultExchangePreview(domElements, state) {
     const rex = domElements.resultExchange;
     const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
@@ -342,56 +330,54 @@ function updateResultExchangePreview(domElements, state) {
     const toDenom = parseInt(rex.toDenom.value, 10);
     const fromCountInput = parseInt(rex.fromCount.value, 10) || 0;
     
-    // 顯示可用數量
+    // 顯示?�用?��?
     const fromPettyCount = currentResults.distribution.pettyCash[fromDenom] || 0;
-    rex.fromPreview.innerHTML = `可用: ${fromPettyCount} 張/枚`;
+    rex.fromPreview.innerHTML = `?�用: ${fromPettyCount} �??�`;
     
     const toRevenueCount = currentResults.distribution.revenue[toDenom] || 0;
-    rex.toPreview.innerHTML = `可用: ${toRevenueCount} 張/枚`;
+    rex.toPreview.innerHTML = `?�用: ${toRevenueCount} �??�`;
     
-    // 檢查交換可行性
-    const swapPath = findValidSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
+    // 檢查交�??��???    const swapPath = findValidSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
     
     if (fromCountInput > 0) {
         if (swapPath.possible) {
-            rex.toPreview.innerHTML += `<br><span class="swap-path possible">✔ 可換入 ${swapPath.countToReceive} 張/枚</span>`;
+            rex.toPreview.innerHTML += `<br><span class="swap-path possible">???��???${swapPath.countToReceive} �???/span>`;
         } else {
-            rex.toPreview.innerHTML += `<br><span class="swap-path impossible">✖ 無法完成此交換</span>`;
+            rex.toPreview.innerHTML += `<br><span class="swap-path impossible">???��?完�?此交??/span>`;
         }
     }
     
-    // 控制按鈕狀態
-    rex.performBtn.disabled = !swapPath.possible;
+    // ?�制?��??�??    rex.performBtn.disabled = !swapPath.possible;
 }
 
 /**
- * 設定收納零錢對換工具
- * @param {Object} domElements - DOM 元素集合
- */
-function setupCoinConsolidationTool(domElements) {
+ * 設�??��??�錢對�?工具
+ * @param {Object} domElements - DOM ?��??��?
+ * @param {Object} state - ?�用程�??�?��?必�??�入以避?�undefined?�誤�? */
+function setupCoinConsolidationTool(domElements, state) {
     const cc = domElements.coinConsolidation;
     
-    // 建立硬幣面額選項
+    // 建�?硬幣?��??��?
     const optionsHTML = APP_CONFIG.COIN_DENOMINATIONS
-        .map(denom => `<option value="${denom}">${denom}元</option>`)
+        .map(denom => `<option value="${denom}">${denom}??/option>`)
         .join('');
     
     cc.fromDenom.innerHTML = optionsHTML;
     cc.toDenom.innerHTML = optionsHTML;
     
-    // 設定預設值
-    cc.fromDenom.value = '5';
+    // 設�??�設??    cc.fromDenom.value = '5';
     cc.toDenom.value = '10';
     cc.fromCount.value = '';
     
-    updateCoinConsolidationPreview(domElements);
+    // ?��?：�??�傳?��??��?象以?��?exchangeHistory?��?義錯�?    if (state && state.exchangeHistory && state.exchangeHistory.length > 0) {
+        updateCoinConsolidationPreview(domElements, state);
+    }
 }
 
 /**
- * 更新收納零錢對換預覽
- * @param {Object} domElements - DOM 元素集合
- * @param {Object} state - 應用程式狀態
- */
+ * ?�新?��??�錢對�??�覽
+ * @param {Object} domElements - DOM ?��??��?
+ * @param {Object} state - ?�用程�??�?? */
 function updateCoinConsolidationPreview(domElements, state) {
     const cc = domElements.coinConsolidation;
     const currentResults = state.exchangeHistory[state.exchangeHistory.length - 1];
@@ -402,39 +388,36 @@ function updateCoinConsolidationPreview(domElements, state) {
     const toDenom = parseInt(cc.toDenom.value, 10);
     const fromCountInput = parseInt(cc.fromCount.value, 10) || 0;
     
-    // 顯示上繳區可用數量
+    // 顯示上繳?�?�用?��?
     const fromRevenueCount = currentResults.distribution.revenue[fromDenom] || 0;
-    cc.fromPreview.innerHTML = `可用: ${fromRevenueCount} 枚`;
+    cc.fromPreview.innerHTML = `?�用: ${fromRevenueCount} ?�`;
     
-    // 顯示打包區可用數量（散裝）
+    // 顯示?��??�?�用?��?（散裝�?
     const toPackingCount = calculatePackages(currentResults.distribution.pettyCash[toDenom] || 0, toDenom).loose;
-    cc.toPreview.innerHTML = `可用: ${toPackingCount} 枚`;
+    cc.toPreview.innerHTML = `?�用: ${toPackingCount} ?�`;
     
-    // 檢查交換可行性
-    const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
+    // 檢查交�??��???    const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCountInput, currentResults.distribution);
     
     if (fromCountInput > 0) {
         if (swapPath.possible) {
-            cc.toPreview.innerHTML += `<br><span class="swap-path possible">✔ 可換入 ${swapPath.countToReceive} 枚</span>`;
+            cc.toPreview.innerHTML += `<br><span class="swap-path possible">???��???${swapPath.countToReceive} ??/span>`;
         } else {
-            cc.toPreview.innerHTML += `<br><span class="swap-path impossible">✖ 無法完成此交換</span>`;
+            cc.toPreview.innerHTML += `<br><span class="swap-path impossible">???��?完�?此交??/span>`;
         }
     }
     
-    // 控制按鈕狀態
-    cc.performBtn.disabled = !swapPath.possible;
+    // ?�制?��??�??    cc.performBtn.disabled = !swapPath.possible;
 }
 
 /**
- * 渲染結果微調歷史記錄
- * @param {Object} domElements - DOM 元素集合
- * @param {Object} state - 應用程式狀態
- */
+ * 渲�?結�?微調歷史記�?
+ * @param {Object} domElements - DOM ?��??��?
+ * @param {Object} state - ?�用程�??�?? */
 function renderResultExchangeHistory(domElements, state) {
     const logEl = domElements.resultExchange.log;
     
     if (!state.exchangeHistory || state.exchangeHistory.length <= 1) {
-        logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">尚無微調紀錄</p>';
+        logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">尚無微調紀??/p>';
         return;
     }
     
@@ -442,14 +425,13 @@ function renderResultExchangeHistory(domElements, state) {
     const activeIndex = state.exchangeHistory.length - 1;
     
     state.exchangeHistory.forEach((item, index) => {
-        if (index > 0) { // 跳過初始狀態
-            const timestamp = item.lastAction && item.lastAction.time ? 
+        if (index > 0) { // 跳�??��??�??            const timestamp = item.lastAction && item.lastAction.time ? 
                 new Date(item.lastAction.time).toLocaleTimeString('zh-TW', { hour12: false }) : 
-                '未知時間';
+                '?�知?��?';
             
             const actionText = `
                 <span class="history-timestamp">${timestamp}</span> 
-                <span class="history-action">${item.lastAction ? item.lastAction.text : '未知操作'}</span>
+                <span class="history-action">${item.lastAction ? item.lastAction.text : '?�知?��?'}</span>
             `;
             
             const activeClass = index === activeIndex ? 'active' : '';
@@ -457,14 +439,14 @@ function renderResultExchangeHistory(domElements, state) {
         }
     });
     
-    logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">尚無微調紀錄</p>';
+    logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">尚無微調紀??/p>';
 }
 
-// === 顏色管理函數 ===
+// === 顏色管�??�數 ===
 
 /**
- * 初始化顏色選擇器
- * @param {Object} domElements - DOM 元素集合
+ * ?��??��??�選?�器
+ * @param {Object} domElements - DOM ?��??��?
  */
 function initColorPickers(domElements) {
     [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
@@ -480,7 +462,7 @@ function initColorPickers(domElements) {
             hexDisplay.textContent = currentColor.toUpperCase();
         }
         
-        // 控制擴展面額的顏色選擇器顯示
+        // ?�制?��??��??��??�選?�器顯示
         if (APP_CONFIG.EXTENDED_DENOMINATIONS.includes(denom)) {
             const colorElement = document.getElementById(`color-picker-${denom}`);
             if (colorElement) {
@@ -491,18 +473,16 @@ function initColorPickers(domElements) {
 }
 
 /**
- * 套用顏色到 CSS 變數
- * @param {number} denom - 面額
- * @param {string} color - 顏色值
- */
+ * 套用顏色??CSS 變數
+ * @param {number} denom - ?��?
+ * @param {string} color - 顏色?? */
 function applyColor(denom, color) {
     const varName = denom >= 100 ? `--note-${denom}` : `--coin-${denom}`;
     document.documentElement.style.setProperty(varName, color);
 }
 
 /**
- * 重置所有顏色為預設值
- * @param {Object} domElements - DOM 元素集合
+ * ?�置?�?��??�為?�設?? * @param {Object} domElements - DOM ?��??��?
  */
 function resetColors(domElements) {
     Object.entries(APP_CONFIG.DEFAULT_COLORS).forEach(([denom, color]) => {
@@ -515,36 +495,34 @@ function resetColors(domElements) {
 }
 
 /**
- * 切換擴展面額顯示
- * @param {boolean} show - 是否顯示
+ * ?��??��??��?顯示
+ * @param {boolean} show - ?�否顯示
  */
 function toggleExtendedDenominations(show) {
-    // 更新設定
+    // ?�新設�?
     APP_CONFIG.SETTINGS.showExtendedDenoms = show;
     
-    // 更新輸入欄位
+    // ?�新輸入欄�?
     document.querySelectorAll('.extended-denom').forEach(el => {
         el.classList.toggle('show', show);
     });
     
-    // 更新選項
+    // ?�新?��?
     document.querySelectorAll('.extended-option').forEach(el => {
         el.classList.toggle('show', show);
         el.style.display = show ? 'block' : 'none';
     });
     
-    // 更新顏色選擇器
-    document.querySelectorAll('.extended-color').forEach(el => {
+    // ?�新顏色?��???    document.querySelectorAll('.extended-color').forEach(el => {
         el.classList.toggle('show', show);
     });
     
-    // 更新面額換算工具
+    // ?�新?��??��?工具
     updateExchangeOptions();
 }
 
 /**
- * 更新換算工具的選項
- */
+ * ?�新?��?工具?�選?? */
 function updateExchangeOptions() {
     const selects = document.querySelectorAll('#exchange-from, #exchange-to');
     selects.forEach(select => {
@@ -556,38 +534,44 @@ function updateExchangeOptions() {
 }
 
 /**
- * 切換暗色模式
- * @param {boolean} isDark - 是否為暗色模式
- */
+ * ?��??�色模�?
+ * @param {boolean} isDark - ?�否?��??�模�? */
 function toggleDarkMode(isDark) {
     APP_CONFIG.SETTINGS.darkMode = isDark;
     document.body.classList.toggle('dark-mode', isDark);
     
-    // 更新按鈕圖示
+    // ?�新?��??�示
     const themeIcon = document.querySelector('#theme-toggle .theme-icon');
     if (themeIcon) {
-        themeIcon.textContent = isDark ? '🌞' : '🌙';
+        themeIcon.textContent = isDark ? '??' : '??';
     }
 }
 
 /**
- * 初始化驗證區塊
- */
+ * ?��??��?證�?�?- ?��?：確保即?�更?��??�正常�?�? */
 function initVerificationBlock() {
     const checkboxes = document.querySelectorAll('.verify-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateVerificationStatus);
+    console.log(`?�到 ${checkboxes.length} ?��?證核?�方塊`);
+    
+    checkboxes.forEach((checkbox, index) => {
+        // 移除?��?事件??��?��?如�?存在�?        checkbox.removeEventListener('change', updateVerificationStatus);
+        
+        // 添�??��?事件??��??        checkbox.addEventListener('change', (e) => {
+            console.log(`?��??��? ${index + 1} ?�?��???`, e.target.checked);
+            updateVerificationStatus();
+        });
+        
+        // 確�??��??�?�正�?        checkbox.checked = false;
     });
     
-    // 初始化狀態
-    updateVerificationStatus();
+    // ?��??��??�顯�?    updateVerificationStatus();
+    console.log('驗�??�塊�?始�?完�?');
 }
 
-// === 總額換算工具 ===
+// === 總�??��?工具 ===
 
 /**
- * 初始化總額換算彈窗
- * @param {Object} domElements - DOM 元素集合
+ * ?��??�總額�?算�?�? * @param {Object} domElements - DOM ?��??��?
  */
 function initExchangeModal(domElements) {
     const ex = domElements.exchange;
@@ -596,8 +580,8 @@ function initExchangeModal(domElements) {
 }
 
 /**
- * 更新總額換算資訊
- * @param {Object} domElements - DOM 元素集合
+ * ?�新總�??��?資�?
+ * @param {Object} domElements - DOM ?��??��?
  */
 function updateExchangeInfo(domElements) {
     const ex = domElements.exchange;
@@ -605,19 +589,19 @@ function updateExchangeInfo(domElements) {
     const fromDenom = parseInt(ex.from.value, 10);
     const toDenom = parseInt(ex.to.value, 10);
     
-    // 取得當前金額
+    // ?��??��??��?
     const fromCurrentAmount = parseInputValue(domElements.amountInputs[fromDenom].value);
     const fromCurrentCount = Math.floor(fromCurrentAmount / fromDenom);
     const toCurrentAmount = parseInputValue(domElements.amountInputs[toDenom].value);
     const toCurrentCount = Math.floor(toCurrentAmount / toDenom);
     
-    // 更新當前資訊
+    // ?�新?��?資�?
     ex.fromCurrentAmount.textContent = formatNumber(fromCurrentAmount);
     ex.fromCurrentCount.textContent = fromCurrentCount;
     ex.toCurrentAmount.textContent = formatNumber(toCurrentAmount);
     ex.toCurrentCount.textContent = toCurrentCount;
     
-    // 計算轉換後的金額
+    // 計�?轉�?後�??��?
     let fromNewAmount = fromCurrentAmount;
     let toNewAmount = toCurrentAmount;
     
@@ -626,16 +610,15 @@ function updateExchangeInfo(domElements) {
         toNewAmount += amount;
     }
     
-    // 更新轉換後資訊
-    ex.fromNewAmount.textContent = formatNumber(fromNewAmount);
+    // ?�新轉�?後�?�?    ex.fromNewAmount.textContent = formatNumber(fromNewAmount);
     ex.fromNewCount.textContent = Math.floor(fromNewAmount / fromDenom);
     ex.toNewAmount.textContent = formatNumber(toNewAmount);
     ex.toNewCount.textContent = Math.floor(toNewAmount / toDenom);
 }
 
-// === 匯出函數 ===
+// === ?�出?�數 ===
 if (typeof module !== 'undefined' && module.exports) {
-    // Node.js 環境
+    // Node.js ?��?
     module.exports = {
         updateUI,
         updateSummarySection,
@@ -661,8 +644,7 @@ if (typeof module !== 'undefined' && module.exports) {
         updateVerificationStatus
     };
 } else {
-    // 瀏覽器環境：將函數暴露到全局作用域
-    window.updateUI = updateUI;
+    // ?�覽?�環境�?將函?�暴?�到?��?作用??    window.updateUI = updateUI;
     window.updateSummarySection = updateSummarySection;
     window.updateRevenueSection = updateRevenueSection;
     window.updatePettyCashSection = updatePettyCashSection;

@@ -60,6 +60,8 @@ body {
 
 .header h1 {
     margin-bottom: 0.5rem;
+    flex-grow: 1;
+    text-align: center;
 }
 
 /* === 卡片系統 === */
@@ -969,6 +971,208 @@ th {
 .dark-mode .extra-calc-result {
     background-color: rgba(52, 168, 83, 0.2);
     color: var(--secondary);
+}
+
+/* 人員管理區塊黑底主題 */
+.dark-mode .staff-manager,
+.dark-mode .staff-save-manager {
+    background: #404040;
+    border-color: #555;
+}
+
+.dark-mode .staff-item,
+.dark-mode .save-staff-item {
+    background: #4a4a4a;
+    border-color: #555;
+    color: var(--dark);
+}
+
+.dark-mode .staff-item:hover,
+.dark-mode .save-staff-item:hover {
+    background: #555;
+}
+
+.dark-mode .save-staff-list {
+    background: #404040;
+    border-color: #555;
+}
+
+.dark-mode .save-section {
+    background: rgba(13, 71, 161, 0.15);
+    border-color: #555;
+}
+
+.dark-mode .save-section h4 {
+    color: var(--primary-light);
+    border-bottom-color: rgba(13, 71, 161, 0.3);
+}
+
+.dark-mode .save-value {
+    background: rgba(52, 168, 83, 0.2);
+    border-color: rgba(52, 168, 83, 0.4);
+    color: var(--secondary);
+}
+
+.dark-mode .machine-btn {
+    background: #404040;
+    border-color: #555;
+    color: var(--dark);
+}
+
+.dark-mode .machine-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.dark-mode .setting-description {
+    color: #b0b0b0;
+}
+
+.dark-mode .save-actions {
+    border-top-color: #555;
+    border-bottom-color: #555;
+}
+
+.dark-mode .save-history-section h4 {
+    color: var(--secondary);
+}
+
+/* 保存記錄預覽樣式 */
+.save-preview {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    background: #f8f9fa;
+}
+
+.save-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.save-preview-item:last-child {
+    border-bottom: none;
+}
+
+.save-preview-time {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.save-preview-info {
+    color: var(--gray);
+    font-size: 0.8rem;
+}
+
+.save-count {
+    font-size: 0.9rem;
+    color: var(--secondary);
+    font-weight: normal;
+}
+
+.no-saves {
+    text-align: center;
+    color: var(--gray);
+    font-style: italic;
+    margin: 1rem 0;
+}
+
+/* 保存記錄預覽黑底主題 */
+.dark-mode .save-preview {
+    background: #404040;
+    border-color: #555;
+}
+
+.dark-mode .save-preview-item {
+    border-bottom-color: #555;
+}
+
+.dark-mode .save-preview-time {
+    color: var(--primary-light);
+}
+
+.dark-mode .save-preview-info {
+    color: #b0b0b0;
+}
+
+.dark-mode .no-saves {
+    color: #b0b0b0;
+}
+
+/* 全面修復黑底主題 - 計算結果區域 */
+.dark-mode .section-title,
+.dark-mode .subsection-title {
+    color: var(--dark);
+}
+
+.dark-mode .result-block {
+    background: #2c2c2c;
+    border-color: #555;
+}
+
+.dark-mode .result-block h3,
+.dark-mode .result-block h4 {
+    color: var(--dark);
+}
+
+.dark-mode .item {
+    background: #404040;
+    border-color: #555;
+    color: var(--dark);
+}
+
+.dark-mode .item .amount {
+    color: var(--dark);
+}
+
+.dark-mode .summary-item {
+    background: #404040;
+    border-color: #555;
+}
+
+.dark-mode .summary-label {
+    color: #b0b0b0;
+}
+
+.dark-mode .summary-value {
+    color: var(--dark);
+}
+
+.dark-mode .warning-note {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.4);
+    color: #ffc107;
+}
+
+.dark-mode .info-note {
+    background: rgba(13, 71, 161, 0.2);
+    border-color: rgba(13, 71, 161, 0.4);
+    color: var(--primary-light);
+}
+
+.dark-mode .success-note {
+    background: rgba(52, 168, 83, 0.2);
+    border-color: rgba(52, 168, 83, 0.4);
+    color: var(--secondary);
+}
+
+/* 額外計算區塊禁用狀態修復 */
+.dark-mode .extra-calc-input:disabled {
+    background-color: #333;
+    color: #666;
+    border-color: #444;
+    cursor: not-allowed;
+}
+
+.dark-mode .extra-calc-input:disabled::placeholder {
+    color: #555;
 }
 
 /* 頁面頂部樣式 */

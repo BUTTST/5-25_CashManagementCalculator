@@ -3,242 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>現金管理計算工具 v3.7</title>
+    <title>?��?管�?計�?工具 v3.9</title>
     
-    <!-- 引入樣式表 -->
-    <link rel="stylesheet" href="資源檔案/styles.css">
+    <!-- 引入�??�?-->
+    <link rel="stylesheet" href="資�?檔�?/styles.css">
 </head>
 <body>
     <div class="container">
-        <!-- 頁面標題與操作按鈕 -->
+        <!-- ?�面標�??��?作�???-->
         <div class="header">
             <div class="header-top">
-                <h1>現金管理計算工具 v3.7</h1>
+                <h1>?��?管�?計�?工具 v3.9</h1>
                 <div class="header-controls">
-                    <button id="theme-toggle" class="control-btn" title="切換主題">
-                        <span class="theme-icon">🌙</span>
+                    <button id="theme-toggle" class="control-btn" title="?��?主�?">
+                        <span class="theme-icon">??</span>
                     </button>
-                    <button id="settings-btn" class="control-btn" title="設定">
-                        <span class="settings-icon">⚙️</span>
+                    <button id="settings-btn" class="control-btn" title="設�?">
+                        <span class="settings-icon">?��?</span>
                     </button>
                 </div>
             </div>
-            <p>輸入各面額總金額，系統自動計算零錢處理、預留零用金和營收上繳</p>
+            <p>輸入?�面額總?��?，系統自?��?算零?��??�、�??�零?��??��??��?�?/p>
             <div class="action-buttons">
-                <button id="show-package-info" class="info-btn">硬幣&紙鈔包裝資訊</button>
-                <button id="show-manual" class="info-btn">查看使用說明</button>
-                <button id="show-exchange" class="info-btn">面額換算工具 (總額)</button>
-                <button id="custom-color-btn" class="info-btn">自訂面額顏色</button>
-                <button id="show-changelog" class="info-btn">📅 每日更新紀錄</button>
-                <button id="save-btn" class="info-btn save-btn">💾 保存</button>
-                <button id="export-btn" class="info-btn export-btn">📄 導出</button>
+                <button id="show-package-info" class="info-btn">硬幣&紙�??��?資�?</button>
+                <button id="show-manual" class="info-btn">?��?使用說�?</button>
+                <button id="show-exchange" class="info-btn">?��??��?工具 (總�?)</button>
+                <button id="custom-color-btn" class="info-btn">?��??��?顏色</button>
+                <button id="show-changelog" class="info-btn">?? 每日?�新紀??/button>
+                <button id="save-btn" class="info-btn save-btn">?�� 保�?</button>
+                <button id="export-btn" class="info-btn export-btn">?? 導出</button>
             </div>
         </div>
 
-        <!-- 輸入區塊 -->
+        <!-- 輸入?��?-->
         <div class="card">
             <div class="input-section">
-                <!-- 操作按鈕列 -->
+                <!-- ?��??��???-->
                 <div class="buttons-row">
                     <button id="clear-btn" class="btn btn-clear">
-                        <span class="btn-text">清除數值</span>
+                        <span class="btn-text">清除?��?/span>
                         <div class="progress-bar"></div>
                     </button>
-                    <button id="simulate-btn" class="btn btn-simulate">模擬數值</button>
+                    <button id="simulate-btn" class="btn btn-simulate">模擬?��?/button>
                 </div>
                 
-                <!-- 輸入表單標題 -->
-                <h2 class="section-title">輸入各面額總金額</h2>
+                <!-- 輸入表單標�? -->
+                <h2 class="section-title">輸入?�面額總?��?</h2>
                 
-                <!-- 面額輸入表單 -->
+                <!-- ?��?輸入表單 -->
                 <div class="input-form">
-                    <!-- 2000元輸入 (可選) -->
+                    <!-- 2000?�輸??(?�選) -->
                     <div id="input-group-2000" class="input-group extended-denom" style="display: none;">
                         <div class="denomination">
                             <div class="denom-icon note-2000">2K</div>
-                            <label for="amount2000">2000 元</label>
+                            <label for="amount2000">2000 ??/label>
                         </div>
                         <input type="text" id="amount2000" data-denomination="2000" data-is-count-mode="false" 
-                               placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;">
+                               placeholder="輸入總�? ??0-99 �? inputmode="numeric" class="amount-input" style="width: 100%;">
                         <div id="error2000" class="error-message"></div>
                     </div>
                     
-                    <!-- 1000元輸入 -->
+                    <!-- 1000?�輸??-->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon note-1000">1K</div>
-                            <label for="amount1000">1000 元</label>
+                            <label for="amount1000">1000 ??/label>
                         </div>
                         <input type="text" id="amount1000" data-denomination="1000" data-is-count-mode="false" 
-                               placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;">
+                               placeholder="輸入總�? ??0-99 �? inputmode="numeric" class="amount-input" style="width: 100%;">
                         <div id="error1000" class="error-message"></div>
                     </div>
                     
-                    <!-- 500元輸入 -->
+                    <!-- 500?�輸??-->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon note-500">500</div>
-                            <label for="amount500">500 元</label>
+                            <label for="amount500">500 ??/label>
                         </div>
                         <input type="text" id="amount500" data-denomination="500" data-is-count-mode="false" 
-                               placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;">
+                               placeholder="輸入總�? ??0-99 �? inputmode="numeric" class="amount-input" style="width: 100%;">
                         <div id="error500" class="error-message"></div>
                     </div>
                     
-                    <!-- 200元輸入 (可選) -->
+                    <!-- 200?�輸??(?�選) -->
                     <div id="input-group-200" class="input-group extended-denom" style="display: none;">
                         <div class="denomination">
                             <div class="denom-icon note-200">200</div>
-                            <label for="amount200">200 元</label>
+                            <label for="amount200">200 ??/label>
                         </div>
                         <input type="text" id="amount200" data-denomination="200" data-is-count-mode="false" 
-                               placeholder="輸入總額 或 0-99 張" inputmode="numeric" class="amount-input" style="width: 100%;">
+                               placeholder="輸入總�? ??0-99 �? inputmode="numeric" class="amount-input" style="width: 100%;">
                         <div id="error200" class="error-message"></div>
                     </div>
                     
-                    <!-- 100元輸入（含捆裝） -->
+                    <!-- 100?�輸?��??��?裝�? -->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon note-100">100</div>
-                            <label for="amount100">100 元</label>
+                            <label for="amount100">100 ??/label>
                         </div>
                         <div class="input-flexbox">
                             <input type="text" id="bundle100" data-package-type="bundle" data-denomination="100" 
-                                   placeholder="捆" inputmode="numeric" class="bag-input">
+                                   placeholder="?? inputmode="numeric" class="bag-input">
                             <input type="text" id="amount100" data-denomination="100" data-is-count-mode="false" 
-                                   placeholder="總額 或 0-99 張" inputmode="numeric" class="amount-input">
+                                   placeholder="總�? ??0-99 �? inputmode="numeric" class="amount-input">
                         </div>
                         <div id="error100" class="error-message"></div>
                     </div>
                     
-                    <!-- 50元輸入（含袋裝） -->
+                    <!-- 50?�輸?��??��?裝�? -->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon coin-50">50</div>
-                            <label for="amount50">50 元</label>
+                            <label for="amount50">50 ??/label>
                         </div>
                         <div class="input-flexbox">
                             <input type="text" id="bag50" data-package-type="bag" data-denomination="50" 
-                                   placeholder="袋" inputmode="numeric" class="bag-input">
+                                   placeholder="�? inputmode="numeric" class="bag-input">
                             <input type="text" id="amount50" data-denomination="50" 
-                                   placeholder="輸入總金額" inputmode="numeric" class="amount-input">
+                                   placeholder="輸入總�?�? inputmode="numeric" class="amount-input">
                         </div>
                         <div id="error50" class="error-message"></div>
                     </div>
                     
-                    <!-- 10元輸入（含袋裝） -->
+                    <!-- 10?�輸?��??��?裝�? -->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon coin-10">10</div>
-                            <label for="amount10">10 元</label>
+                            <label for="amount10">10 ??/label>
                         </div>
                         <div class="input-flexbox">
                             <input type="text" id="bag10" data-package-type="bag" data-denomination="10" 
-                                   placeholder="袋" inputmode="numeric" class="bag-input">
+                                   placeholder="�? inputmode="numeric" class="bag-input">
                             <input type="text" id="amount10" data-denomination="10" 
-                                   placeholder="輸入總金額" inputmode="numeric" class="amount-input">
+                                   placeholder="輸入總�?�? inputmode="numeric" class="amount-input">
                         </div>
                         <div id="error10" class="error-message"></div>
                     </div>
                     
-                    <!-- 5元輸入（含袋裝） -->
+                    <!-- 5?�輸?��??��?裝�? -->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon coin-5">5</div>
-                            <label for="amount5">5 元</label>
+                            <label for="amount5">5 ??/label>
                         </div>
                         <div class="input-flexbox">
                             <input type="text" id="bag5" data-package-type="bag" data-denomination="5" 
-                                   placeholder="袋" inputmode="numeric" class="bag-input">
+                                   placeholder="�? inputmode="numeric" class="bag-input">
                             <input type="text" id="amount5" data-denomination="5" 
-                                   placeholder="輸入總金額" inputmode="numeric" class="amount-input">
+                                   placeholder="輸入總�?�? inputmode="numeric" class="amount-input">
                         </div>
                         <div id="error5" class="error-message"></div>
                     </div>
                     
-                    <!-- 1元輸入（含袋裝） -->
+                    <!-- 1?�輸?��??��?裝�? -->
                     <div class="input-group">
                         <div class="denomination">
                             <div class="denom-icon coin-1">1</div>
-                            <label for="amount1">1 元</label>
+                            <label for="amount1">1 ??/label>
                         </div>
                         <div class="input-flexbox">
                             <input type="text" id="bag1" data-package-type="bag" data-denomination="1" 
-                                   placeholder="袋" inputmode="numeric" class="bag-input">
+                                   placeholder="�? inputmode="numeric" class="bag-input">
                             <input type="text" id="amount1" data-denomination="1" 
-                                   placeholder="輸入總金額" inputmode="numeric" class="amount-input">
+                                   placeholder="輸入總�?�? inputmode="numeric" class="amount-input">
                         </div>
                         <div id="error1" class="error-message"></div>
                     </div>
                 </div>
                 
-                <!-- 計算按鈕 -->
-                <button id="calculate-btn" class="btn btn-block">計算結果</button>
+                <!-- 計�??��? -->
+                <button id="calculate-btn" class="btn btn-block">計�?結�?</button>
             </div>
         </div>
 
-        <!-- 結果顯示區塊 -->
+        <!-- 結�?顯示?��?-->
         <div id="result-container" class="result-section">
-            <!-- 結果總覽 -->
+            <!-- 結�?總覽 -->
             <div id="summary-section" class="card">
-                <h2 class="section-title">結果總覽</h2>
+                <h2 class="section-title">結�?總覽</h2>
                 <div class="summary-grid">
                     <div class="summary-box highlight-box">
-                        <div class="summary-title">全部總金額</div>
-                        <div id="total-amount" class="summary-value">0 元</div>
+                        <div class="summary-title">?�部總�?�?/div>
+                        <div id="total-amount" class="summary-value">0 ??/div>
                     </div>
                     <div class="summary-box">
-                        <div class="summary-title">零錢處理</div>
-                        <div id="summary-small-coins" class="summary-value">0 元</div>
+                        <div class="summary-title">?�錢?��?</div>
+                        <div id="summary-small-coins" class="summary-value">0 ??/div>
                     </div>
                     <div id="petty-cash-box" class="summary-box">
-                        <div class="summary-title">預留零用金</div>
-                        <div id="petty-cash-actual" class="summary-value">0 元</div>
+                        <div class="summary-title">?��??�用??/div>
+                        <div id="petty-cash-actual" class="summary-value">0 ??/div>
                     </div>
                     <div class="summary-box">
-                        <div class="summary-title">營收上繳</div>
-                        <div id="summary-revenue" class="summary-value">0 元</div>
+                        <div class="summary-title">?�收上繳</div>
+                        <div id="summary-revenue" class="summary-value">0 ??/div>
                     </div>
                 </div>
             </div>
             
-            <!-- 代收(+) — PC(-) 額外計算 -->
+            <!-- �?��(+) ??PC(-) 額�?計�? -->
             <div id="pc-collection-section" class="card">
                 <h2 class="section-title collapsible-header" id="extraCalcHeader">
-                    代收(+) — PC(-) 額外計算
-                    <button id="lock-btn" class="lock-btn" title="鎖定/解鎖輸入框">🔓</button>
+                    �?��(+) ??PC(-) 額�?計�?
+                    <button id="lock-btn" class="lock-btn" title="?��?/�??輸入�?>??</button>
                 </h2>
-                <div class="collapsible-content active" id="extraCalcContent">
+                <div class="collapsible-content collapsed" id="extraCalcContent">
                     <div class="extra-calc-row">
                         <div class="extra-calc-col">
-                            <label for="report-total">報表總額</label>
-                            <input type="text" id="report-total" placeholder="輸入報表總額" class="extra-calc-input" inputmode="numeric">
+                            <label for="report-total">?�表總�?</label>
+                            <input type="text" id="report-total" placeholder="輸入?�表總�?" class="extra-calc-input" inputmode="numeric">
                         </div>
                         <div class="extra-calc-col">
-                            <label for="collect-amount">總金額</label>
+                            <label for="collect-amount">總�?�?/label>
                             <div style="display:flex;align-items:center;">
-                                <input type="text" id="collect-amount" placeholder="輸入總金額" class="extra-calc-input" inputmode="numeric">
-                                <button type="button" class="calc-btn" onclick="importTotalAmount()">匯入</button>
+                                <input type="text" id="collect-amount" placeholder="輸入總�?�? class="extra-calc-input" inputmode="numeric">
+                                <button type="button" class="calc-btn" onclick="importTotalAmount()">?�入</button>
                             </div>
                         </div>
                         <div class="extra-calc-col">
-                            <label for="pc-amount">PC ( - )：</label>
-                            <input type="text" id="pc-amount" placeholder="輸入 PC 金額" inputmode="numeric" class="extra-calc-input">
+                            <label for="pc-amount">PC ( - )�?/label>
+                            <input type="text" id="pc-amount" placeholder="輸入 PC ?��?" inputmode="numeric" class="extra-calc-input">
                         </div>
                     </div>
-                    <div class="extra-calc-result" id="extra-calc-result">計算結果：0 元</div>
+                    <div class="extra-calc-result" id="extra-calc-result">計�?結�?�? ??/div>
                     <div class="explanation">
-                        <p><span class="highlight-add">代收</span>：是全部總金額現金會 <span class="highlight-add">多</span>，帳表不用改</p>
-                        <p><span class="highlight-sub">PC</span>：帳表上的金額要 <span class="highlight-sub">減去</span> PC 的金額才是實際要看的數值。</p>
+                        <p><span class="highlight-add">�?��</span>：是?�部總�?額現?��? <span class="highlight-add">�?/span>，帳表�??�改</p>
+                        <p><span class="highlight-sub">PC</span>：帳表�??��?額�? <span class="highlight-sub">減去</span> PC ?��?額�??�實?��??��??�值�?/p>
                     </div>
                 </div>
             </div>
             
-            <!-- 營收上繳詳情 -->
+            <!-- ?�收上繳詳�? -->
             <div id="revenue-section" class="card">
-                <h2 class="section-title">營收上繳</h2>
+                <h2 class="section-title">?�收上繳</h2>
                 <div class="result-block">
-                    <h3 class="subsection-title">紙鈔</h3>
+                    <h3 class="subsection-title">紙�?</h3>
                     <div id="revenue-notes"></div>
                 </div>
                 <hr class="orange-separator">
@@ -248,73 +248,73 @@
                 </div>
                 <div class="result-block">
                     <div class="result-row result-total">
-                        <div class="label">營收總額</div>
-                        <div id="revenue-amount" class="value">0 元</div>
+                        <div class="label">?�收總�?</div>
+                        <div id="revenue-amount" class="value">0 ??/div>
                     </div>
                 </div>
             </div>
             
-            <!-- 預留零用金詳情 -->
+            <!-- ?��??�用?�詳??-->
             <div id="petty-cash-section" class="card">
-                <h2 class="section-title">預留零用金 (目標 20,000 元)</h2>
+                <h2 class="section-title">?��??�用??(?��? 20,000 ??</h2>
                 <div class="result-block">
-                    <h3 class="subsection-title">紙鈔填滿</h3>
+                    <h3 class="subsection-title">紙�?填滿</h3>
                     <div id="paper-money-detail"></div>
                 </div>
                 <hr>
                 <div class="result-block">
-                    <h3 class="subsection-title">保留硬幣</h3>
+                    <h3 class="subsection-title">保�?硬幣</h3>
                     <div id="kept-coins-detail"></div>
                 </div>
                 <div id="balance-warning" class="warning-block" style="display: none;">
-                    <div class="warning-title">注意！</div>
+                    <div class="warning-title">注�?�?/div>
                     <div id="balance-warning-text"></div>
                 </div>
                 <div class="result-block">
                     <div class="result-row result-total">
-                        <div class="label">預留零用金實際總額</div>
-                        <div id="petty-cash-final" class="value money-amount">0 元</div>
+                        <div class="label">?��??�用?�實?�總�?/div>
+                        <div id="petty-cash-final" class="value money-amount">0 ??/div>
                     </div>
                 </div>
             </div>
             
-            <!-- 零錢處理詳情 -->
+            <!-- ?�錢?��?詳�? -->
             <div id="small-coins-section" class="card">
-                <h2 class="section-title collapsible-header" id="smallCoinsHeader">零錢處理 → 移入「營收」</h2>
+                <h2 class="section-title collapsible-header" id="smallCoinsHeader">?�錢?��? ??移入?��??��?/h2>
                 <div class="collapsible-content" id="smallCoinsContent">
                     <div class="result-block">
                         <div class="result-row">
-                            <div class="label">四種硬幣合計 (50+10+5+1)</div>
-                            <div id="total-coins" class="value money-amount">0 元</div>
+                            <div class="label">?�種硬幣?��? (50+10+5+1)</div>
+                            <div id="total-coins" class="value money-amount">0 ??/div>
                         </div>
                         <div class="result-row">
-                            <div class="label">多出兩位數 (mod 100)</div>
-                            <div id="remainder-coins" class="value money-amount">0 元</div>
+                            <div class="label">多出?��???(mod 100)</div>
+                            <div id="remainder-coins" class="value money-amount">0 ??/div>
                         </div>
                         <div class="result-row result-total">
-                            <div class="label">移入營收的零錢</div>
-                            <div id="moved-coins" class="value money-amount">0 元</div>
+                            <div class="label">移入?�收?�零??/div>
+                            <div id="moved-coins" class="value money-amount">0 ??/div>
                         </div>
                         <div class="coin-detail" id="coin-breakdown"></div>
                     </div>
                 </div>
             </div>
             
-            <!-- 結果微調工具 -->
+            <!-- 結�?微調工具 -->
             <div id="result-exchange-section" class="card">
-                <h2 class="section-title collapsible-header" id="resultExchangeHeader">結果微調工具 (預留/上繳)</h2>
+                <h2 class="section-title collapsible-header" id="resultExchangeHeader">結�?微調工具 (?��?/上繳)</h2>
                 <div class="collapsible-content" id="resultExchangeContent">
                     <div class="result-exchange-tool">
                         <div class="exchange-grid">
-                            <!-- 轉出面額設定 -->
+                            <!-- 轉出?��?設�? -->
                             <div class="exchange-panel">
-                                <h4>從「預留金」轉出</h4>
+                                <h4>從「�??��??��???/h4>
                                 <div class="exchange-field">
-                                    <label for="result-exchange-from-denom">面額</label>
+                                    <label for="result-exchange-from-denom">?��?</label>
                                     <select id="result-exchange-from-denom" class="exchange-select"></select>
                                 </div>
                                 <div class="exchange-field">
-                                    <label for="result-exchange-from-count">張/枚數</label>
+                                    <label for="result-exchange-from-count">�??�數</label>
                                     <div class="input-stepper">
                                         <button class="stepper-btn" data-target="result-exchange-from-count" data-step="-1">-</button>
                                         <input type="number" id="result-exchange-from-count" class="exchange-input" placeholder="0" min="0">
@@ -324,53 +324,53 @@
                                 <div id="result-exchange-from-preview" class="exchange-live-preview"></div>
                             </div>
                             
-                            <!-- 交換箭頭 -->
-                            <div class="exchange-arrow">⇄</div>
+                            <!-- 交�?箭頭 -->
+                            <div class="exchange-arrow">??/div>
                             
-                            <!-- 轉入面額設定 -->
+                            <!-- 轉入?��?設�? -->
                             <div class="exchange-panel">
-                                <h4>從「上繳營收」換入</h4>
+                                <h4>從「�?繳�??�」�???/h4>
                                 <div class="exchange-field">
-                                    <label for="result-exchange-to-denom">面額</label>
+                                    <label for="result-exchange-to-denom">?��?</label>
                                     <select id="result-exchange-to-denom" class="exchange-select"></select>
                                 </div>
                                 <div id="result-exchange-to-preview" class="exchange-live-preview"></div>
                             </div>
                         </div>
                         
-                        <!-- 微調執行按鈕 -->
-                        <button id="perform-result-exchange-btn" class="btn btn-block btn-simulate">確認微調</button>
+                        <!-- 微調?��??��? -->
+                        <button id="perform-result-exchange-btn" class="btn btn-block btn-simulate">確�?微調</button>
                         
-                        <!-- 歷史紀錄控制 -->
+                        <!-- 歷史紀?�控??-->
                         <div class="history-controls">
-                            <h3 class="subsection-title">微調歷史紀錄</h3>
+                            <h3 class="subsection-title">微調歷史紀??/h3>
                             <div class="buttons-row">
-                                <button id="undo-result-exchange-btn" class="btn btn-clear">恢復上一步</button>
-                                <button id="reset-result-exchange-btn" class="btn btn-danger">重置所有微調</button>
+                                <button id="undo-result-exchange-btn" class="btn btn-clear">?�復上�?�?/button>
+                                <button id="reset-result-exchange-btn" class="btn btn-danger">?�置?�?�微�?/button>
                             </div>
                             <div id="result-exchange-history-log" class="history-log">
-                                <p style="text-align:center; color: var(--gray);">尚無微調紀錄</p>
+                                <p style="text-align:center; color: var(--gray);">尚無微調紀??/p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 收納零錢對換工具 -->
+            <!-- ?��??�錢對�?工具 -->
             <div id="coin-consolidation-section" class="card">
-                <h2 class="section-title collapsible-header" id="coinConsolidationHeader">收納零錢對換 (上繳區/打包區)</h2>
+                <h2 class="section-title collapsible-header" id="coinConsolidationHeader">?��??�錢對�? (上繳?�/?��??�)</h2>
                 <div class="collapsible-content" id="coinConsolidationContent">
                     <div class="result-exchange-tool">
                         <div class="exchange-grid">
-                            <!-- 從上繳區轉出 -->
+                            <!-- 從�?繳�?轉出 -->
                             <div class="exchange-panel">
-                                <h4>從「上繳區」轉出</h4>
+                                <h4>從「�?繳�??��???/h4>
                                 <div class="exchange-field">
-                                    <label for="coin-consolidation-from-denom">硬幣面額</label>
+                                    <label for="coin-consolidation-from-denom">硬幣?��?</label>
                                     <select id="coin-consolidation-from-denom" class="exchange-select"></select>
                                 </div>
                                 <div class="exchange-field">
-                                    <label for="coin-consolidation-from-count">枚數</label>
+                                    <label for="coin-consolidation-from-count">?�數</label>
                                     <div class="input-stepper">
                                         <button class="stepper-btn" data-target="coin-consolidation-from-count" data-step="-1">-</button>
                                         <input type="number" id="coin-consolidation-from-count" class="exchange-input" placeholder="0" min="0">
@@ -380,99 +380,99 @@
                                 <div id="coin-consolidation-from-preview" class="exchange-live-preview"></div>
                             </div>
                             
-                            <!-- 交換箭頭 -->
-                            <div class="exchange-arrow">⇄</div>
+                            <!-- 交�?箭頭 -->
+                            <div class="exchange-arrow">??/div>
                             
-                            <!-- 從打包區換入 -->
+                            <!-- 從�??��??�入 -->
                             <div class="exchange-panel">
-                                <h4>從「打包區(預留)」換入</h4>
+                                <h4>從「�??��?(?��?)?��???/h4>
                                 <div class="exchange-field">
-                                    <label for="coin-consolidation-to-denom">硬幣面額</label>
+                                    <label for="coin-consolidation-to-denom">硬幣?��?</label>
                                     <select id="coin-consolidation-to-denom" class="exchange-select"></select>
                                 </div>
                                 <div id="coin-consolidation-to-preview" class="exchange-live-preview"></div>
                             </div>
                         </div>
                         
-                        <!-- 交換執行按鈕 -->
-                        <button id="perform-coin-consolidation-btn" class="btn btn-block btn-simulate">確認交換</button>
+                        <!-- 交�??��??��? -->
+                        <button id="perform-coin-consolidation-btn" class="btn btn-block btn-simulate">確�?交�?</button>
                     </div>
                 </div>
             </div>
             
-            <!-- 零錢打包區塊 -->
+            <!-- ?�錢?��??��?-->
             <div id="coin-pack-section" class="card">
-                <h2 class="section-title">零錢打包</h2>
+                <h2 class="section-title">?�錢?��?</h2>
                 <div class="result-block" id="coin-pack-block"></div>
             </div>
             
-            <!-- 點核區塊 -->
+            <!-- 點核?��?-->
             <div id="verification-section" class="card">
-                <h2 class="section-title">📝 點核區塊</h2>
+                <h2 class="section-title">?? 點核?��?/h2>
                 <div class="verification-list">
                     <div class="verification-item">
                         <input type="checkbox" id="verify-cash-taken" class="verify-checkbox">
                         <label for="verify-cash-taken" class="verify-label">
                             <span class="checkmark"></span>
-                            上繳紙鈔、零錢已拿起
+                            上繳紙�??�零?�已?�起
                         </label>
                     </div>
                     <div class="verification-item">
                         <input type="checkbox" id="verify-revenue-complete" class="verify-checkbox">
                         <label for="verify-revenue-complete" class="verify-label">
                             <span class="checkmark"></span>
-                            上繳金額撰寫完整
+                            上繳?��??�寫完整
                         </label>
                     </div>
                     <div class="verification-item">
                         <input type="checkbox" id="verify-petty-complete" class="verify-checkbox">
                         <label for="verify-petty-complete" class="verify-label">
                             <span class="checkmark"></span>
-                            預留金額撰寫完整
+                            ?��??��??�寫完整
                         </label>
                     </div>
                 </div>
                 <div class="verification-status" id="verification-status">
-                    <span class="status-text">點核狀態：<span id="verification-count">0/3</span> 項目已完成</span>
+                    <span class="status-text">點核?�?��?<span id="verification-count">0/3</span> ?�目已�???/span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 彈窗區塊 -->
-    <!-- 硬幣&紙鈔包裝資訊彈窗 -->
+    <!-- 彈�??��?-->
+    <!-- 硬幣&紙�??��?資�?彈�? -->
     <div id="package-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>硬幣 & 紙鈔包裝資訊</h3>
+                <h3>硬幣 & 紙�??��?資�?</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="manual-section">
-                    <h4>硬幣袋裝換算表</h4>
+                    <h4>硬幣袋�??��?�?/h4>
                     <div class="table-container">
                         <table>
                             <thead>
-                                <tr><th>面額</th><th>每袋數量</th><th>每袋金額</th><th>備註</th></tr>
+                                <tr><th>?��?</th><th>每�??��?</th><th>每�??��?</th><th>?�註</th></tr>
                             </thead>
                             <tbody>
-                                <tr><td><strong>50元</strong></td><td>40枚</td><td>2,000元</td><td>每袋40枚裝</td></tr>
-                                <tr><td><strong>10元</strong></td><td>50枚</td><td>500元</td><td>每袋50枚裝</td></tr>
-                                <tr><td><strong>5元</strong></td><td>50枚</td><td>250元</td><td>每袋50枚裝</td></tr>
-                                <tr><td><strong>1元</strong></td><td>100枚</td><td>100元</td><td>每袋100枚裝</td></tr>
+                                <tr><td><strong>50??/strong></td><td>40??/td><td>2,000??/td><td>每�?40?��?</td></tr>
+                                <tr><td><strong>10??/strong></td><td>50??/td><td>500??/td><td>每�?50?��?</td></tr>
+                                <tr><td><strong>5??/strong></td><td>50??/td><td>250??/td><td>每�?50?��?</td></tr>
+                                <tr><td><strong>1??/strong></td><td>100??/td><td>100??/td><td>每�?100?��?</td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <h4>紙鈔捆裝換算表</h4>
+                    <h4>紙�??��??��?�?/h4>
                     <div class="table-container">
                         <table>
                             <thead>
-                                <tr><th>面額</th><th>每捆數量</th><th>每捆金額</th><th>備註</th></tr>
+                                <tr><th>?��?</th><th>每�??��?</th><th>每�??��?</th><th>?�註</th></tr>
                             </thead>
                             <tbody>
-                                <tr><td><strong>1000元</strong></td><td>-</td><td>-</td><td>無需捆包</td></tr>
-                                <tr><td><strong>500元</strong></td><td>20張</td><td>10,000元</td><td>不限制10,000元一捆</td></tr>
-                                <tr><td><strong>100元</strong></td><td>20張</td><td>2,000元</td><td>強制2,000元一捆</td></tr>
+                                <tr><td><strong>1000??/strong></td><td>-</td><td>-</td><td>?��??��?</td></tr>
+                                <tr><td><strong>500??/strong></td><td>20�?/td><td>10,000??/td><td>不�???0,000?��???/td></tr>
+                                <tr><td><strong>100??/strong></td><td>20�?/td><td>2,000??/td><td>強制2,000?��???/td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -481,362 +481,368 @@
         </div>
     </div>
 
-    <!-- 使用說明彈窗 -->
+    <!-- 使用說�?彈�? -->
     <div id="manual-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>POS機算錢-說明文件</h3>
+                <h3>POS機�???說�??�件</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="manual-section">
-                    <h4>一、功能簡介</h4>
-                    <p>此工具專為需處理大量現金交易的場景設計，自動化處理現金盤點、零用金分配與營收上繳。</p>
+                    <h4>一?��??�簡�?/h4>
+                    <p>此工?��??��??��?大�??��?交�??�場?�設計�??��??��??�現?�盤點、零?��??��??��??��?繳�?/p>
                 </div>
                 <div class="manual-section">
-                    <h4>二、計算規則</h4>
-                    <h5>1. 零錢處理</h5>
+                    <h4>二、�?算�???/h4>
+                    <h5>1. ?�錢?��?</h5>
                     <ul>
-                        <li>計算四種硬幣（50, 10, 5, 1元）總額。</li>
-                        <li>提取不足100元的零頭（總額 mod 100），這部分將移入「營收上繳」。</li>
+                        <li>計�??�種硬幣�?0, 10, 5, 1?��?總�???/li>
+                        <li>?��?不足100?��??�頭（總�?mod 100）�??�部?��?移入?��??��?繳」�?/li>
                     </ul>
-                    <h5>2. 預留零用金（目標20,000元）</h5>
+                    <h5>2. ?��??�用?��??��?20,000?��?</h5>
                     <ul>
-                        <li><strong>硬幣部分</strong>：保留所有可湊成百元的硬幣（即硬幣總額扣除上述零頭）。</li>
-                        <li><strong>紙鈔部分</strong>：優先使用100元和500元，尋找能使總額最接近或等於20,000元的組合。</li>
+                        <li><strong>硬幣?��?</strong>：�??��??�可湊�??��??�硬�???�硬�?��額扣?��?述零?��???/li>
+                        <li><strong>紙�??��?</strong>：優?�使??00?��?500?��?尋找?�使總�??�?��??��???0,000?��?組�???/li>
                     </ul>
-                    <h5>3. 營收上繳</h5>
-                    <p>營收上繳金額 = 全部總金額 - 預留零用金實際總額。</p>
+                    <h5>3. ?�收上繳</h5>
+                    <p>?�收上繳?��? = ?�部總�?�?- ?��??�用?�實?�總額�?/p>
                 </div>
                 <div class="manual-section">
-                    <h4>三、面額換算功能</h4>
-                    <p>提供兩種換算工具：</p>
+                    <h4>三、面額�?算�???/h4>
+                    <p>?��??�種?��?工具�?/p>
                     <ul>
-                        <li><strong>總額換算</strong>：在輸入階段，直接修改各面額的總金額。</li>
-                        <li><strong>結果微調</strong>：在產生結果後，可將「預留金」與「上繳營收」中的特定面額互相交換，而不影響總金額。</li>
+                        <li><strong>總�??��?</strong>：在輸入?�段，直?�修?��??��??�總?��???/li>
+                        <li><strong>結�?微調</strong>：在?��?結�?後�??��??��??��??��??��?繳�??�」中?�特定面額�??�交?��??��?影響總�?額�?/li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 面額換算工具彈窗 -->
+    <!-- ?��??��?工具彈�? -->
     <div id="exchange-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>面額換算工具 (總額)</h3>
+                <h3>?��??��?工具 (總�?)</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="exchange-section">
-                    <h4>轉出面額</h4>
+                    <h4>轉出?��?</h4>
                     <div class="exchange-field">
-                        <label for="exchange-amount">金額</label>
-                        <input type="text" id="exchange-amount" placeholder="輸入要轉換的金額" class="exchange-input" inputmode="numeric">
+                        <label for="exchange-amount">?��?</label>
+                        <input type="text" id="exchange-amount" placeholder="輸入要�??��??��?" class="exchange-input" inputmode="numeric">
                     </div>
                     <div class="exchange-field">
-                        <label for="exchange-from">選擇面額</label>
+                        <label for="exchange-from">?��??��?</label>
                         <select id="exchange-from" class="exchange-select">
-                            <option value="2000" class="extended-option" style="display: none;">2000元</option>
-                            <option value="1000" selected>1000元</option>
-                            <option value="500">500元</option>
-                            <option value="200" class="extended-option" style="display: none;">200元</option>
-                            <option value="100">100元</option>
-                            <option value="50">50元</option>
-                            <option value="10">10元</option>
-                            <option value="5">5元</option>
-                            <option value="1">1元</option>
+                            <option value="2000" class="extended-option" style="display: none;">2000??/option>
+                            <option value="1000" selected>1000??/option>
+                            <option value="500">500??/option>
+                            <option value="200" class="extended-option" style="display: none;">200??/option>
+                            <option value="100">100??/option>
+                            <option value="50">50??/option>
+                            <option value="10">10??/option>
+                            <option value="5">5??/option>
+                            <option value="1">1??/option>
                         </select>
                     </div>
                     <div class="exchange-info">
-                        <div>當前面額總額: <span id="from-current-amount">0</span> 元</div>
-                        <div>(數量: <span id="from-current-count">0</span> 張/枚)</div>
+                        <div>?��??��?總�?: <span id="from-current-amount">0</span> ??/div>
+                        <div>(?��?: <span id="from-current-count">0</span> �???</div>
                         <hr style="margin: 5px 0;">
-                        <div>轉換後剩餘金額: <span id="from-new-amount">0</span> 元</div>
-                        <div>(數量: <span id="from-new-count">0</span> 張/枚)</div>
+                        <div>轉�?後剩餘�?�? <span id="from-new-amount">0</span> ??/div>
+                        <div>(?��?: <span id="from-new-count">0</span> �???</div>
                     </div>
                 </div>
-                <div class="exchange-arrow">→</div>
+                <div class="exchange-arrow">??/div>
                 <div class="exchange-section">
-                    <h4>轉入面額</h4>
+                    <h4>轉入?��?</h4>
                     <div class="exchange-field">
-                        <label for="exchange-to">選擇面額</label>
+                        <label for="exchange-to">?��??��?</label>
                         <select id="exchange-to" class="exchange-select">
-                        <option value="2000" class="extended-option" style="display: none;">2000元</option>
-                        <option value="1000">1000元</option>
-                        <option value="500">500元</option>
-                        <option value="200" class="extended-option" style="display: none;">200元</option>
-                        <option value="100">100元</option>
-                        <option value="50">50元</option>
-                        <option value="10">10元</option>
-                        <option value="5">5元</option>
-                        <option value="1" selected>1元</option>
+                        <option value="2000" class="extended-option" style="display: none;">2000??/option>
+                            <option value="1000">1000??/option>
+                            <option value="500">500??/option>
+                        <option value="200" class="extended-option" style="display: none;">200??/option>
+                            <option value="100">100??/option>
+                            <option value="50">50??/option>
+                            <option value="10">10??/option>
+                            <option value="5">5??/option>
+                            <option value="1" selected>1??/option>
                         </select>
                     </div>
                     <div class="exchange-info">
-                        <div>當前面額總額: <span id="to-current-amount">0</span> 元</div>
-                        <div>(數量: <span id="to-current-count">0</span> 張/枚)</div>
+                        <div>?��??��?總�?: <span id="to-current-amount">0</span> ??/div>
+                        <div>(?��?: <span id="to-current-count">0</span> �???</div>
                         <hr style="margin: 5px 0;">
-                        <div>轉換後總金額: <span id="to-new-amount">0</span> 元</div>
-                        <div>(數量: <span id="to-new-count">0</span> 張/枚)</div>
+                        <div>轉�?後總?��?: <span id="to-new-amount">0</span> ??/div>
+                        <div>(?��?: <span id="to-new-count">0</span> �???</div>
                     </div>
                 </div>
-                <button id="exchange-confirm" class="btn btn-confirm btn-exchange">確認轉換</button>
+                <button id="exchange-confirm" class="btn btn-confirm btn-exchange">確�?轉�?</button>
             </div>
         </div>
     </div>
 
-    <!-- 自訂面額顏色彈窗 -->
+    <!-- ?��??��?顏色彈�? -->
     <div id="color-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>自訂面額顏色</h3>
+                <h3>?��??��?顏色</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div id="color-picker-2000" class="picker-group extended-color" style="display: none;"><label>2000 元:</label><input type="color" id="pick-2000"><span id="hex-2000" class="hex-value"></span></div>
-                <div class="picker-group"><label>1000 元:</label><input type="color" id="pick-1000"><span id="hex-1000" class="hex-value"></span></div>
-                <div class="picker-group"><label>500 元:</label> <input type="color" id="pick-500"> <span id="hex-500"  class="hex-value"></span></div>
-                <div id="color-picker-200" class="picker-group extended-color" style="display: none;"><label>200 元:</label> <input type="color" id="pick-200"> <span id="hex-200"  class="hex-value"></span></div>
-                <div class="picker-group"><label>100 元:</label> <input type="color" id="pick-100"> <span id="hex-100"  class="hex-value"></span></div>
-                <div class="picker-group"><label>50 元:</label>  <input type="color" id="pick-50">  <span id="hex-50"   class="hex-value"></span></div>
-                <div class="picker-group"><label>10 元:</label>  <input type="color" id="pick-10">  <span id="hex-10"   class="hex-value"></span></div>
-                <div class="picker-group"><label>5 元:</label>   <input type="color" id="pick-5">   <span id="hex-5"    class="hex-value"></span></div>
-                <div class="picker-group"><label>1 元:</label>   <input type="color" id="pick-1">   <span id="hex-1"    class="hex-value"></span></div>
+                <div id="color-picker-2000" class="picker-group extended-color" style="display: none;"><label>2000 ??</label><input type="color" id="pick-2000"><span id="hex-2000" class="hex-value"></span></div>
+                <div class="picker-group"><label>1000 ??</label><input type="color" id="pick-1000"><span id="hex-1000" class="hex-value"></span></div>
+                <div class="picker-group"><label>500 ??</label> <input type="color" id="pick-500"> <span id="hex-500"  class="hex-value"></span></div>
+                <div id="color-picker-200" class="picker-group extended-color" style="display: none;"><label>200 ??</label> <input type="color" id="pick-200"> <span id="hex-200"  class="hex-value"></span></div>
+                <div class="picker-group"><label>100 ??</label> <input type="color" id="pick-100"> <span id="hex-100"  class="hex-value"></span></div>
+                <div class="picker-group"><label>50 ??</label>  <input type="color" id="pick-50">  <span id="hex-50"   class="hex-value"></span></div>
+                <div class="picker-group"><label>10 ??</label>  <input type="color" id="pick-10">  <span id="hex-10"   class="hex-value"></span></div>
+                <div class="picker-group"><label>5 ??</label>   <input type="color" id="pick-5">   <span id="hex-5"    class="hex-value"></span></div>
+                <div class="picker-group"><label>1 ??</label>   <input type="color" id="pick-1">   <span id="hex-1"    class="hex-value"></span></div>
                 <div style="display:flex;gap:8px;margin-top:16px;">
-                    <button id="reset-colors" class="btn btn-clear" style="flex:1;">一鍵還原預設色</button>
-                    <button id="close-color-modal" class="btn btn-simulate" style="flex:1;">完成</button>
+                    <button id="reset-colors" class="btn btn-clear" style="flex:1;">一?��??��?設色</button>
+                    <button id="close-color-modal" class="btn btn-simulate" style="flex:1;">完�?</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 每日更新紀錄彈窗 -->
+    <!-- 每日?�新紀?��?�?-->
     <div id="changelog-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📅 每日更新紀錄</h3>
+                <h3>?? 每日?�新紀??/h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="manual-section">
                     <h4>2025/7/2</h4>
-                    <h5>🎉 重點更新</h5>
+                    <h5>?? ?��??�新</h5>
                     <ul>
-                        <li><strong>README 文件完善</strong>：更新了完整的功能說明文件，詳細介紹工具的使用方式和技術特色。</li>
-                        <li><strong>更新報告整理</strong>：新增了版本對比報告，記錄從 v1.0 到 v2.6 的完整演進過程。</li>
-                        <li><strong>核心功能穩定</strong>：確認所有主要功能運作正常，包括計算引擎、微調工具、狀態持久化等。</li>
+                        <li><strong>README ?�件完�?</strong>：更?��?完整?��??�說?��?件�?詳細介紹工具?�使?�方式�??�術特?��?/li>
+                        <li><strong>?�新?��??��?</strong>：新增�??�本對�??��?，�??��? v1.0 ??v2.6 ?��??��??��?程�?/li>
+                        <li><strong>?��??�能穩�?</strong>：確認�??�主要�??��?作正常�??�括計�?引�??�微調工?�、�??��?久�?等�?/li>
                     </ul>
-                    <h5>🔧 文件改進</h5>
+                    <h5>?�� ?�件?��?/h5>
                     <ul>
-                        <li><strong>使用說明優化</strong>：在 README 中新增了詳細的使用步驟和功能亮點說明。</li>
-                        <li><strong>技術文件完整</strong>：補充了核心演算法邏輯的技術說明，方便開發者理解。</li>
-                        <li><strong>版本歷程記錄</strong>：建立了完整的版本更新紀錄，追蹤功能演進。</li>
+                        <li><strong>使用說�??��?</strong>：在 README 中新增�?詳細?�使?�步驟�??�能亮�?說�???/li>
+                        <li><strong>?�術�?件�???/strong>：�??��??��?演�?法�?輯�??�術說?��??�便?�發?��?�?�?/li>
+                        <li><strong>?�本歷�?記�?</strong>：建立�?完整?��??�更?��??��?追蹤?�能演進�?/li>
                     </ul>
-                    <h5>📊 功能特色</h5>
+                    <h5>?? ?�能?�色</h5>
                     <ul>
-                        <li><strong>智慧計算引擎</strong>：自動處理零錢分配和預留金計算。</li>
-                        <li><strong>便利輸入模式</strong>：支援張數快輸和袋/捆加總功能。</li>
-                        <li><strong>強大微調工具</strong>：提供預留/上繳交換和零錢收納對換。</li>
-                        <li><strong>狀態自動保存</strong>：使用 localStorage 技術保存使用者資料。</li>
+                        <li><strong>?�慧計�?引�?</strong>：自?��??�零?��??��??��??��?算�?/li>
+                        <li><strong>便利輸入模�?</strong>：支?�張?�快輸�?�??��?總�??��?/li>
+                        <li><strong>強大微調工具</strong>：�?供�???上繳交�??�零?�收納�??��?/li>
+                        <li><strong>?�?�自?��?�?/strong>：使??localStorage ?�術�?存使?�者�??��?/li>
                     </ul>
                 </div>
                 <hr>
                 <div class="manual-section">
                     <h4>2025/6/4</h4>
-                    <h5>🎉 重點更新</h5>
+                    <h5>?? ?��??�新</h5>
                     <ul>
-                        <li><strong>核心程式完成</strong>：完成主要的現金管理計算功能開發。</li>
-                        <li><strong>檔案結構整理</strong>：上傳了完整的專案檔案，包含主程式和說明文件。</li>
-                        <li><strong>功能測試驗證</strong>：驗證了計算邏輯的正確性和使用者介面的完整性。</li>
+                        <li><strong>?��?程�?完�?</strong>：�??�主要�??��?管�?計�??�能?�發??/li>
+                        <li><strong>檔�?結�??��?</strong>：�??��?完整?��?案�?案�??�含主�?式�?說�??�件??/li>
+                        <li><strong>?�能測試驗�?</strong>：�?證�?計�??�輯?�正確性�?使用?��??��?完整?��?/li>
                     </ul>
-                    <h5>🔧 技術實現</h5>
+                    <h5>?�� ?�術實??/h5>
                     <ul>
-                        <li><strong>計算邏輯完善</strong>：實現了零錢處理、預留金分配、營收上繳的完整計算流程。</li>
-                        <li><strong>介面設計優化</strong>：完成了響應式設計，支援各種裝置的良好顯示效果。</li>
-                        <li><strong>狀態管理系統</strong>：建立了完整的應用程式狀態管理機制。</li>
+                        <li><strong>計�??�輯完�?</strong>：實?��??�錢?��??��??��??��??��??��?繳�?完整計�?流�???/li>
+                        <li><strong>介面設�??��?</strong>：�??��??��?式設計�??�援?�種裝置?�良好顯示�??��?/li>
+                        <li><strong>?�?�管?�系�?/strong>：建立�?完整?��??��?式�??�管?��??��?/li>
                     </ul>
-                    <h5>💰 業務邏輯</h5>
+                    <h5>?�� 業�??�輯</h5>
                     <ul>
-                        <li><strong>預留零用金目標</strong>：設定為 20,000 元的標準目標。</li>
-                        <li><strong>包裝規則定義</strong>：建立了完整的硬幣袋裝和紙鈔捆裝規則。</li>
-                        <li><strong>面額處理邏輯</strong>：支援 7 種面額 (1000, 500, 100, 50, 10, 5, 1) 的完整處理。</li>
+                        <li><strong>?��??�用?�目�?/strong>：設定為 20,000 ?��?標�??��???/li>
+                        <li><strong>?��?規�?定義</strong>：建立�?完整?�硬�??裝�?紙�??��?規�???/li>
+                        <li><strong>?��??��??�輯</strong>：支??7 種面�?(1000, 500, 100, 50, 10, 5, 1) ?��??��??��?/li>
                     </ul>
                 </div>
                 <hr>
                 <div class="manual-section">
                     <h4>2025/6/2</h4>
-                    <h5>🔧 功能調整</h5>
+                    <h5>?�� ?�能調整</h5>
                     <ul>
-                        <li><strong>介面優化</strong>：針對使用者體驗進行了介面調整和優化。</li>
-                        <li><strong>計算邏輯調整</strong>：微調了部分計算邏輯，提升準確性。</li>
-                        <li><strong>錯誤處理改進</strong>：加強了輸入驗證和錯誤提示機制。</li>
+                        <li><strong>介面?��?</strong>：�?對使?�者�?驗進�?了�??�調?��??��???/li>
+                        <li><strong>計�??�輯調整</strong>：微調�??��?計�??�輯，�??��?確性�?/li>
+                        <li><strong>?�誤?��??��?/strong>：�?強�?輸入驗�??�錯誤�?示�??��?/li>
                     </ul>
                 </div>
                 <hr>
                 <div class="manual-section">
                     <h4>2025/5/29</h4>
-                    <h5>🎉 專案啟動</h5>
+                    <h5>?? 專�??��?</h5>
                     <ul>
-                        <li><strong>專案初始化</strong>：建立了現金管理計算工具的基礎架構。</li>
-                        <li><strong>核心概念確立</strong>：定義了預留零用金、營收上繳、零錢處理的核心業務邏輯。</li>
-                        <li><strong>技術架構規劃</strong>：選定了純前端技術棧 (HTML5 + CSS3 + JavaScript)。</li>
+                        <li><strong>專�??��???/strong>：建立�??��?管�?計�?工具?�基礎架構�?/li>
+                        <li><strong>?��?概念確�?</strong>：�?義�??��??�用?�、�??��?繳、零?��??��??��?業�??�輯??/li>
+                        <li><strong>?�術架構�???/strong>：選定�?純�?端�?術棧 (HTML5 + CSS3 + JavaScript)??/li>
                     </ul>
                 </div>
                 <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
-                    <h5 style="color: #2e7d32; margin: 0 0 8px 0;">版本演進總覽</h5>
-                    <p style="margin: 5px 0;"><strong>v2.6 (2025/7/2)</strong>：文件完善，功能穩定</p>
-                    <p style="margin: 5px 0;"><strong>v2.0-2.5 (2025/6/2-6/4)</strong>：核心功能開發與優化</p>
-                    <p style="margin: 5px 0;"><strong>v1.0 (2025/5/29)</strong>：專案啟動與基礎建設</p>
+                    <h5 style="color: #2e7d32; margin: 0 0 8px 0;">?�本演進總�?/h5>
+                    <p style="margin: 5px 0;"><strong>v2.6 (2025/7/2)</strong>：�?件�??��??�能穩�?</p>
+                    <p style="margin: 5px 0;"><strong>v2.0-2.5 (2025/6/2-6/4)</strong>：核心�??��??��??��?</p>
+                    <p style="margin: 5px 0;"><strong>v1.0 (2025/5/29)</strong>：�?案�??��??��?建設</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 設定彈窗 -->
+    <!-- 設�?彈�? -->
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚙️ 系統設定</h3>
+                <h3>?��? 系統設�?</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="settings-section">
-                    <h4>面額設定</h4>
+                    <h4>?��?設�?</h4>
                     <div class="setting-item">
                         <label class="setting-label">
                             <input type="checkbox" id="show-extended-denoms" class="setting-checkbox">
-                            <span class="setting-text">顯示 2000、200 面額</span>
+                            <span class="setting-text">顯示 2000??00 ?��?</span>
                         </label>
-                        <p class="setting-description">開啟後可使用2000元和200元面額（僅放在營收中）</p>
+                        <p class="setting-description">?��?後可使用2000?��?200?�面額�??�放?��??�中�?/p>
                     </div>
                 </div>
                 
                 <div class="settings-section">
-                    <h4>機台設定</h4>
+                    <h4>機台設�?</h4>
                     <div class="setting-item">
-                        <label class="setting-label">機號：</label>
+                        <label class="setting-label">機�?�?/label>
                         <div class="machine-selector">
-                            <button id="machine-1" class="machine-btn active">①</button>
-                            <button id="machine-2" class="machine-btn">②</button>
+                            <button id="machine-1" class="machine-btn active">??/button>
+                            <button id="machine-2" class="machine-btn">??/button>
                         </div>
                     </div>
                 </div>
                 
                 <div class="settings-section">
-                    <h4>人員管理</h4>
+                    <h4>介面設�?</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="enable-block-movement-toggle" class="setting-checkbox" checked>
+                            <span class="setting-text">顯示?�塊移?��???/span>
+                        </label>
+                        <p class="setting-description">?��??�選?�隱?��??��?塊�?上�?移�??��?</p>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>人員管�?</h4>
                     <div class="staff-manager">
                         <div id="staff-list" class="staff-list"></div>
                         <div class="staff-controls">
-                            <input type="text" id="new-staff-name" placeholder="輸入人員名稱" class="staff-input">
-                            <button id="add-staff-btn" class="btn btn-simulate">新增</button>
+                            <input type="text" id="new-staff-name" placeholder="輸入人員?�稱" class="staff-input">
+                            <button id="add-staff-btn" class="btn btn-simulate">?��?</button>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- 保�?記�?簡�?顯示 -->
+                <div class="settings-section">
+                    <h4>保�?記�? <span class="save-count" id="settings-save-count">(0)</span></h4>
+                    <div id="settings-save-preview" class="save-preview">
+                        <p class="no-saves">尚無保�?記�?</p>
                     </div>
                 </div>
                 
                 <div class="modal-footer">
-                    <button id="save-settings-btn" class="btn btn-simulate">保存設定</button>
-                    <button id="reset-settings-btn" class="btn btn-clear">恢復預設</button>
+                    <button id="save-settings-btn" class="btn btn-simulate">保�?設�?</button>
+                    <button id="reset-settings-btn" class="btn btn-clear">?�復?�設</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 保存彈窗 -->
+    <!-- 保�?彈�? -->
     <div id="save-modal" class="modal">
-        <div class="modal-content large-modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3>💾 保存記錄</h3>
+                <h3>?�� 保�?記�?</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="save-form">
                     <div class="save-section">
-                        <h4>基本資訊</h4>
+                        <h4>?�本資�?</h4>
                         <div class="save-item">
-                            <label>時間：</label>
+                            <label>?��?�?/label>
                             <span id="save-timestamp" class="save-value"></span>
                         </div>
                         <div class="save-item">
-                            <label>機號：</label>
+                            <label>機�?�?/label>
                             <div class="machine-selector">
-                                <button id="save-machine-1" class="machine-btn save-machine-btn active">①</button>
-                                <button id="save-machine-2" class="machine-btn save-machine-btn">②</button>
+                                <button id="save-machine-1" class="machine-btn save-machine-btn active">??/button>
+                                <button id="save-machine-2" class="machine-btn save-machine-btn">??/button>
                             </div>
                         </div>
                     </div>
                     
                     <div class="save-section">
-                        <h4>人員設定</h4>
-                        <div class="staff-save-manager">
-                            <div id="save-staff-list" class="save-staff-list"></div>
-                            <div class="staff-controls">
-                                <input type="text" id="save-new-staff-name" placeholder="輸入人員名稱" class="staff-input">
-                                <button id="save-add-staff-btn" class="btn btn-simulate">新增</button>
-                            </div>
-                            <div class="save-item">
-                                <label>選擇負責人員：</label>
-                                <select id="save-staff-select" class="save-select"></select>
-                            </div>
+                        <h4>人員設�?</h4>
+                        <div class="save-item">
+                            <label>?��?負責人員�?/label>
+                            <select id="save-staff-select" class="save-select"></select>
                         </div>
+                        <p class="setting-description" style="margin-left: 0; margin-top: 0.5rem;">
+                            如�??��??�編輯人?��?請至??a href="#" id="goto-settings-link">系統設�?</a>?�中管�???                        </p>
                     </div>
                 </div>
                 
                 <div class="save-actions">
-                    <button id="confirm-save-btn" class="btn btn-success">確認保存</button>
-                    <button id="cancel-save-btn" class="btn btn-clear">取消</button>
-                </div>
-                
-                <!-- 歷史記錄復原 -->
-                <div class="save-history-section">
-                    <h4>已保存記錄 <span class="history-count" id="save-history-count">(0)</span></h4>
-                    <div id="save-history-list" class="save-history-list">
-                        <p class="no-history">尚無保存記錄</p>
-                    </div>
+                    <button id="confirm-save-btn" class="btn btn-success">確�?保�?</button>
+                    <button id="cancel-save-btn" class="btn btn-clear">?��?</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 導出彈窗 -->
+    <!-- 導出彈�? -->
     <div id="export-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📄 資料導出</h3>
+                <h3>?? 資�?導出</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="export-options">
                     <div class="export-option">
-                        <button id="export-settings-btn" class="btn btn-export">導出設定</button>
-                        <p class="export-desc">導出當前系統設定和配置</p>
+                        <button id="export-settings-btn" class="btn btn-export">導出設�?</button>
+                        <p class="export-desc">導出?��?系統設�??��?�?/p>
                     </div>
                     <div class="export-option">
-                        <button id="export-history-btn" class="btn btn-export">導出歷史數據</button>
-                        <p class="export-desc">導出所有保存的計算記錄</p>
+                        <button id="export-history-btn" class="btn btn-export">導出歷史?��?</button>
+                        <p class="export-desc">導出?�?��?存�?計�?記�?</p>
                     </div>
                     <div class="export-option">
-                        <button id="export-all-btn" class="btn btn-export highlight">一鍵全部導出</button>
-                        <p class="export-desc">導出所有資料（設定 + 歷史）</p>
+                        <button id="export-all-btn" class="btn btn-export highlight">一?�全?��???/button>
+                        <p class="export-desc">導出?�?��??��?設�? + 歷史�?/p>
                     </div>
                 </div>
                 
                 <div id="export-result" class="export-result" style="display: none;">
-                    <h4>導出結果</h4>
+                    <h4>導出結�?</h4>
                     <textarea id="export-text" class="export-textarea" readonly></textarea>
                     <div class="export-actions">
-                        <button id="copy-export-btn" class="btn btn-simulate">📋 一鍵複製</button>
-                        <button id="download-export-btn" class="btn btn-primary">⬇️ 下載檔案</button>
+                        <button id="copy-export-btn" class="btn btn-simulate">?? 一?��?�?/button>
+                        <button id="download-export-btn" class="btn btn-primary">⬇�? 下�?檔�?</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 引入 JavaScript 模組 -->
-    <script src="資源檔案/core-logic.js"></script>
-    <script src="資源檔案/ui-components.js"></script>
-    <script src="資源檔案/state-management.js"></script>
-    <script src="資源檔案/main.js"></script>
+    <!-- 引入 JavaScript 模�? -->
+    <script src="資�?檔�?/core-logic.js"></script>
+    <script src="資�?檔�?/ui-components.js"></script>
+    <script src="資�?檔�?/state-management.js"></script>
+    <script src="資�?檔�?/main.js"></script>
 </body>
 </html>

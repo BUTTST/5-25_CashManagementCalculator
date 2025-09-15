@@ -1,25 +1,25 @@
-/* 現金管理計算工具 - 狀態管理模組 */
+/* ?��?管�?計�?工具 - ?�?�管?�模�?*/
 
-// === 狀態管理類別 ===
+// === ?�?�管?��???===
 
 /**
- * 應用程式狀態管理器
+ * ?�用程�??�?�管?�器
  */
 class StateManager {
     constructor(stateKey = APP_CONFIG.STATE_KEY) {
         this.stateKey = stateKey;
         this.state = {
-            inputs: {},           // 使用者輸入資料
-            results: null,        // 計算結果
-            exchangeHistory: [],  // 微調歷史記錄
-            version: '3.6'        // 版本號
+            inputs: {},           // 使用?�輸?��???
+            results: null,        // 計�?結�?
+            exchangeHistory: [],  // 微調歷史記�?
+            version: '3.6'        // ?�本??
         };
-        this.listeners = [];      // 狀態變更監聽器
+        this.listeners = [];      // ?�?��??�監?�器
     }
     
     /**
-     * 從 localStorage 載入狀態
-     * @returns {boolean} 是否成功載入
+     * �?localStorage 載入?�??
+     * @returns {boolean} ?�否?��?載入
      */
     loadState() {
         try {
@@ -31,15 +31,15 @@ class StateManager {
                 return true;
             }
         } catch (error) {
-            console.error('無法載入狀態:', error);
+            console.error('?��?載入?�??', error);
             this.clearState();
         }
         return false;
     }
     
     /**
-     * 儲存狀態到 localStorage
-     * @returns {boolean} 是否成功儲存
+     * ?��??�?�到 localStorage
+     * @returns {boolean} ?�否?��??��?
      */
     saveState() {
         try {
@@ -47,13 +47,13 @@ class StateManager {
             this.notifyListeners('save', this.state);
             return true;
         } catch (error) {
-            console.error('無法儲存狀態:', error);
+            console.error('?��??��??�??', error);
             return false;
         }
     }
     
     /**
-     * 清除狀態
+     * 清除?�??
      */
     clearState() {
         this.state = {
@@ -67,8 +67,8 @@ class StateManager {
     }
     
     /**
-     * 更新輸入資料
-     * @param {Object} inputs - 新的輸入資料
+     * ?�新輸入資�?
+     * @param {Object} inputs - ?��?輸入資�?
      */
     updateInputs(inputs) {
         this.state.inputs = { ...inputs };
@@ -77,40 +77,40 @@ class StateManager {
     }
     
     /**
-     * 更新計算結果
-     * @param {Object} results - 計算結果
+     * ?�新計�?結�?
+     * @param {Object} results - 計�?結�?
      */
     updateResults(results) {
         this.state.results = results;
-        // 重置微調歷史，將新結果作為初始狀態
+        // ?�置微調歷史，�??��??��??��?始�???
         this.state.exchangeHistory = [JSON.parse(JSON.stringify(results))];
         this.saveState();
         this.notifyListeners('results', this.state);
     }
     
     /**
-     * 添加微調歷史記錄
-     * @param {Object} newResult - 新的結果狀態
+     * 添�?微調歷史記�?
+     * @param {Object} newResult - ?��?結�??�??
      */
     addExchangeHistory(newResult) {
-        // 添加時間戳記
+        // 添�??��??��?
         if (newResult.lastAction) {
             newResult.lastAction.time = Date.now();
         }
         
         this.state.exchangeHistory.push(JSON.parse(JSON.stringify(newResult)));
-        this.state.results = newResult; // 更新當前結果
+        this.state.results = newResult; // ?�新?��?結�?
         this.saveState();
         this.notifyListeners('exchange', this.state);
     }
     
     /**
-     * 撤銷最後一次微調
-     * @returns {boolean} 是否成功撤銷
+     * ?�銷?�後�?次微�?
+     * @returns {boolean} ?�否?��??�銷
      */
     undoLastExchange() {
         if (this.state.exchangeHistory.length <= 1) {
-            return false; // 無法撤銷初始狀態
+            return false; // ?��??�銷?��??�??
         }
         
         this.state.exchangeHistory.pop();
@@ -121,15 +121,15 @@ class StateManager {
     }
     
     /**
-     * 重置所有微調
-     * @returns {boolean} 是否成功重置
+     * ?�置?�?�微�?
+     * @returns {boolean} ?�否?��??�置
      */
     resetAllExchanges() {
         if (this.state.exchangeHistory.length <= 1) {
-            return false; // 沒有微調需要重置
+            return false; // 沒�?微調?�要�?�?
         }
         
-        // 只保留初始狀態
+        // ?��??��?始�???
         this.state.exchangeHistory = [this.state.exchangeHistory[0]];
         this.state.results = this.state.exchangeHistory[0];
         this.saveState();
@@ -138,16 +138,16 @@ class StateManager {
     }
     
     /**
-     * 回復到指定的歷史狀態
-     * @param {number} index - 歷史記錄索引
-     * @returns {boolean} 是否成功回復
+     * ?�復?��?定�?歷史?�??
+     * @param {number} index - 歷史記�?索�?
+     * @returns {boolean} ?�否?��??�復
      */
     revertToHistoryState(index) {
         if (index < 0 || index >= this.state.exchangeHistory.length) {
             return false;
         }
         
-        // 截斷歷史記錄到指定索引
+        // ?�斷歷史記�??��?定索�?
         this.state.exchangeHistory = this.state.exchangeHistory.slice(0, index + 1);
         this.state.results = this.state.exchangeHistory[index];
         this.saveState();
@@ -156,24 +156,24 @@ class StateManager {
     }
     
     /**
-     * 取得當前狀態
-     * @returns {Object} 當前狀態
+     * ?��??��??�??
+     * @returns {Object} ?��??�??
      */
     getState() {
         return { ...this.state };
     }
     
     /**
-     * 取得當前結果
-     * @returns {Object|null} 當前計算結果
+     * ?��??��?結�?
+     * @returns {Object|null} ?��?計�?結�?
      */
     getCurrentResults() {
         return this.state.results;
     }
     
     /**
-     * 取得最新的微調結果
-     * @returns {Object|null} 最新的微調結果
+     * ?��??�?��?微調結�?
+     * @returns {Object|null} ?�?��?微調結�?
      */
     getLatestExchangeResult() {
         if (this.state.exchangeHistory.length > 0) {
@@ -183,8 +183,8 @@ class StateManager {
     }
     
     /**
-     * 添加狀態變更監聽器
-     * @param {Function} listener - 監聽器函數
+     * 添�??�?��??�監?�器
+     * @param {Function} listener - ??��?�函??
      */
     addListener(listener) {
         if (typeof listener === 'function') {
@@ -193,8 +193,8 @@ class StateManager {
     }
     
     /**
-     * 移除狀態變更監聽器
-     * @param {Function} listener - 要移除的監聽器函數
+     * 移除?�?��??�監?�器
+     * @param {Function} listener - 要移?��???��?�函??
      */
     removeListener(listener) {
         const index = this.listeners.indexOf(listener);
@@ -204,9 +204,9 @@ class StateManager {
     }
     
     /**
-     * 通知所有監聽器狀態變更
-     * @param {string} action - 變更動作類型
-     * @param {Object} state - 新狀態
+     * ?�知?�?�監?�器?�?��???
+     * @param {string} action - 變更?��?類�?
+     * @param {Object} state - ?��???
      * @private
      */
     notifyListeners(action, state) {
@@ -214,64 +214,64 @@ class StateManager {
             try {
                 listener(action, state);
             } catch (error) {
-                console.error('狀態監聽器執行錯誤:', error);
+                console.error('?�?�監?�器?��??�誤:', error);
             }
         });
     }
     
     /**
-     * 匯出狀態為 JSON
-     * @returns {string} JSON 格式的狀態資料
+     * ?�出?�?�為 JSON
+     * @returns {string} JSON ?��??��??��???
      */
     exportState() {
         return JSON.stringify(this.state, null, 2);
     }
     
     /**
-     * 從 JSON 匯入狀態
-     * @param {string} jsonState - JSON 格式的狀態資料
-     * @returns {boolean} 是否成功匯入
+     * �?JSON ?�入?�??
+     * @param {string} jsonState - JSON ?��??��??��???
+     * @returns {boolean} ?�否?��??�入
      */
     importState(jsonState) {
         try {
             const importedState = JSON.parse(jsonState);
             
-            // 驗證狀態結構
+            // 驗�??�?��?�?
             if (this.validateStateStructure(importedState)) {
                 this.state = importedState;
                 this.saveState();
                 this.notifyListeners('import', this.state);
                 return true;
             } else {
-                console.error('匯入的狀態結構無效');
+                console.error('?�入?��??��?構無??);
                 return false;
             }
         } catch (error) {
-            console.error('匯入狀態時發生錯誤:', error);
+            console.error('?�入?�?��??��??�誤:', error);
             return false;
         }
     }
     
     /**
-     * 驗證狀態結構的有效性
-     * @param {Object} state - 要驗證的狀態
-     * @returns {boolean} 是否有效
+     * 驗�??�?��?構�??��???
+     * @param {Object} state - 要�?證�??�??
+     * @returns {boolean} ?�否?��?
      * @private
      */
     validateStateStructure(state) {
-        // 基本結構檢查
+        // ?�本結�?檢查
         if (!state || typeof state !== 'object') {
             return false;
         }
         
-        // 檢查必要屬性
+        // 檢查必�?屬�?
         if (!state.hasOwnProperty('inputs') || 
             !state.hasOwnProperty('results') || 
             !state.hasOwnProperty('exchangeHistory')) {
             return false;
         }
         
-        // 檢查 inputs 結構
+        // 檢查 inputs 結�?
         if (state.inputs && typeof state.inputs === 'object') {
             for (const [denom, data] of Object.entries(state.inputs)) {
                 if (!APP_CONFIG.DENOMINATIONS.includes(parseInt(denom, 10))) {
@@ -283,7 +283,7 @@ class StateManager {
             }
         }
         
-        // 檢查 exchangeHistory 結構
+        // 檢查 exchangeHistory 結�?
         if (state.exchangeHistory && Array.isArray(state.exchangeHistory)) {
             for (const result of state.exchangeHistory) {
                 if (!result.hasOwnProperty('distribution') || 
@@ -297,31 +297,31 @@ class StateManager {
     }
     
     /**
-     * 取得狀態統計資訊
-     * @returns {Object} 統計資訊
+     * ?��??�?�統計�?�?
+     * @returns {Object} 統�?資�?
      */
     getStateStats() {
         return {
             hasInputs: Object.keys(this.state.inputs).length > 0,
             hasResults: this.state.results !== null,
             exchangeCount: this.state.exchangeHistory.length,
-            lastSaved: localStorage.getItem(this.stateKey + '_timestamp') || '未知',
+            lastSaved: localStorage.getItem(this.stateKey + '_timestamp') || '?�知',
             stateSize: JSON.stringify(this.state).length
         };
     }
 }
 
-// === 輸入狀態管理函數 ===
+// === 輸入?�?�管?�函??===
 
 /**
- * 從 DOM 輸入元素更新狀態
- * @param {StateManager} stateManager - 狀態管理器
- * @param {Object} domInputs - DOM 輸入元素集合
+ * �?DOM 輸入?��??�新?�??
+ * @param {StateManager} stateManager - ?�?�管?�器
+ * @param {Object} domInputs - DOM 輸入?��??��?
  */
 function updateStateFromInputs(stateManager, domInputs) {
     const inputs = {};
     
-    // 使用動態面額列表，包含擴展面額
+    // 使用?��??��??�表，�??�擴展面�?
     [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
         const amountInput = domInputs.amountInputs[denom];
         const bagInput = domInputs.bagInputs[denom];
@@ -338,14 +338,14 @@ function updateStateFromInputs(stateManager, domInputs) {
 }
 
 /**
- * 從狀態恢復 DOM 輸入元素
- * @param {Object} state - 應用程式狀態
- * @param {Object} domInputs - DOM 輸入元素集合
+ * 從�??�恢�?DOM 輸入?��?
+ * @param {Object} state - ?�用程�??�??
+ * @param {Object} domInputs - DOM 輸入?��??��?
  */
 function restoreInputsFromState(state, domInputs) {
     if (!state.inputs) return;
     
-    // 使用所有支持的面額，包含擴展面額
+    // 使用?�?�支?��??��?，�??�擴展面�?
     [...APP_CONFIG.BASE_DENOMINATIONS, ...APP_CONFIG.EXTENDED_DENOMINATIONS].forEach(denom => {
         const inputData = state.inputs[denom];
         const amountInput = domInputs.amountInputs[denom];
@@ -361,12 +361,12 @@ function restoreInputsFromState(state, domInputs) {
     });
 }
 
-// === 快照管理 ===
+// === 快照管�? ===
 
 /**
- * 建立狀態快照
- * @param {Object} state - 要快照的狀態
- * @returns {Object} 狀態快照
+ * 建�??�?�快??
+ * @param {Object} state - 要快?��??�??
+ * @returns {Object} ?�?�快??
  */
 function createStateSnapshot(state) {
     return {
@@ -377,29 +377,29 @@ function createStateSnapshot(state) {
 }
 
 /**
- * 產生狀態檢查碼
- * @param {Object} state - 狀態物件
- * @returns {string} 檢查碼
+ * ?��??�?�檢?�碼
+ * @param {Object} state - ?�?�物�?
+ * @returns {string} 檢查�?
  * @private
  */
 function generateStateChecksum(state) {
-    // 簡單的檢查碼生成（實際應用中可使用更強的雜湊演算法）
+    // 簡單?�檢?�碼?��?（實?��??�中?�使?�更強�??��?演�?法�?
     const stateString = JSON.stringify(state);
     let hash = 0;
     
     for (let i = 0; i < stateString.length; i++) {
         const char = stateString.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // 轉換為 32-bit 整數
+        hash = hash & hash; // 轉�???32-bit ?�數
     }
     
     return hash.toString(16);
 }
 
 /**
- * 驗證狀態快照完整性
- * @param {Object} snapshot - 狀態快照
- * @returns {boolean} 是否完整
+ * 驗�??�?�快?��??��?
+ * @param {Object} snapshot - ?�?�快??
+ * @returns {boolean} ?�否完整
  */
 function validateSnapshot(snapshot) {
     if (!snapshot || !snapshot.state || !snapshot.checksum) {
@@ -410,25 +410,25 @@ function validateSnapshot(snapshot) {
     return currentChecksum === snapshot.checksum;
 }
 
-// === 狀態遷移函數 ===
+// === ?�?�遷移函??===
 
 /**
- * 遷移舊版本狀態到新版本
- * @param {Object} oldState - 舊版本狀態
- * @returns {Object} 遷移後的狀態
+ * ?�移?��??��??�到?��???
+ * @param {Object} oldState - ?��??��???
+ * @returns {Object} ?�移後�??�??
  */
 function migrateState(oldState) {
-    // 檢查是否需要遷移
+    // 檢查?�否?�要遷�?
     if (!oldState || oldState.version === APP_CONFIG.STATE_KEY) {
         return oldState;
     }
     
     let migratedState = { ...oldState };
     
-    // 添加版本標記
+    // 添�??�本標�?
     migratedState.version = APP_CONFIG.STATE_KEY;
     
-    // 確保必要屬性存在
+    // 確�?必�?屬性�???
     if (!migratedState.inputs) {
         migratedState.inputs = {};
     }
@@ -437,7 +437,7 @@ function migrateState(oldState) {
         migratedState.exchangeHistory = [];
     }
     
-    // 遷移輸入資料格式（如果需要）
+    // ?�移輸入資�??��?（�??��?要�?
     APP_CONFIG.DENOMINATIONS.forEach(denom => {
         if (!migratedState.inputs[denom]) {
             migratedState.inputs[denom] = { amount: 0, packages: 0 };
@@ -447,20 +447,20 @@ function migrateState(oldState) {
     return migratedState;
 }
 
-// === 工廠函數 ===
+// === 工�??�數 ===
 
 /**
- * 建立狀態管理器實例
- * @param {string} stateKey - 狀態儲存鍵值
- * @returns {StateManager} 狀態管理器實例
+ * 建�??�?�管?�器實�?
+ * @param {string} stateKey - ?�?�儲存鍵??
+ * @returns {StateManager} ?�?�管?�器實�?
  */
 function createStateManager(stateKey) {
     return new StateManager(stateKey);
 }
 
-// === 匯出函數 ===
+// === ?�出?�數 ===
 if (typeof module !== 'undefined' && module.exports) {
-    // Node.js 環境
+    // Node.js ?��?
     module.exports = {
         StateManager,
         updateStateFromInputs,
@@ -471,7 +471,7 @@ if (typeof module !== 'undefined' && module.exports) {
         createStateManager
     };
 } else {
-    // 瀏覽器環境：將函數暴露到全局作用域
+    // ?�覽?�環境�?將函?�暴?�到?��?作用??
     window.StateManager = StateManager;
     window.updateStateFromInputs = updateStateFromInputs;
     window.restoreInputsFromState = restoreInputsFromState;
