@@ -177,32 +177,54 @@
 
         <!-- 代收(+) — PC(-) 額外計算 -->
         <div class="card movable-block" id="extra-calc-section">
-            <h2 class="section-title collapsible-header" id="extraCalcHeader">
-                代收(+) — PC(-) 額外計算
+            <div class="extra-calc-header collapsible-header" id="extraCalcHeader">
+                <span>代收(+) — PC(-) 額外計算</span>
                 <button id="lock-btn" class="lock-btn" title="鎖定/解鎖輸入框">🔓</button>
-            </h2>
+            </div>
             <div class="collapsible-content collapsed" id="extraCalcContent">
+                <!-- 第一行：代收和總金額 -->
                 <div class="extra-calc-row">
                     <div class="extra-calc-col">
-                        <label for="report-total">報表總額</label>
-                        <input type="text" id="report-total" placeholder="輸入報表總額" class="extra-calc-input" inputmode="numeric">
+                        <label for="collection-amount">代收</label>
+                        <input type="text" id="collection-amount" placeholder="輸入代收金額" class="extra-calc-input" inputmode="numeric">
                     </div>
                     <div class="extra-calc-col">
                         <label for="collect-amount">總金額</label>
-                        <div style="display:flex;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:0.3rem;">
                             <input type="text" id="collect-amount" placeholder="輸入總金額" class="extra-calc-input" inputmode="numeric">
-                            <button type="button" class="calc-btn" onclick="importTotalAmount()">匯入</button>
+                            <button type="button" class="calc-btn calc-btn-primary" onclick="importTotalAmount()" title="匯入計算結果的全部總金額">匯入</button>
+                            <button type="button" class="calc-btn calc-btn-secondary" id="import-after-collection-btn" onclick="importAfterCollectionAmount()" title="匯入代收加總後的金額" style="display:none;">匯入(加總)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二行：報表總額和PC -->
+                <div class="extra-calc-row">
+                    <div class="extra-calc-col">
+                        <label for="report-total">報表總額</label>
+                        <div style="position: relative;">
+                            <input type="text" id="report-total" placeholder="輸入報表總額" class="extra-calc-input" inputmode="numeric">
+                            <!-- 代收計算結果顯示在報表總額底下 -->
+                            <div class="collection-calc-result" id="collection-calc-result" style="display:none;">
+                                <span class="result-label">代收加總後：</span>
+                                <span class="result-value" id="collection-after-deduction">0 元</span>
+                            </div>
                         </div>
                     </div>
                     <div class="extra-calc-col">
-                        <label for="pc-amount">PC ( - )：</label>
+                        <label for="pc-amount">PC ( - )</label>
                         <input type="text" id="pc-amount" placeholder="輸入 PC 金額" inputmode="numeric" class="extra-calc-input">
                     </div>
                 </div>
+
+                <!-- 最終計算結果 -->
                 <div class="extra-calc-result" id="extra-calc-result">計算結果：0 元</div>
+
+                <!-- 說明文字 -->
                 <div class="explanation">
-                    <p><span class="highlight-add">代收</span>：是全部總金額現金會 <span class="highlight-add">多</span>，帳表不用改</p>
+                    <p><span class="highlight-add">代收</span>：是全部總金額現金會 <span class="highlight-add">多</span>，帳表不用改。計算：報表總額 - 代收數值 = 代收加總後數值</p>
                     <p><span class="highlight-sub">PC</span>：帳表上的金額要 <span class="highlight-sub">減去</span> PC 的金額才是實際要看的數值。</p>
+                    <p><strong>最終計算</strong>：總金額 - 報表總額 - PC金額 = 實際差額</p>
                 </div>
             </div>
         </div>
@@ -347,9 +369,17 @@
                     <button class="move-btn move-up" title="向上移動">▲</button>
                     <button class="move-btn move-down" title="向下移動">▼</button>
                 </div>
-                <h2 class="section-title collapsible-header" id="resultExchangeHeader">結果微調工具 (預留/上繳)</h2>
-                <div class="collapsible-content" id="resultExchangeContent">
+                <h2 class="section-title collapsible-header collapsed" id="resultExchangeHeader">[預留/上繳] 跨區等值交換（不變更總額）</h2>
+                <div class="collapsible-content collapsed" id="resultExchangeContent">
                     <div class="result-exchange-tool">
+                        <blockquote class="callout info">
+                            <p><strong>用途</strong>：不改變總額的前提下，將「預留金」與「上繳營收」的面額做等值交換。</p>
+                            <ul>
+                                <li><strong>影響範圍</strong>：僅更動兩區的面額與數量；不影響兩區總額與整體總額。</li>
+                                <li><strong>使用方式</strong>：先選擇預留金要轉出的面額與數量，再選擇上繳欲換入的面額，按「確認微調」。</li>
+                                <li><strong>限制</strong>：需等值且數量足夠，不允許為負；支援「恢復上一步／重置」。</li>
+                            </ul>
+                        </blockquote>
                         <div class="exchange-grid">
                             <!-- 轉出面額設定 -->
                             <div class="exchange-panel">
@@ -407,9 +437,17 @@
                     <button class="move-btn move-up" title="向上移動">▲</button>
                     <button class="move-btn move-down" title="向下移動">▼</button>
                 </div>
-                <h2 class="section-title collapsible-header" id="coinConsolidationHeader">收納零錢對換 (上繳區/打包區)</h2>
-                <div class="collapsible-content" id="coinConsolidationContent">
+                <h2 class="section-title collapsible-header collapsed" id="coinConsolidationHeader">對換零錢湊整（上繳 ↔ 打包）</h2>
+                <div class="collapsible-content collapsed" id="coinConsolidationContent">
                     <div class="result-exchange-tool">
+                        <blockquote class="callout tip">
+                            <p><strong>用途</strong>：把「上繳區」的散幣與「打包區(預留)」的硬幣互換，用於湊滿整袋或拆袋。</p>
+                            <ul>
+                                <li><strong>影響範圍</strong>：僅影響硬幣與打包狀態，不影響總額與紙鈔。</li>
+                                <li><strong>使用方式</strong>：選擇上繳區轉出的硬幣面額與枚數，選擇打包區欲換入的面額，按「確認交換」。</li>
+                                <li><strong>限制</strong>：僅限硬幣；需符合袋裝規格與雙方數量條件；支援「恢復上一步／重置」。</li>
+                            </ul>
+                        </blockquote>
                         <div class="exchange-grid">
                             <!-- 從上繳區轉出 -->
                             <div class="exchange-panel">
@@ -901,34 +939,8 @@
     <script src="資源檔案/core-logic.js"></script>
     <script src="資源檔案/ui-components.js"></script>
     <script src="資源檔案/state-management.js"></script>
+    <script src="資源檔案/helpers.js"></script>
     <script src="資源檔案/main.js"></script>
-</body>
-</html>
-                    </div>
-                    <div class="export-option">
-                        <button id="export-all-btn" class="btn btn-export highlight">一?�全?��???/button>
-                        <p class="export-desc">導出?�?��??��?設�? + 歷史�?/p>
-                    </div>
-                </div>
-                
-                <div id="export-result" class="export-result" style="display: none;">
-                    <h4>導出結�?</h4>
-                    <textarea id="export-text" class="export-textarea" readonly></textarea>
-                    <div class="export-actions">
-                        <button id="copy-export-btn" class="btn btn-simulate">?? 一?��?�?/button>
-                        <button id="download-export-btn" class="btn btn-primary">⬇�? 下�?檔�?</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- 引入 JavaScript 模�? -->
-    <script src="資�?檔�?/core-logic.js"></script>
-    <script src="資�?檔�?/ui-components.js"></script>
-    <script src="資�?檔�?/state-management.js"></script>
-    <script src="資�?檔�?/main.js"></script>
 </body>
 </html>
 

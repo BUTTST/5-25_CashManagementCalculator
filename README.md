@@ -1,5 +1,7 @@
 # 現金管理計算工具 (README 7-2版 ) 
 
+[Vercel 主控台](https://vercel.com/titans-projects-0ee27614/5-25-cash-management-calculator)
+
 一個專為零售、餐飲等需要頻繁處理現金的場景所設計的智慧計算工具。它不僅能自動計算每日的預留零用金與上繳營收，更提供多種便利的微調功能，讓帳務處理變得輕鬆、準確且高效。
 
 ### ✨ 功能亮點 (Features)

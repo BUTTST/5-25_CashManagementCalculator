@@ -234,13 +234,13 @@ class CashManagementApp {
         // === 摺疊面板 ===
         document.querySelectorAll('.collapsible-header').forEach(header => {
             header.addEventListener('click', (e) => {
-                // 如果點擊的是鎖定按鈕，不要觸發折疊
-                if (e.target.classList.contains('lock-btn') || e.target.closest('.lock-btn')) {
+                // 如果點擊的是鎖定按鈕或按鈕內的元素，不要觸發折疊
+                if (e.target.id === 'lock-btn' || e.target.closest('#lock-btn')) {
                     return;
                 }
                 const content = document.getElementById(header.id.replace('Header', 'Content'));
                 header.classList.toggle('collapsed');
-                if (content) content.classList.toggle('active');
+                if (content) content.classList.toggle('collapsed');
             });
         });
         

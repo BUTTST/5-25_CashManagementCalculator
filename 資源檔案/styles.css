@@ -455,15 +455,16 @@ body {
 
 .collapsible-content {
     overflow: hidden; 
-    max-height: 0; 
+    max-height: 2000px; 
     transition: max-height 0.5s ease-in-out; 
-    border-top: 1px solid #eee; 
-    padding-top: 0;
+    padding-top: 1rem;
 }
 
-.collapsible-content.active {
-    max-height: 2000px; 
-    padding-top: 1rem;
+.collapsible-content.collapsed {
+    max-height: 0; 
+    padding-top: 0;
+    padding-bottom: 0;
+    border: none;
 }
 
 /* === 分隔線 === */
@@ -918,6 +919,48 @@ th {
 
 /* === 新增功能樣式 === */
 
+/* 說明標註框（Callout） */
+.callout {
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+    background: #f1f3f4;
+}
+
+.callout p {
+    margin-bottom: 0.4rem;
+}
+
+.callout ul {
+    margin: 0.4rem 0 0 1.2rem;
+}
+
+.callout.info {
+    border-left-color: var(--primary-light);
+    background: rgba(26, 115, 232, 0.08);
+}
+
+.callout.tip {
+    border-left-color: var(--secondary);
+    background: rgba(52, 168, 83, 0.08);
+}
+
+.dark-mode .callout {
+    background: #2f2f2f;
+    border-left-color: #5a5a5a;
+}
+
+.dark-mode .callout.info {
+    background: rgba(26, 115, 232, 0.15);
+    border-left-color: var(--primary-light);
+}
+
+.dark-mode .callout.tip {
+    background: rgba(52, 168, 83, 0.15);
+    border-left-color: var(--secondary);
+}
+
 /* 深色模式 */
 .dark-mode {
     --light: #2c2c2c;
@@ -971,6 +1014,12 @@ th {
 .dark-mode .extra-calc-result {
     background-color: rgba(52, 168, 83, 0.2);
     color: var(--secondary);
+}
+
+.dark-mode .collection-calc-result {
+    background-color: rgba(255, 152, 0, 0.2);
+    border-color: var(--warning);
+    color: var(--tertiary);
 }
 
 /* 人員管理區塊黑底主題 */
@@ -1330,21 +1379,15 @@ th {
     transform: rotate(-90deg);
 }
 
-.extra-calc-container {
+/* 額外計算區塊的內容區域樣式（已整合到 .collapsible-content） */
+#extraCalcContent {
     background-color: #f8f9fa;
     padding: 1rem;
     border-radius: 0 0 var(--radius) var(--radius);
-    border: 1px solid #e9ecef;
-    border-top: none;
-    overflow: hidden;
-    max-height: 1000px;
-    transition: max-height 0.3s ease-in-out;
 }
 
-.extra-calc-container.collapsed {
-    max-height: 0;
+#extraCalcContent.collapsed {
     padding: 0;
-    border: 0;
 }
 
 .extra-calc-row {
@@ -1385,6 +1428,9 @@ th {
 .extra-calc-input:disabled {
     background-color: #e9ecef;
     color: var(--gray);
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-color: #ccc;
 }
 
 .extra-calc-result {
@@ -1398,45 +1444,109 @@ th {
     margin-top: 0.5rem;
 }
 
+.collection-calc-result {
+    text-align: center;
+    padding: 0.5rem 0.6rem;
+    background-color: #fff3e0;
+    border-radius: var(--radius);
+    font-weight: 600;
+    color: var(--warning);
+    font-size: 1rem;
+    margin: 0.5rem 0 0 0;
+    border: 2px solid var(--tertiary);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.collection-calc-result .result-label {
+    margin-right: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.collection-calc-result .result-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* 為報表總額的容器增加底部空間，避免結果框被後續元素覆蓋 */
+.extra-calc-col:has(#report-total) {
+    margin-bottom: 3rem;
+    position: relative;
+}
+
 .lock-btn {
     background-color: transparent;
     border: none;
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.6rem;
     border-radius: var(--radius);
     margin-left: auto;
     transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
 }
 
 .lock-btn:hover {
     background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.lock-btn:active {
+    transform: scale(0.95);
 }
 
 .lock-btn.locked {
     color: var(--warning);
+    background-color: rgba(255, 152, 0, 0.2);
+    border: 2px solid var(--warning);
+    box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+}
+
+.lock-btn.locked:hover {
+    background-color: rgba(255, 152, 0, 0.3);
+    border-color: var(--warning);
 }
 
 .calc-btn {
-    margin-left: 0.5rem;
     padding: 0 0.6rem;
     background: var(--primary);
     color: #fff;
     border: none;
     border-radius: var(--radius);
-    font-size: 1rem;
+    font-size: 0.9rem;
     height: 2.4rem;
     cursor: pointer;
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
 .calc-btn:hover {
     background: var(--primary-light);
+    transform: translateY(-1px);
 }
 
 .calc-btn:active {
     opacity: 0.8;
+    transform: translateY(0);
+}
+
+.calc-btn-primary {
+    background: var(--primary-light);
+}
+
+.calc-btn-secondary {
+    background: var(--warning);
+    font-size: 0.85rem;
 }
 
 .explanation {
@@ -2046,14 +2156,19 @@ th {
     .input-form {
         grid-template-columns: 1fr;
     }
-    
+
     .extra-calc-row {
         flex-direction: column;
         gap: 0.8rem;
     }
-    
+
     .extra-calc-col {
         width: 100%;
+    }
+
+    .collection-calc-result {
+        position: static;
+        margin: 0.5rem 0 1rem 0;
     }
     
     .result-row {
