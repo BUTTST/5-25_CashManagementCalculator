@@ -207,15 +207,7 @@ class CashManagementApp {
         dom.clearBtn.addEventListener('click', () => this.handleClearClick());
         dom.calculateBtn.addEventListener('click', () => this.handleCalculate());
         dom.simulateBtn.addEventListener('click', () => this.simulateValues());
-        
-        // === 長按重置功能 ===
-        // 注意：mousedown和touchstart不能設為passive，因為需要preventDefault來阻止默認行為
-        // 這是為了防止長按時觸發其他瀏覽器默認行為（如選擇文字、右鍵選單等）
-        dom.clearBtn.addEventListener('mousedown', (e) => this.startHardResetTimer(e));
-        dom.clearBtn.addEventListener('touchstart', (e) => this.startHardResetTimer(e), { passive: false });
-        dom.clearBtn.addEventListener('mouseup', () => this.cancelHardResetTimer());
-        dom.clearBtn.addEventListener('mouseleave', () => this.cancelHardResetTimer());
-        dom.clearBtn.addEventListener('touchend', () => this.cancelHardResetTimer());
+        // 移除長按清除功能，避免行動裝置點按失效問題
         
         // === 輸入欄位事件 ===
         Object.values(dom.amountInputs).forEach(input => {
@@ -400,9 +392,7 @@ class CashManagementApp {
      * 處理清除按鈕點擊
      */
     handleClearClick() {
-        if (!this.isLongPress) {
-            this.softClear();
-        }
+        this.softClear();
     }
     
     /**
@@ -563,9 +553,10 @@ class CashManagementApp {
      * @returns {boolean} 是否所有輸入都有效
      */
     validateAllInputs() {
-        // 調用 core-logic.js 中的 validateAllInputs 函數
+        // 調用 core-logic.js 中的 validateAllInputs 函數（提供解析後 inputs）
+        const processedInputs = window.collectInputs ? window.collectInputs(this.domElements) : {};
         const isValid = window.validateAllInputs ? 
-            window.validateAllInputs(this.domElements, {}) : true;
+            window.validateAllInputs(this.domElements, processedInputs) : true;
         
         if (this.domElements.calculateBtn) {
         this.domElements.calculateBtn.disabled = !isValid;
@@ -831,47 +822,7 @@ class CashManagementApp {
         this.domElements.color.hexes[denom].textContent = color.toUpperCase();
     }
     
-    /**
-     * 開始硬重置計時器
-     * @param {Event} e - 事件對象
-     * 
-     * 重要：此函數需要preventDefault來阻止瀏覽器默認行為
-     * 因此對應的事件監聽器不能設為passive: true
-     */
-    startHardResetTimer(e) {
-        // 阻止默認行為（如選擇文字、右鍵選單等）
-        e.preventDefault();
-        this.isLongPress = false;
-        
-        const progress = this.domElements.clearBtnProgress;
-        progress.style.transition = `width ${APP_CONFIG.LONG_PRESS_DURATION / 1000}s linear`;
-        progress.style.width = '100%';
-        
-        this.longPressTimer = setTimeout(() => {
-            this.isLongPress = true;
-            this.hardReset();
-            this.cancelHardResetTimer();
-        }, APP_CONFIG.LONG_PRESS_DURATION);
-    }
-    
-    /**
-     * 取消硬重置計時器
-     */
-    cancelHardResetTimer() {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-        
-        const progress = this.domElements.clearBtnProgress;
-        const text = this.domElements.clearBtnText;
-        
-        progress.style.transition = 'width 0.2s';
-        progress.style.width = '0%';
-        text.textContent = '清除數值';
-        
-        setTimeout(() => {
-            this.isLongPress = false;
-        }, 50);
-    }
+    // 已移除清除按鈕長按計時器相關邏輯
     
     /**
      * 處理狀態變更
@@ -1380,16 +1331,100 @@ class CashManagementApp {
         } else {
             const recentSaves = this.saveHistory.slice(-5).reverse(); // 顯示最近5筆，最新的在上
             previewEl.innerHTML = recentSaves.map(save => `
-                <div class="save-preview-item">
+                <div class="save-preview-item" data-save-id="${save.id}">
                     <div>
                         <div class="save-preview-time">${save.timestamp}</div>
                         <div class="save-preview-info">機號${save.machine || save.machineNumber} | ${save.staff || save.staffName}</div>
                     </div>
+                    <div style="display:flex;gap:.5rem;margin-top:.25rem;">
+                        <button class="btn btn-simulate btn-restore" data-save-id="${save.id}" style="padding:.2rem .6rem;">復現</button>
+                        <button class="btn btn-clear btn-delete" data-save-id="${save.id}" style="padding:.2rem .6rem;">刪除</button>
+                    </div>
                 </div>
             `).join('');
+
+            // 綁定事件（委派）
+            previewEl.onclick = (e) => {
+                const restoreBtn = e.target.closest('.btn-restore');
+                const deleteBtn = e.target.closest('.btn-delete');
+                if (restoreBtn) {
+                    const id = restoreBtn.getAttribute('data-save-id');
+                    this.restoreFromSave(id);
+                } else if (deleteBtn) {
+                    const id = deleteBtn.getAttribute('data-save-id');
+                    this.deleteSave(id);
+                }
+            };
         }
         
         console.log('保存記錄預覽已更新');
+    }
+
+    /**
+     * 渲染保存歷史（目前透過設定預覽呈現）
+     */
+    renderSaveHistory() {
+        this.updateSettingsSavePreview();
+    }
+
+    /**
+     * 復現指定保存紀錄
+     * @param {string} saveId
+     */
+    restoreFromSave(saveId) {
+        const target = this.saveHistory.find(s => s.id === saveId);
+        if (!target) {
+            alert('找不到指定的保存紀錄');
+            return;
+        }
+
+        // 套用設定
+        if (target.settings) {
+            Object.assign(APP_CONFIG.SETTINGS, target.settings);
+            this.saveSettings();
+            if (typeof toggleDarkMode !== 'undefined') {
+                toggleDarkMode(APP_CONFIG.SETTINGS.darkMode);
+            }
+            if (typeof toggleExtendedDenominations !== 'undefined') {
+                toggleExtendedDenominations(APP_CONFIG.SETTINGS.showExtendedDenoms);
+            }
+            this.updateSettingsModal();
+        }
+
+        // 套用狀態（輸入、結果、微調歷史）
+        this.stateManager.state.inputs = target.inputs || {};
+        this.stateManager.state.results = target.results || null;
+        this.stateManager.state.exchangeHistory = Array.isArray(target.exchangeHistory) ? target.exchangeHistory : [];
+        this.stateManager.saveState();
+
+        // 恢復輸入
+        restoreInputsFromState(this.stateManager.getState(), this.domElements);
+
+        // 恢復結果顯示與工具
+        if (this.stateManager.getState().results) {
+            updateUI(this.stateManager.getState().results);
+            this.domElements.resultContainer.classList.add('active');
+            this.domElements.resultContainer.style.display = 'block';
+            setupResultExchangeTool(this.domElements);
+            setupCoinConsolidationTool(this.domElements, this.stateManager.getState());
+            renderResultExchangeHistory(this.domElements, this.stateManager.getState());
+        }
+
+        this.validateAllInputs();
+        showNotification('已復現所選保存紀錄', 'success');
+    }
+
+    /**
+     * 刪除指定保存紀錄
+     * @param {string} saveId
+     */
+    deleteSave(saveId) {
+        const idx = this.saveHistory.findIndex(s => s.id === saveId);
+        if (idx === -1) return;
+        this.saveHistory.splice(idx, 1);
+        this.saveSaveHistory();
+        this.updateSettingsSavePreview();
+        showNotification('已刪除保存紀錄', 'warning');
     }
     
     /**
