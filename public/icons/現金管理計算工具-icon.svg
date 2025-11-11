@@ -1,0 +1,197 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- ============================================ -->
+  <!-- 漸變與濾鏡定義區塊 -->
+  <!-- ============================================ -->
+  <defs>
+    
+    <!-- 背景漸變：紫色三色漸變（左上→右下） -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />   <!-- 淺紫色 -->
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />   <!-- 中紫色 -->
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" /> <!-- 粉紫色 -->
+    </linearGradient>
+    
+    <!-- 螢幕漸變：藍色徑向漸變（中心→外圍） -->
+    <radialGradient id="screenGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#1a73e8;stop-opacity:1" />   <!-- 亮藍色（中心） -->
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:0.8" /> <!-- 深藍色（外圍） -->
+    </radialGradient>
+    
+    <!-- 金幣漸變：金色線性漸變（左上→右下） -->
+    <linearGradient id="coinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbc05;stop-opacity:1" />   <!-- 深金色 -->
+      <stop offset="100%" style="stop-color:#ffd54f;stop-opacity:1" /> <!-- 亮金色 -->
+    </linearGradient>
+    
+    <!-- 光暈濾鏡：用於金幣的外發光效果 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>  <!-- 模糊半徑8px -->
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>      <!-- 先顯示模糊層 -->
+        <feMergeNode in="SourceGraphic"/>    <!-- 再顯示原始圖形 -->
+      </feMerge>
+    </filter>
+    
+    <!-- 計算器光暈濾鏡：用於計算器的外發光效果（更強） -->
+    <filter id="calcGlow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/> <!-- 模糊半徑12px -->
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+  </defs>
+  
+  
+  <!-- ============================================ -->
+  <!-- 背景層 -->
+  <!-- ============================================ -->
+  <!-- 圓角矩形背景：512x512，圓角115px（約22.5%） -->
+  <rect width="512" height="512" rx="115" ry="115" fill="url(#bgGradient)"/>
+  
+  
+  <!-- ============================================ -->
+  <!-- 計算器主體（中心物件） -->
+  <!-- ============================================ -->
+  <!-- 位置：畫布中心(256, 240)，稍微上移以容納金幣 -->
+  <g transform="translate(256, 240)" filter="url(#calcGlow)">
+    
+    <!-- 計算器外框：外層光暈層（比主體大5px，半透明白色） -->
+    <rect x="-150" y="-125" width="300" height="250" rx="28" 
+          fill="#ffffff" opacity="0.3"/>
+    
+    <!-- 計算器主體：白色矩形，尺寸290x240 -->
+    <rect x="-145" y="-120" width="290" height="240" rx="28" 
+          fill="white" opacity="0.95"/>
+    
+    <!-- 顯示螢幕：藍色漸變矩形 -->
+    <rect x="-130" y="-105" width="260" height="65" rx="16" 
+          fill="url(#screenGradient)"/>
+    
+    <!-- 螢幕顯示內容：預留零用金目標金額 -->
+    <g transform="translate(2, -51)">
+      <text x="0" y="0" 
+            font-family="Arial, sans-serif" 
+            font-size="60" 
+            font-weight="bold" 
+            fill="#ffffff" 
+            text-anchor="middle" 
+            opacity="0.95"
+            letter-spacing="4">20000</text>
+    </g>
+    
+    <!-- ============================================ -->
+    <!-- 按鈕區域：六個圓形按鈕 -->
+    <!-- ============================================ -->
+    <!-- 按鈕區域位置：從計算器中心向左偏移100px，向下偏移35px -->
+    <g transform="translate(-100, 13)">
+      <!-- 按鈕統一設定：半徑28px，水平間距80px，垂直間距65px -->
+      
+      <!-- 第一排按鈕（從左到右） -->
+      <circle cx="0" cy="0" r="28" fill="#34a853" opacity="0.9"/>  <!-- 綠色按鈕 -->
+      <circle cx="80" cy="0" r="28" fill="#fbbc05" opacity="0.9"/>   <!-- 黃色按鈕 -->
+      <circle cx="160" cy="0" r="28" fill="#ea4335" opacity="0.9"/> <!-- 紅色按鈕 -->
+      
+      <!-- 第二排按鈕（從左到右，垂直間距65px） -->
+      <circle cx="0" cy="65" r="28" fill="#6c757d" opacity="0.9"/>  <!-- 灰色按鈕 -->
+      <circle cx="80" cy="65" r="28" fill="#6c757d" opacity="0.9"/>  <!-- 灰色按鈕 -->
+      <circle cx="160" cy="65" r="28" fill="#6c757d" opacity="0.9"/> <!-- 灰色按鈕 -->
+      
+    </g>
+    
+  </g>
+  
+  
+  <!-- ============================================ -->
+  <!-- 金幣堆疊（右側） -->
+  <!-- ============================================ -->
+  <!-- 位置：右側(380, 300)，靠計算器底邊，保持合適間距 -->
+  <g transform="translate(380, 300)" filter="url(#glow)">
+    
+    <!-- 第一顆金幣（最下層） -->
+    <circle cx="0" cy="40" r="35" fill="#ffffff" opacity="0.9"/>  <!-- 外圈：白色 -->
+    <circle cx="0" cy="40" r="28" fill="url(#coinGradient)"/>    <!-- 內圈：金色漸變 -->
+    <text x="0" y="48" 
+          font-family="Arial, sans-serif" 
+          font-size="24" 
+          font-weight="bold" 
+          fill="#0d47a1" 
+          text-anchor="middle">$</text>
+    
+    <!-- 第二顆金幣（向上偏移30px） -->
+    <circle cx="0" cy="10" r="35" fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="10" r="28" fill="url(#coinGradient)"/>
+    <text x="0" y="18" 
+          font-family="Arial, sans-serif" 
+          font-size="24" 
+          font-weight="bold" 
+          fill="#0d47a1" 
+          text-anchor="middle">$</text>
+    
+    <!-- 第三顆金幣（向上偏移30px） -->
+    <circle cx="0" cy="-20" r="35" fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="-20" r="28" fill="url(#coinGradient)"/>
+    <text x="0" y="-12" 
+          font-family="Arial, sans-serif" 
+          font-size="24" 
+          font-weight="bold" 
+          fill="#0d47a1" 
+          text-anchor="middle">$</text>
+    
+    <!-- 第四顆金幣（最上層，向上偏移30px） -->
+    <circle cx="0" cy="-50" r="35" fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="-50" r="28" fill="url(#coinGradient)"/>
+    <text x="0" y="-42" 
+          font-family="Arial, sans-serif" 
+          font-size="24" 
+          font-weight="bold" 
+          fill="#0d47a1" 
+          text-anchor="middle">$</text>
+    
+  </g>
+  
+  
+  <!-- ============================================ -->
+  <!-- 設計說明與技術規格 -->
+  <!-- ============================================ -->
+  <!-- 
+    設計語彙：最終版本 v2 - 優化調整版
+    關鍵字：calculator, cash, coins, modern, gradient, glow, professional
+    
+    適用場景：
+    - PWA應用圖標
+    - 網站Logo
+    - 現金管理工具
+    - 金融應用
+    
+    風格特徵：
+    - 背景：採用SVG圖標_41的現代紫色漸變（#667eea → #764ba2 → #f093fb）
+    - 光暈：計算器和金幣都有外發光效果，增強視覺層次
+    - 計算器：採用SVG圖標_43的設計，加大尺寸，白色主體配藍色漸變螢幕
+    - 數字顯示：中央螢幕顯示"20000"，對應預留零用金目標
+    - 按鈕間距：六個按鈕之間增加間距（水平70px，垂直60px），視覺更清晰
+    - 金幣位置：往下擺放，靠計算器底邊，保持合適間距，不水平置中
+    - 色彩系統：紫色背景、藍色螢幕、金色硬幣，色彩豐富且和諧
+    
+    技術規格：
+    - viewBox: 0 0 512 512（固定尺寸，可縮放）
+    - 圓角: rx="115" ry="115" (約22.5%)
+    - 中心物件: 計算器加大（290x240），佔據約85%畫布空間
+    - 光暈效果: 使用feGaussianBlur濾鏡實現外發光
+    - 漸變: 多層漸變系統，視覺豐富
+    - 按鈕間距: 水平間距70px，垂直間距60px
+    - 金幣位置: 右側，垂直位置300（靠計算器底邊，保持合適間距）
+    
+    編輯提示：
+    - 調整計算器大小：修改 <g transform="translate(256, 240)"> 中的數值
+    - 調整按鈕間距：修改按鈕的 cx 和 cy 值（目前水平70px，垂直60px）
+    - 調整金幣位置：修改 <g transform="translate(380, 300)"> 中的數值
+    - 調整金幣間距：修改每顆金幣的 cy 值（目前每顆間距30px）
+    - 修改顏色：在 <defs> 區塊中修改漸變的 stop-color 值
+    - 調整光暈強度：修改 filter 中的 stdDeviation 值（數值越大，光暈越強）
+  -->
+  
+</svg>
+

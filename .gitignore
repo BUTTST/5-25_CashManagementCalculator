@@ -1,0 +1,25 @@
+# 圖標生成目錄（包含多個測試版本，不需要版本控制）
+圖標生成-現金管理計算工具/
+
+# Node.js 依賴
+node_modules/
+
+# 作業系統檔案
+.DS_Store
+Thumbs.db
+
+# 編輯器設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日誌檔案
+*.log
+npm-debug.log*
+
+# 環境變數檔案
+.env
+.env.local
+

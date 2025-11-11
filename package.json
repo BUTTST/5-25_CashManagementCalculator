@@ -1,0 +1,12 @@
+{
+  "name": "cash-management-calculator",
+  "version": "3.9.0",
+  "description": "現金管理計算工具",
+  "scripts": {
+    "convert-icons": "node convert-icons.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.0"
+  }
+}
+
