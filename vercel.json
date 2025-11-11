@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/favicon.ico",
+      "destination": "/icons/現金管理計算工具-icon-32.png"
+    }
+  ],
   "headers": [
     {
       "source": "/icons/(.*)",
