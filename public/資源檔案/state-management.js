@@ -28,6 +28,13 @@ class StateManager {
             const savedState = localStorage.getItem(this.stateKey);
             if (savedState) {
                 const parsedState = JSON.parse(savedState);
+                // 確保新版本新增的歷史記錄陣列已初始化
+                if (!parsedState.exchangeToolHistory) {
+                    parsedState.exchangeToolHistory = [];
+                }
+                if (!parsedState.coinConsolidationHistory) {
+                    parsedState.coinConsolidationHistory = [];
+                }
                 this.state = { ...this.state, ...parsedState };
                 this.notifyListeners('load', this.state);
                 console.log('狀態載入成功:', this.state);
@@ -278,6 +285,11 @@ class StateManager {
      * @param {Object} result - 初始結果狀態
      */
     initCoinConsolidationHistory(result) {
+        // 確保 coinConsolidationHistory 已初始化
+        if (!this.state.coinConsolidationHistory) {
+            this.state.coinConsolidationHistory = [];
+        }
+        
         if (this.state.coinConsolidationHistory.length === 0 && result) {
             this.state.coinConsolidationHistory = [JSON.parse(JSON.stringify(result))];
             this.saveState();
