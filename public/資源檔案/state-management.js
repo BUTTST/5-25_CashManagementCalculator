@@ -9,10 +9,12 @@ class StateManager {
     constructor(stateKey = APP_CONFIG.STATE_KEY) {
         this.stateKey = stateKey;
         this.state = {
-            inputs: {},           // 使用者輸入資料
-            results: null,        // 計算結果
-            exchangeHistory: [],  // 微調歷史記錄
-            version: '3.9'        // 版本號
+            inputs: {},                    // 使用者輸入資料
+            results: null,                 // 計算結果
+            exchangeHistory: [],           // [預留/上繳] 跨區等值交換歷史記錄
+            exchangeToolHistory: [],       // 面額換算工具 (總額) 歷史記錄
+            coinConsolidationHistory: [],  // 對換零錢湊整歷史記錄
+            version: '4.1'                 // 版本號
         };
         this.listeners = [];      // 狀態變更監聽器
     }
@@ -175,6 +177,190 @@ class StateManager {
      */
     getExchangeHistory() {
         return [...this.state.exchangeHistory];
+    }
+    
+    // === 面額換算工具歷史記錄管理 ===
+    
+    /**
+     * 初始化面額換算工具歷史記錄（保存初始輸入狀態）
+     * @param {Object} inputs - 初始輸入狀態
+     */
+    initExchangeToolHistory(inputs) {
+        if (this.state.exchangeToolHistory.length === 0) {
+            this.state.exchangeToolHistory = [{
+                inputs: JSON.parse(JSON.stringify(inputs)),
+                time: new Date().toISOString()
+            }];
+            this.saveState();
+        }
+    }
+    
+    /**
+     * 添加面額換算工具歷史記錄
+     * @param {Object} inputs - 輸入狀態快照
+     */
+    addExchangeToolHistory(inputs) {
+        const historyItem = {
+            inputs: JSON.parse(JSON.stringify(inputs)),
+            time: new Date().toISOString()
+        };
+        this.state.exchangeToolHistory.push(historyItem);
+        this.saveState();
+        this.notifyListeners('exchangeTool', this.state);
+    }
+    
+    /**
+     * 撤銷面額換算工具最後一次操作
+     * @returns {boolean} 是否成功撤銷
+     */
+    undoLastExchangeTool() {
+        if (this.state.exchangeToolHistory.length <= 1) {
+            return false;
+        }
+        this.state.exchangeToolHistory.pop();
+        this.saveState();
+        this.notifyListeners('undoExchangeTool', this.state);
+        return true;
+    }
+    
+    /**
+     * 重置所有面額換算工具操作
+     * @returns {boolean} 是否成功重置
+     */
+    resetAllExchangeTools() {
+        if (this.state.exchangeToolHistory.length <= 1) {
+            return false;
+        }
+        this.state.exchangeToolHistory = [this.state.exchangeToolHistory[0]];
+        this.saveState();
+        this.notifyListeners('resetExchangeTool', this.state);
+        return true;
+    }
+    
+    /**
+     * 回復到指定的面額換算工具歷史狀態
+     * @param {number} index - 歷史記錄索引
+     * @returns {boolean} 是否成功回復
+     */
+    revertToExchangeToolHistory(index) {
+        if (index < 0 || index >= this.state.exchangeToolHistory.length) {
+            return false;
+        }
+        this.state.exchangeToolHistory = this.state.exchangeToolHistory.slice(0, index + 1);
+        this.saveState();
+        this.notifyListeners('revertExchangeTool', this.state);
+        return true;
+    }
+    
+    /**
+     * 取得最新的面額換算工具輸入狀態
+     * @returns {Object} 最新的輸入狀態
+     */
+    getLatestExchangeToolInputs() {
+        if (this.state.exchangeToolHistory.length > 0) {
+            return { ...this.state.exchangeToolHistory[this.state.exchangeToolHistory.length - 1].inputs };
+        }
+        return this.state.inputs;
+    }
+    
+    /**
+     * 取得面額換算工具歷史記錄
+     * @returns {Array} 歷史記錄陣列
+     */
+    getExchangeToolHistory() {
+        return [...this.state.exchangeToolHistory];
+    }
+    
+    // === 對換零錢湊整歷史記錄管理 ===
+    
+    /**
+     * 初始化對換零錢湊整歷史記錄（保存初始結果狀態）
+     * @param {Object} result - 初始結果狀態
+     */
+    initCoinConsolidationHistory(result) {
+        if (this.state.coinConsolidationHistory.length === 0 && result) {
+            this.state.coinConsolidationHistory = [JSON.parse(JSON.stringify(result))];
+            this.saveState();
+        }
+    }
+    
+    /**
+     * 添加對換零錢湊整歷史記錄
+     * @param {Object} result - 交換後的結果
+     */
+    addCoinConsolidationHistory(result) {
+        if (result.lastAction) {
+            result.lastAction.time = new Date().toISOString();
+        }
+        this.state.coinConsolidationHistory.push(JSON.parse(JSON.stringify(result)));
+        this.state.results = { ...result };
+        this.saveState();
+        this.notifyListeners('coinConsolidation', this.state);
+    }
+    
+    /**
+     * 撤銷對換零錢湊整最後一次操作
+     * @returns {boolean} 是否成功撤銷
+     */
+    undoLastCoinConsolidation() {
+        if (this.state.coinConsolidationHistory.length <= 1) {
+            return false;
+        }
+        this.state.coinConsolidationHistory.pop();
+        this.state.results = { ...this.state.coinConsolidationHistory[this.state.coinConsolidationHistory.length - 1] };
+        this.saveState();
+        this.notifyListeners('undoCoinConsolidation', this.state);
+        return true;
+    }
+    
+    /**
+     * 重置所有對換零錢湊整操作
+     * @returns {boolean} 是否成功重置
+     */
+    resetAllCoinConsolidations() {
+        if (this.state.coinConsolidationHistory.length <= 1) {
+            return false;
+        }
+        this.state.coinConsolidationHistory = [this.state.coinConsolidationHistory[0]];
+        this.state.results = { ...this.state.coinConsolidationHistory[0] };
+        this.saveState();
+        this.notifyListeners('resetCoinConsolidation', this.state);
+        return true;
+    }
+    
+    /**
+     * 回復到指定的對換零錢湊整歷史狀態
+     * @param {number} index - 歷史記錄索引
+     * @returns {boolean} 是否成功回復
+     */
+    revertToCoinConsolidationHistory(index) {
+        if (index < 0 || index >= this.state.coinConsolidationHistory.length) {
+            return false;
+        }
+        this.state.coinConsolidationHistory = this.state.coinConsolidationHistory.slice(0, index + 1);
+        this.state.results = { ...this.state.coinConsolidationHistory[index] };
+        this.saveState();
+        this.notifyListeners('revertCoinConsolidation', this.state);
+        return true;
+    }
+    
+    /**
+     * 取得最新的對換零錢湊整結果
+     * @returns {Object} 最新的結果對象
+     */
+    getLatestCoinConsolidationResult() {
+        if (this.state.coinConsolidationHistory && this.state.coinConsolidationHistory.length > 0) {
+            return { ...this.state.coinConsolidationHistory[this.state.coinConsolidationHistory.length - 1] };
+        }
+        return this.state.results ? { ...this.state.results } : null;
+    }
+    
+    /**
+     * 取得對換零錢湊整歷史記錄
+     * @returns {Array} 歷史記錄陣列
+     */
+    getCoinConsolidationHistory() {
+        return [...this.state.coinConsolidationHistory];
     }
     
     /**

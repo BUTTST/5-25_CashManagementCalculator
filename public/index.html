@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>現金管理計算工具 v3.9</title>
+    <title>現金管理計算工具 v4.1</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -34,7 +34,7 @@
                 <button id="theme-toggle" class="control-btn" title="切換主題">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <h1>現金管理計算工具 v3.9</h1>
+                <h1>現金管理計算工具 v4.1</h1>
                 <button id="settings-btn" class="control-btn" title="設定">
                     <span class="settings-icon">⚙️</span>
                 </button>
@@ -45,7 +45,7 @@
                 <button id="show-manual" class="info-btn">查看使用說明</button>
                 <button id="show-exchange" class="info-btn">面額換算工具 (總額)</button>
                 <button id="custom-color-btn" class="info-btn">自訂面額顏色</button>
-                <button id="show-changelog" class="info-btn">📅 每日更新紀錄</button>
+                <button id="show-changelog" class="info-btn">📅 歷史更新紀錄</button>
                 <button id="save-btn" class="info-btn save-btn">💾 保存</button>
                 <button id="export-btn" class="info-btn export-btn">📄 導出</button>
             </div>
@@ -252,8 +252,8 @@
             <!-- 結果總覽 -->
             <div id="summary-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="summary-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="summary-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title">結果總覽</h2>
                 <div class="summary-grid">
@@ -276,38 +276,11 @@
                 </div>
             </div>
             
-            <!-- PC與代收統計 -->
-            <div id="pc-collection-section" class="card movable-block">
-                <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
-                </div>
-                <h2 class="section-title">PC與代收統計</h2>
-                <div class="pc-collection-grid">
-                    <div class="pc-item">
-                        <div class="pc-title">紙鈔張數</div>
-                        <div id="pc-note-count" class="pc-value">0 張</div>
-                    </div>
-                    <div class="pc-item">
-                        <div class="pc-title">硬幣枚數</div>
-                        <div id="pc-coin-count" class="pc-value">0 枚</div>
-                    </div>
-                    <div class="pc-item">
-                        <div class="pc-title">上繳金額</div>
-                        <div id="pc-revenue-amount" class="pc-value">0 元</div>
-                    </div>
-                    <div class="pc-item">
-                        <div class="pc-title">預留金額</div>
-                        <div id="pc-petty-amount" class="pc-value">0 元</div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- 營收上繳詳情 -->
             <div id="revenue-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="revenue-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="revenue-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title">營收上繳</h2>
                 <div class="result-block">
@@ -330,8 +303,8 @@
             <!-- 預留零用金詳情 -->
             <div id="petty-cash-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="petty-cash-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="petty-cash-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title">預留零用金 (目標 20,000 元)</h2>
                 <div class="result-block">
@@ -358,8 +331,8 @@
             <!-- 零錢處理詳情 -->
             <div id="small-coins-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="small-coins-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="small-coins-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title collapsible-header" id="smallCoinsHeader">零錢處理 → 移入「營收」</h2>
                 <div class="collapsible-content" id="smallCoinsContent">
@@ -384,8 +357,8 @@
             <!-- 結果微調工具 -->
             <div id="result-exchange-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="result-exchange-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="result-exchange-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title collapsible-header collapsed" id="resultExchangeHeader">[預留/上繳] 跨區等值交換（不變更總額）</h2>
                 <div class="collapsible-content collapsed" id="resultExchangeContent">
@@ -452,8 +425,8 @@
             <!-- 收納零錢對換工具 -->
             <div id="coin-consolidation-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="coin-consolidation-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="coin-consolidation-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title collapsible-header collapsed" id="coinConsolidationHeader">對換零錢湊整（上繳 ↔ 打包）</h2>
                 <div class="collapsible-content collapsed" id="coinConsolidationContent">
@@ -501,6 +474,18 @@
                         
                         <!-- 交換執行按鈕 -->
                         <button id="perform-coin-consolidation-btn" class="btn btn-block btn-simulate">確認交換</button>
+                        
+                        <!-- 歷史紀錄控制 -->
+                        <div class="history-controls">
+                            <h3 class="subsection-title">交換歷史紀錄</h3>
+                            <div class="buttons-row">
+                                <button id="undo-coin-consolidation-btn" class="btn btn-clear">恢復上一步</button>
+                                <button id="reset-coin-consolidation-btn" class="btn btn-danger">重置所有交換</button>
+                            </div>
+                            <div id="coin-consolidation-history-log" class="history-log">
+                                <p style="text-align:center; color: var(--gray);">尚無交換紀錄</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -508,47 +493,13 @@
             <!-- 零錢打包區塊 -->
             <div id="coin-pack-section" class="card movable-block">
                 <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
+                    <button class="move-btn move-up" data-block-id="coin-pack-section" data-direction="up" title="向上移動">▲</button>
+                    <button class="move-btn move-down" data-block-id="coin-pack-section" data-direction="down" title="向下移動">▼</button>
                 </div>
                 <h2 class="section-title">零錢打包</h2>
                 <div class="result-block" id="coin-pack-block"></div>
             </div>
             
-            <!-- 點核區塊 -->
-            <div id="verification-section" class="card movable-block">
-                <div class="move-buttons">
-                    <button class="move-btn move-up" title="向上移動">▲</button>
-                    <button class="move-btn move-down" title="向下移動">▼</button>
-                </div>
-                <h2 class="section-title">📝 點核區塊</h2>
-                <div class="verification-list">
-                    <div class="verification-item">
-                        <input type="checkbox" id="verify-cash-taken" class="verify-checkbox">
-                        <label for="verify-cash-taken" class="verify-label">
-                            <span class="checkmark"></span>
-                            上繳紙鈔、零錢已拿起
-                        </label>
-                    </div>
-                    <div class="verification-item">
-                        <input type="checkbox" id="verify-revenue-complete" class="verify-checkbox">
-                        <label for="verify-revenue-complete" class="verify-label">
-                            <span class="checkmark"></span>
-                            上繳金額撰寫完整
-                        </label>
-                    </div>
-                    <div class="verification-item">
-                        <input type="checkbox" id="verify-petty-complete" class="verify-checkbox">
-                        <label for="verify-petty-complete" class="verify-label">
-                            <span class="checkmark"></span>
-                            預留金額撰寫完整
-                        </label>
-                    </div>
-                </div>
-                <div class="verification-status" id="verification-status">
-                    <span class="status-text">點核狀態：<span id="verification-count">0/3</span> 項目已完成</span>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -695,6 +646,18 @@
                     </div>
                 </div>
                 <button id="exchange-confirm" class="btn btn-confirm btn-exchange">確認轉換</button>
+                
+                <!-- 歷史紀錄控制 -->
+                <div class="history-controls" style="margin-top: 1.5rem;">
+                    <h3 class="subsection-title">換算歷史紀錄</h3>
+                    <div class="buttons-row">
+                        <button id="undo-exchange-tool-btn" class="btn btn-clear">恢復上一步</button>
+                        <button id="reset-exchange-tool-btn" class="btn btn-danger">重置所有換算</button>
+                    </div>
+                    <div id="exchange-tool-history-log" class="history-log">
+                        <p style="text-align:center; color: var(--gray);">尚無換算紀錄</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -724,84 +687,15 @@
         </div>
     </div>
 
-    <!-- 每日更新紀錄彈窗 -->
+    <!-- 歷史更新紀錄彈窗 -->
     <div id="changelog-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📅 每日更新紀錄</h3>
+                <h3>📅 歷史更新紀錄</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="manual-section">
-                    <h4>2025/7/2</h4>
-                    <h5>🎉 重點更新</h5>
-                    <ul>
-                        <li><strong>README 文件完善</strong>：更新了完整的功能說明文件，詳細介紹工具的使用方式和技術特色。</li>
-                        <li><strong>更新報告整理</strong>：新增了版本對比報告，記錄從 v1.0 到 v2.6 的完整演進過程。</li>
-                        <li><strong>核心功能穩定</strong>：確認所有主要功能運作正常，包括計算引擎、微調工具、狀態持久化等。</li>
-                    </ul>
-                    <h5>🔧 文件改進</h5>
-                    <ul>
-                        <li><strong>使用說明優化</strong>：在 README 中新增了詳細的使用步驟和功能亮點說明。</li>
-                        <li><strong>技術文件完整</strong>：補充了核心演算法邏輯的技術說明，方便開發者理解。</li>
-                        <li><strong>版本歷程記錄</strong>：建立了完整的版本更新紀錄，追蹤功能演進。</li>
-                    </ul>
-                    <h5>📊 功能特色</h5>
-                    <ul>
-                        <li><strong>智慧計算引擎</strong>：自動處理零錢分配和預留金計算。</li>
-                        <li><strong>便利輸入模式</strong>：支援張數快輸和袋/捆加總功能。</li>
-                        <li><strong>強大微調工具</strong>：提供預留/上繳交換和零錢收納對換。</li>
-                        <li><strong>狀態自動保存</strong>：使用 localStorage 技術保存使用者資料。</li>
-                    </ul>
-                </div>
-                <hr>
-                <div class="manual-section">
-                    <h4>2025/6/4</h4>
-                    <h5>🎉 重點更新</h5>
-                    <ul>
-                        <li><strong>核心程式完成</strong>：完成主要的現金管理計算功能開發。</li>
-                        <li><strong>檔案結構整理</strong>：上傳了完整的專案檔案，包含主程式和說明文件。</li>
-                        <li><strong>功能測試驗證</strong>：驗證了計算邏輯的正確性和使用者介面的完整性。</li>
-                    </ul>
-                    <h5>🔧 技術實現</h5>
-                    <ul>
-                        <li><strong>計算邏輯完善</strong>：實現了零錢處理、預留金分配、營收上繳的完整計算流程。</li>
-                        <li><strong>介面設計優化</strong>：完成了響應式設計，支援各種裝置的良好顯示效果。</li>
-                        <li><strong>狀態管理系統</strong>：建立了完整的應用程式狀態管理機制。</li>
-                    </ul>
-                    <h5>💰 業務邏輯</h5>
-                    <ul>
-                        <li><strong>預留零用金目標</strong>：設定為 20,000 元的標準目標。</li>
-                        <li><strong>包裝規則定義</strong>：建立了完整的硬幣袋裝和紙鈔捆裝規則。</li>
-                        <li><strong>面額處理邏輯</strong>：支援 7 種面額 (1000, 500, 100, 50, 10, 5, 1) 的完整處理。</li>
-                    </ul>
-                </div>
-                <hr>
-                <div class="manual-section">
-                    <h4>2025/6/2</h4>
-                    <h5>🔧 功能調整</h5>
-                    <ul>
-                        <li><strong>介面優化</strong>：針對使用者體驗進行了介面調整和優化。</li>
-                        <li><strong>計算邏輯調整</strong>：微調了部分計算邏輯，提升準確性。</li>
-                        <li><strong>錯誤處理改進</strong>：加強了輸入驗證和錯誤提示機制。</li>
-                    </ul>
-                </div>
-                <hr>
-                <div class="manual-section">
-                    <h4>2025/5/29</h4>
-                    <h5>🎉 專案啟動</h5>
-                    <ul>
-                        <li><strong>專案初始化</strong>：建立了現金管理計算工具的基礎架構。</li>
-                        <li><strong>核心概念確立</strong>：定義了預留零用金、營收上繳、零錢處理的核心業務邏輯。</li>
-                        <li><strong>技術架構規劃</strong>：選定了純前端技術棧 (HTML5 + CSS3 + JavaScript)。</li>
-                    </ul>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
-                    <h5 style="color: #2e7d32; margin: 0 0 8px 0;">版本演進總覽</h5>
-                    <p style="margin: 5px 0;"><strong>v2.6 (2025/7/2)</strong>：文件完善，功能穩定</p>
-                    <p style="margin: 5px 0;"><strong>v2.0-2.5 (2025/6/2-6/4)</strong>：核心功能開發與優化</p>
-                    <p style="margin: 5px 0;"><strong>v1.0 (2025/5/29)</strong>：專案啟動與基礎建設</p>
-                </div>
+                <!-- 內容將由 changelog.js 動態載入 -->
             </div>
         </div>
     </div>
@@ -958,6 +852,7 @@
     <script src="資源檔案/ui-components.js"></script>
     <script src="資源檔案/state-management.js"></script>
     <script src="資源檔案/helpers.js"></script>
+    <script src="資源檔案/changelog.js"></script>
     <script src="資源檔案/main.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "cash-management-calculator",
-  "version": "3.9.0",
+  "version": "4.1.0",
   "description": "現金管理計算工具",
   "private": true,
   "scripts": {

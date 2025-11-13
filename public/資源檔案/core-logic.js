@@ -2,7 +2,7 @@
 
 // === 常數定義 ===
 const APP_CONFIG = {
-    STATE_KEY: 'cashTool.v3.9.state',           // localStorage 儲存鍵
+    STATE_KEY: 'cashTool.v4.1.state',           // localStorage 儲存鍵
     PETTY_CASH_TARGET: 20000,                   // 預留零用金目標金額
     LONG_PRESS_DURATION: 5000,                  // 長按重置持續時間(毫秒)
     
@@ -48,14 +48,12 @@ const APP_CONFIG = {
     // 可移動區塊清單
     MOVABLE_BLOCKS: [
         'summary-section',
-        'pc-collection-section', 
         'revenue-section',
         'petty-cash-section',
         'small-coins-section',
         'result-exchange-section',
         'coin-consolidation-section',
-        'coin-pack-section',
-        'verification-section'
+        'coin-pack-section'
     ]
 };
 
@@ -532,26 +530,26 @@ function moveBlock(blockId, direction) {
  * @param {HTMLElement} block - 區塊元素
  */
 function addMoveButtons(block) {
-    if (!block || block.classList.contains('has-move-buttons')) return;
+    if (!block) return;
+    
+    // 檢查整個區塊是否已經有移動按鈕（不只在標題內）
+    if (block.querySelector('.move-buttons')) {
+        block.classList.add('has-move-buttons');
+        return;
+    }
     
     const header = block.querySelector('.section-title');
     if (!header) return;
     
-    // 檢查是否已經有移動按鈕
-    if (header.querySelector('.move-buttons')) return;
-    
     const moveButtonsContainer = document.createElement('div');
     moveButtonsContainer.className = 'move-buttons';
     moveButtonsContainer.innerHTML = `
-        <button class="move-btn move-up" data-block-id="${block.id}" data-direction="up" title="向上移動">
-            <span class="move-icon">▲</span>
-        </button>
-        <button class="move-btn move-down" data-block-id="${block.id}" data-direction="down" title="向下移動">
-            <span class="move-icon">▼</span>
-        </button>
+        <button class="move-btn move-up" data-block-id="${block.id}" data-direction="up" title="向上移動">▲</button>
+        <button class="move-btn move-down" data-block-id="${block.id}" data-direction="down" title="向下移動">▼</button>
     `;
     
-    header.appendChild(moveButtonsContainer);
+    // 將按鈕插入到標題之前
+    header.parentNode.insertBefore(moveButtonsContainer, header);
     block.classList.add('has-move-buttons');
     
     // 綁定點擊事件
@@ -576,10 +574,29 @@ function addMoveButtons(block) {
  * 初始化所有可移動區塊的移動按鈕
  */
 function initializeMovableBlocks() {
+    // 為所有現有的移動按鈕綁定事件（使用事件委派）
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.move-btn');
+        if (btn && btn.dataset.blockId && btn.dataset.direction) {
+            e.stopPropagation(); // 防止觸發折疊功能
+            const blockId = btn.dataset.blockId;
+            const direction = btn.dataset.direction;
+            const block = document.getElementById(blockId);
+            if (block && moveBlock(blockId, direction)) {
+                // 移動成功後的視覺回饋
+                block.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    block.style.transform = '';
+                }, 200);
+            }
+        }
+    });
+    
+    // 檢查並標記已有按鈕的區塊
     APP_CONFIG.MOVABLE_BLOCKS.forEach(blockId => {
         const block = document.getElementById(blockId);
-        if (block) {
-            addMoveButtons(block);
+        if (block && block.querySelector('.move-buttons')) {
+            block.classList.add('has-move-buttons');
         }
     });
 }

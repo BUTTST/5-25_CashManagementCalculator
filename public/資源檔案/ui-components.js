@@ -23,9 +23,6 @@ function updateUI(results, highlights = {}) {
     // 更新硬幣打包區塊
     updateCoinPackSection(results);
     
-    // 更新PC統計區塊
-    updatePCCollectionSection(results);
-    
     // 處理高亮顯示
     handleHighlights(highlights);
 }
@@ -157,39 +154,6 @@ function updateCoinPackSection(results) {
     });
     
     document.getElementById('coin-pack-block').innerHTML = coinPackHTML || '<p class="item">無散裝硬幣</p>';
-}
-
-/**
- * 更新PC統計區塊
- * @param {Object} results - 計算結果
- */
-function updatePCCollectionSection(results) {
-    const supportedDenoms = getSupportedDenominations();
-    
-    // 計算紙鈔張數（包括預留金和營收）
-    let noteCount = 0;
-    supportedDenoms.forEach(denom => {
-        if (denom >= 100) {
-            noteCount += results.distribution.pettyCash[denom] + results.distribution.revenue[denom];
-        }
-    });
-    
-    // 計算硬幣枚數（包括預留金和營收）
-    let coinCount = 0;
-    APP_CONFIG.COIN_DENOMINATIONS.forEach(denom => {
-        coinCount += results.distribution.pettyCash[denom] + results.distribution.revenue[denom];
-    });
-    
-    // 更新顯示
-    const noteCountEl = document.getElementById('pc-note-count');
-    const coinCountEl = document.getElementById('pc-coin-count');
-    const revenueAmountEl = document.getElementById('pc-revenue-amount');
-    const pettyAmountEl = document.getElementById('pc-petty-amount');
-    
-    if (noteCountEl) noteCountEl.textContent = `${noteCount} 張`;
-    if (coinCountEl) coinCountEl.textContent = `${coinCount} 枚`;
-    if (revenueAmountEl) revenueAmountEl.textContent = formatMoney(results.revenueAmount);
-    if (pettyAmountEl) pettyAmountEl.textContent = formatMoney(results.actualPettyCash);
 }
 
 /**

@@ -572,6 +572,191 @@ th {
     padding-left: 20px; 
 }
 
+/* === 歷史更新紀錄樣式 === */
+.changelog-container {
+    max-width: 100%;
+}
+
+.changelog-entry {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+}
+
+.changelog-date {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--tertiary);
+}
+
+.changelog-content {
+    margin-top: 1rem;
+}
+
+.changelog-section {
+    margin-bottom: 1.5rem;
+}
+
+.changelog-section:last-child {
+    margin-bottom: 0;
+}
+
+.changelog-category {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--secondary);
+    margin-bottom: 0.8rem;
+    margin-top: 0;
+}
+
+.changelog-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.changelog-list li {
+    padding: 0.6rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.7;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.changelog-list li:last-child {
+    border-bottom: none;
+}
+
+.changelog-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.changelog-list li strong {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.changelog-divider {
+    border: none;
+    border-top: 2px solid var(--tertiary);
+    margin: 2rem 0;
+    opacity: 0.3;
+}
+
+.changelog-summary {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--success);
+}
+
+.summary-title {
+    color: #2e7d32;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.version-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.version-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.version-tag {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1rem;
+    min-width: 60px;
+}
+
+.version-date {
+    color: var(--gray);
+    font-size: 0.9rem;
+    min-width: 100px;
+}
+
+.version-desc {
+    color: var(--dark);
+    flex: 1;
+}
+
+/* 深色模式適配 */
+.dark-mode .changelog-entry {
+    background: #2c2c2c;
+    border-left-color: var(--primary-light);
+}
+
+.dark-mode .changelog-date {
+    color: var(--primary-light);
+    border-bottom-color: var(--tertiary);
+}
+
+.dark-mode .changelog-category {
+    color: var(--secondary);
+}
+
+.dark-mode .changelog-list li {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.dark-mode .changelog-list li strong {
+    color: #ffffff;
+}
+
+.dark-mode .changelog-divider {
+    border-top-color: var(--tertiary);
+    opacity: 0.5;
+}
+
+.dark-mode .changelog-summary {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+    border-left-color: var(--success);
+}
+
+.dark-mode .summary-title {
+    color: #a5d6a7;
+}
+
+.dark-mode .version-item {
+    background: #1e1e1e;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .version-tag {
+    color: var(--primary-light);
+}
+
+.dark-mode .version-date {
+    color: #b0b0b0;
+}
+
+.dark-mode .version-desc {
+    color: #e0e0e0;
+}
+
 /* === 換算工具樣式 === */
 .exchange-section {
     margin-bottom: 1rem; 
@@ -1277,23 +1462,30 @@ th {
 
 .move-buttons {
     display: flex;
+    flex-direction: column;
     gap: 4px;
-    margin-left: auto;
+    margin-right: auto;
+    order: -1;
+    flex-shrink: 0;
 }
 
 .move-btn {
     background: rgba(13, 71, 161, 0.1);
     border: 1px solid rgba(13, 71, 161, 0.3);
     border-radius: 4px;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 12px;
+    font-size: 14px;
+    line-height: 1;
     color: var(--primary);
+    padding: 0;
 }
 
 .move-btn:hover {

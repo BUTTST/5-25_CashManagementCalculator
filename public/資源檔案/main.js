@@ -19,7 +19,7 @@ class CashManagementApp {
         // 初始化保存機台選擇
         this.currentSaveMachineNumber = null;
         
-        console.log("現金管理工具 v3.9 已初始化。");
+        console.log("現金管理工具 v4.1 已初始化。");
     }
     
     /**
@@ -72,6 +72,9 @@ class CashManagementApp {
                 from: document.getElementById('exchange-from'),
                 to: document.getElementById('exchange-to'),
                 confirm: document.getElementById('exchange-confirm'),
+                undoBtn: document.getElementById('undo-exchange-tool-btn'),
+                resetBtn: document.getElementById('reset-exchange-tool-btn'),
+                log: document.getElementById('exchange-tool-history-log'),
                 fromCurrentAmount: document.getElementById('from-current-amount'),
                 fromCurrentCount: document.getElementById('from-current-count'),
                 fromNewAmount: document.getElementById('from-new-amount'),
@@ -112,7 +115,10 @@ class CashManagementApp {
                 fromPreview: document.getElementById('coin-consolidation-from-preview'),
                 toDenom: document.getElementById('coin-consolidation-to-denom'),
                 toPreview: document.getElementById('coin-consolidation-to-preview'),
-                performBtn: document.getElementById('perform-coin-consolidation-btn')
+                performBtn: document.getElementById('perform-coin-consolidation-btn'),
+                undoBtn: document.getElementById('undo-coin-consolidation-btn'),
+                resetBtn: document.getElementById('reset-coin-consolidation-btn'),
+                log: document.getElementById('coin-consolidation-history-log')
             },
             
             // 設定相關
@@ -244,7 +250,12 @@ class CashManagementApp {
             dom.modals.exchange.style.display = 'block';
         };
         dom.buttons.showColor.onclick = () => dom.modals.color.style.display = 'block';
-        dom.buttons.showChangelog.onclick = () => dom.modals.changelog.style.display = 'block';
+        dom.buttons.showChangelog.onclick = () => {
+            if (typeof initChangelogModal !== 'undefined') {
+                initChangelogModal();
+            }
+            dom.modals.changelog.style.display = 'block';
+        };
         
         // === 新增功能按鈕 ===
         if (dom.buttons.themeToggle) {
@@ -324,6 +335,15 @@ class CashManagementApp {
         [cc.fromDenom, cc.fromCount, cc.toDenom].forEach(el => {
             el.addEventListener('input', () => this.updateCoinConsolidationPreview());
         });
+        if (cc.undoBtn) {
+            cc.undoBtn.addEventListener('click', () => this.undoCoinConsolidation());
+        }
+        if (cc.resetBtn) {
+            cc.resetBtn.addEventListener('click', () => this.resetCoinConsolidations());
+        }
+        if (cc.log) {
+            cc.log.addEventListener('click', (e) => this.handleCoinConsolidationHistoryClick(e));
+        }
         
         // === 新增功能事件綁定 ===
         
@@ -473,6 +493,12 @@ class CashManagementApp {
             // 重要：setupCoinConsolidationTool需要狀態資料，必須傳入完整的狀態對象
             setupCoinConsolidationTool(this.domElements, this.stateManager.getState());
         
+        // 初始化對換零錢湊整歷史記錄
+        this.stateManager.initCoinConsolidationHistory(results);
+        
+        // 渲染歷史記錄
+        this.renderCoinConsolidationHistory();
+        
             // 確保結果區塊和代收PC計算區塊顯示
             setTimeout(() => {
         this.domElements.resultContainer.classList.add('active');
@@ -529,14 +555,6 @@ class CashManagementApp {
         }
         
         console.log('結果區塊、代收PC計算區塊及後續區域已隱藏');
-        
-        // 重置驗證狀態
-        document.querySelectorAll('.verify-checkbox').forEach(cb => {
-            cb.checked = false;
-        });
-        if (typeof updateVerificationStatus !== 'undefined') {
-            updateVerificationStatus();
-        }
     }
     
     /**
@@ -588,8 +606,18 @@ class CashManagementApp {
                 
                 if (state.exchangeHistory && state.exchangeHistory.length > 0) {
                     setupResultExchangeTool(this.domElements);
-                    setupCoinConsolidationTool(this.domElements);
+                    setupCoinConsolidationTool(this.domElements, state);
                     renderResultExchangeHistory(this.domElements, state);
+                }
+                
+                // 恢復對換零錢湊整歷史記錄顯示
+                if (state.coinConsolidationHistory && state.coinConsolidationHistory.length > 0) {
+                    this.renderCoinConsolidationHistory();
+                }
+                
+                // 恢復面額換算工具歷史記錄顯示
+                if (state.exchangeToolHistory && state.exchangeToolHistory.length > 0) {
+                    this.renderExchangeToolHistory();
                 }
             }
             
@@ -726,7 +754,22 @@ class CashManagementApp {
         const toDenom = parseInt(cc.toDenom.value, 10);
         const fromCount = parseInt(cc.fromCount.value, 10);
         
-        const lastResult = this.stateManager.getLatestExchangeResult();
+        // 使用對換零錢湊整的歷史記錄
+        let lastResult = this.stateManager.getLatestCoinConsolidationResult();
+        if (!lastResult) {
+            // 如果沒有歷史記錄，使用exchangeHistory的最後結果
+            lastResult = this.stateManager.getLatestExchangeResult();
+            // 初始化對換零錢湊整歷史記錄
+            if (lastResult) {
+                this.stateManager.initCoinConsolidationHistory(lastResult);
+            }
+        }
+        
+        if (!lastResult) {
+            alert("請先進行計算！");
+            return;
+        }
+        
         const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
         
         if (!swapPath.possible) {
@@ -750,12 +793,90 @@ class CashManagementApp {
             text: `[上繳]${fromDenom}元x${fromCount} ⇄ [打包]${toDenom}元x${toCount}`
         };
         
-        // 更新狀態
-        this.stateManager.addExchangeHistory(newResult);
+        // 更新狀態（使用獨立歷史記錄）
+        this.stateManager.addCoinConsolidationHistory(newResult);
         
         // 更新 UI
         updateUI(newResult, { revenue: true, packing: true });
         this.updateCoinConsolidationPreview();
+        this.renderCoinConsolidationHistory();
+    }
+    
+    /**
+     * 撤銷對換零錢湊整最後一次操作
+     */
+    undoCoinConsolidation() {
+        if (this.stateManager.undoLastCoinConsolidation()) {
+            const lastResult = this.stateManager.getLatestCoinConsolidationResult();
+            updateUI(lastResult);
+            this.updateCoinConsolidationPreview();
+            this.renderCoinConsolidationHistory();
+        }
+    }
+    
+    /**
+     * 重置所有對換零錢湊整操作
+     */
+    resetCoinConsolidations() {
+        if (confirm('確定要重置所有交換操作嗎？')) {
+            if (this.stateManager.resetAllCoinConsolidations()) {
+                const initialResult = this.stateManager.getLatestCoinConsolidationResult();
+                updateUI(initialResult);
+                this.updateCoinConsolidationPreview();
+                this.renderCoinConsolidationHistory();
+            }
+        }
+    }
+    
+    /**
+     * 處理對換零錢湊整歷史記錄點擊
+     */
+    handleCoinConsolidationHistoryClick(e) {
+        const item = e.target.closest('.history-log-item');
+        if (item) {
+            const index = parseInt(item.dataset.index, 10);
+            if (this.stateManager.revertToCoinConsolidationHistory(index)) {
+                const targetResult = this.stateManager.getLatestCoinConsolidationResult();
+                updateUI(targetResult);
+                this.updateCoinConsolidationPreview();
+                this.renderCoinConsolidationHistory();
+            }
+        }
+    }
+    
+    /**
+     * 渲染對換零錢湊整歷史記錄
+     */
+    renderCoinConsolidationHistory() {
+        const logEl = this.domElements.coinConsolidation.log;
+        const history = this.stateManager.getCoinConsolidationHistory();
+        
+        if (!logEl || !history || history.length <= 1) {
+            if (logEl) {
+                logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">尚無交換紀錄</p>';
+            }
+            return;
+        }
+        
+        let html = '';
+        const activeIndex = history.length - 1;
+        
+        history.forEach((item, index) => {
+            if (index > 0) {
+                const actionText = item.lastAction ? item.lastAction.text : '未知操作';
+                const timeText = item.lastAction && item.lastAction.time ? 
+                    new Date(item.lastAction.time).toLocaleTimeString('zh-TW', { hour12: false }) : '';
+                
+                let displayText = actionText;
+                if (timeText) {
+                    displayText = `<span class="history-timestamp">${timeText}</span> <span class="history-action">${actionText}</span>`;
+                }
+                
+                html += `<div class="history-log-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">${displayText}</div>`;
+            }
+        });
+        
+        logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">尚無交換紀錄</p>';
     }
     
     /**
@@ -802,13 +923,100 @@ class CashManagementApp {
             return;
         }
         
+        // 初始化歷史記錄（如果還沒有）
+        const currentInputs = collectInputs(this.domElements);
+        if (this.stateManager.getState().exchangeToolHistory.length === 0) {
+            this.stateManager.initExchangeToolHistory(currentInputs);
+        }
+        
         // 執行轉換
         fromInput.value = formatNumber(fromCurrentAmount - amount);
         toInput.value = formatNumber(parseInputValue(toInput.value) + amount);
         
-        // 關閉彈窗並更新狀態
-        this.domElements.modals.exchange.style.display = 'none';
+        // 更新狀態並記錄歷史
         this.updateStateFromInputs();
+        const newInputs = collectInputs(this.domElements);
+        this.stateManager.addExchangeToolHistory(newInputs);
+        
+        // 更新歷史記錄顯示
+        this.renderExchangeToolHistory();
+        
+        // 關閉彈窗
+        this.domElements.modals.exchange.style.display = 'none';
+    }
+    
+    /**
+     * 撤銷面額換算工具最後一次操作
+     */
+    undoExchangeTool() {
+        if (this.stateManager.undoLastExchangeTool()) {
+            const latestInputs = this.stateManager.getLatestExchangeToolInputs();
+            restoreInputsFromState({ inputs: latestInputs }, this.domElements);
+            this.updateStateFromInputs();
+            this.renderExchangeToolHistory();
+        }
+    }
+    
+    /**
+     * 重置所有面額換算工具操作
+     */
+    resetExchangeTools() {
+        if (confirm('確定要重置所有換算操作嗎？')) {
+            if (this.stateManager.resetAllExchangeTools()) {
+                const initialInputs = this.stateManager.getState().exchangeToolHistory[0].inputs;
+                restoreInputsFromState({ inputs: initialInputs }, this.domElements);
+                this.updateStateFromInputs();
+                this.renderExchangeToolHistory();
+            }
+        }
+    }
+    
+    /**
+     * 處理面額換算工具歷史記錄點擊
+     */
+    handleExchangeToolHistoryClick(e) {
+        const item = e.target.closest('.history-log-item');
+        if (item) {
+            const index = parseInt(item.dataset.index, 10);
+            if (this.stateManager.revertToExchangeToolHistory(index)) {
+                const targetInputs = this.stateManager.getState().exchangeToolHistory[index].inputs;
+                restoreInputsFromState({ inputs: targetInputs }, this.domElements);
+                this.updateStateFromInputs();
+                this.renderExchangeToolHistory();
+            }
+        }
+    }
+    
+    /**
+     * 渲染面額換算工具歷史記錄
+     */
+    renderExchangeToolHistory() {
+        const logEl = this.domElements.exchange.log;
+        const history = this.stateManager.getExchangeToolHistory();
+        
+        if (!logEl || !history || history.length <= 1) {
+            if (logEl) {
+                logEl.innerHTML = '<p style="text-align:center; color: var(--gray);">尚無換算紀錄</p>';
+            }
+            return;
+        }
+        
+        let html = '';
+        const activeIndex = history.length - 1;
+        
+        history.forEach((item, index) => {
+            if (index > 0) {
+                const timeText = item.time ? 
+                    new Date(item.time).toLocaleTimeString('zh-TW', { hour12: false }) : '';
+                const displayText = timeText ? 
+                    `<span class="history-timestamp">${timeText}</span> <span class="history-action">換算操作</span>` : 
+                    '換算操作';
+                
+                html += `<div class="history-log-item ${index === activeIndex ? 'active' : ''}" data-index="${index}">${displayText}</div>`;
+            }
+        });
+        
+        logEl.innerHTML = html || '<p style="text-align:center; color: var(--gray);">尚無換算紀錄</p>';
     }
     
     /**
@@ -837,6 +1045,18 @@ class CashManagementApp {
             case 'reset':
             case 'revert':
                 renderResultExchangeHistory(this.domElements, state);
+                break;
+            case 'coinConsolidation':
+            case 'undoCoinConsolidation':
+            case 'resetCoinConsolidation':
+            case 'revertCoinConsolidation':
+                this.renderCoinConsolidationHistory();
+                break;
+            case 'exchangeTool':
+            case 'undoExchangeTool':
+            case 'resetExchangeTool':
+            case 'revertExchangeTool':
+                this.renderExchangeToolHistory();
                 break;
             default:
                 // 其他狀態變更暫時不需要特殊處理
@@ -1061,7 +1281,7 @@ class CashManagementApp {
         const settingsData = {
             settings: { ...APP_CONFIG.SETTINGS },
             colors: this.getCurrentColors(),
-            version: '3.9',
+            version: '4.1',
             exportTime: new Date().toISOString()
         };
         
@@ -1074,7 +1294,7 @@ class CashManagementApp {
     handleExportHistory() {
         const historyData = {
             saveHistory: this.saveHistory,
-            version: '3.9',
+            version: '4.1',
             exportTime: new Date().toISOString()
         };
         
@@ -1090,7 +1310,7 @@ class CashManagementApp {
             colors: this.getCurrentColors(),
             saveHistory: this.saveHistory,
             currentState: this.stateManager.getState(),
-            version: '3.9',
+            version: '4.1',
             exportTime: new Date().toISOString()
         };
         
@@ -1211,11 +1431,6 @@ class CashManagementApp {
         // 初始化区块移动功能
         if (typeof initializeMovableBlocks !== 'undefined') {
             initializeMovableBlocks();
-        }
-        
-        // 初始化驗證區塊
-        if (typeof initVerificationBlock !== 'undefined') {
-            initVerificationBlock();
         }
         
         // 初始化額外計算功能
