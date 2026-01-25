@@ -137,6 +137,9 @@ body {
     font-size: 1rem; 
     text-align: center; 
     background-color: #f0f0f0;
+    /* 確保在任何主題下輸入文字可見 */
+    color: var(--dark);
+    caret-color: var(--primary);
 }
 
 .amount-input {
@@ -147,6 +150,9 @@ body {
     font-size: 1.1rem; 
     transition: all 0.3s; 
     background-color: #f9f9f9;
+    /* 明確指定文字顏色以避免繼承導致白底白字問題 */
+    color: var(--dark);
+    caret-color: var(--primary);
 }
 
 .input-group input:focus, 
@@ -155,6 +161,8 @@ body {
     outline: none; 
     box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2); 
     background-color: white;
+    /* 在聚焦時也保證文字為主題深色（light）或主題變數提供的文字色 */
+    color: var(--dark);
 }
 
 /* 錯誤狀態 */
