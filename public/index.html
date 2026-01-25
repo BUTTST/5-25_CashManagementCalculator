@@ -51,6 +51,7 @@
                 <button id="show-changelog" class="info-btn">📅 歷史更新紀錄</button>
                 <button id="save-btn" class="info-btn save-btn">💾 保存</button>
                 <button id="export-btn" class="info-btn export-btn">📄 導出</button>
+                <button id="add-home-btn" class="info-btn">➕ 加到主畫面</button>
             </div>
         </div>
 
@@ -583,6 +584,25 @@
                         <li><strong>結果微調</strong>：在產生結果後，可將「預留金」與「上繳營收」中的特定面額互相交換，而不影響總金額。</li>
                     </ul>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加到主畫面說明彈窗（iOS 使用者會看到） -->
+    <div id="add-to-home-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>加入主畫面（加入捷徑說明）</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>若您使用 iPhone / iPad（Safari），可手動將此頁加入主畫面：</p>
+                <ol>
+                    <li>在 Safari 中，點選畫面下方的 <strong>「分享」</strong> 按鈕（方框內向上箭頭）。</li>
+                    <li>在選單中選擇 <strong>「加入主畫面」</strong>（Add to Home Screen）。</li>
+                    <li>按「加入」即可，系統會在主畫面建立一個捷徑。</li>
+                </ol>
+                <p>（若使用 Android Chrome，請點選畫面上的「➕ 加到主畫面」按鈕，系統會提示您安裝或加入捷徑。）</p>
             </div>
         </div>
     </div>

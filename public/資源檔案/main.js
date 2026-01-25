@@ -13,6 +13,9 @@ class CashManagementApp {
         this.longPressTimer = null;
         this.isLongPress = false;
         
+        // PWA/加入主畫面相關
+        this.deferredPrompt = null; // 儲存 beforeinstallprompt 事件
+        
         // 保存相關
         this.saveHistory = [];
         
@@ -45,6 +48,7 @@ class CashManagementApp {
             modals: {
                 package: document.getElementById('package-modal'),
                 manual: document.getElementById('manual-modal'),
+                addToHome: document.getElementById('add-to-home-modal'),
                 exchange: document.getElementById('exchange-modal'),
                 color: document.getElementById('color-modal'),
                 changelog: document.getElementById('changelog-modal'),
@@ -60,6 +64,7 @@ class CashManagementApp {
                 showExchange: document.getElementById('show-exchange'),
                 showColor: document.getElementById('custom-color-btn'),
                 showChangelog: document.getElementById('show-changelog'),
+                addHome: document.getElementById('add-home-btn'),
                 themeToggle: document.getElementById('theme-toggle'),
                 settings: document.getElementById('settings-btn'),
                 save: document.getElementById('save-btn'),
@@ -256,6 +261,10 @@ class CashManagementApp {
             }
             dom.modals.changelog.style.display = 'block';
         };
+        // 加入主畫面按鈕（Chrome 支援 beforeinstallprompt，iOS 顯示手動說明）
+        if (dom.buttons.addHome) {
+            dom.buttons.addHome.onclick = () => this.handleAddHomeClick();
+        }
         
         // === 新增功能按鈕 ===
         if (dom.buttons.themeToggle) {
@@ -1459,6 +1468,80 @@ class CashManagementApp {
         
         // 初始化人員清單
         this.renderStaffList();
+        
+        // 初始化加入主畫面功能（會監聽 beforeinstallprompt 並控制按鈕/說明）
+        this.setupAddToHome();
+    }
+
+    /**
+     * 設定加入主畫面功能：監聽 beforeinstallprompt，並控制按鈕顯示與處理流程
+     */
+    setupAddToHome() {
+        const dom = this.domElements;
+        try {
+            if (dom.buttons.addHome) dom.buttons.addHome.style.display = 'none';
+
+            // 對於 iOS（Safari）只顯示說明按鈕，使用者需手動加入
+            if (this.isIos() && dom.buttons.addHome) {
+                dom.buttons.addHome.style.display = 'inline-block';
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // 防止瀏覽器自動顯示提示，保存 event 以便之後顯示
+                e.preventDefault();
+                this.deferredPrompt = e;
+                if (dom.buttons.addHome) dom.buttons.addHome.style.display = 'inline-block';
+            });
+
+            window.addEventListener('appinstalled', () => {
+                this.deferredPrompt = null;
+                if (dom.buttons.addHome) dom.buttons.addHome.style.display = 'none';
+                createNotification('已安裝應用於主畫面', 'success');
+            });
+        } catch (err) {
+            console.warn('setupAddToHome 發生錯誤:', err);
+        }
+    }
+
+    /**
+     * 處理「加入主畫面」按鈕點擊
+     */
+    handleAddHomeClick() {
+        const dom = this.domElements;
+        if (this.deferredPrompt) {
+            // 觸發安裝提示
+            this.deferredPrompt.prompt();
+            this.deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    createNotification('已加入主畫面', 'success');
+                } else {
+                    createNotification('您已取消加入主畫面', 'info');
+                }
+                this.deferredPrompt = null;
+                if (dom.buttons.addHome) dom.buttons.addHome.style.display = 'none';
+            }).catch((err) => {
+                console.error('userChoice promise error:', err);
+            });
+            return;
+        }
+
+        // iOS 或其他不支援 beforeinstallprompt 的情況：顯示手動加入說明
+        if (this.isIos()) {
+            if (dom.modals.addToHome) dom.modals.addToHome.style.display = 'block';
+            return;
+        }
+
+        // 其他裝置：顯示通用提示
+        createNotification('此裝置不支援自動加入主畫面，請使用瀏覽器選單手動新增捷徑。', 'info');
+    }
+
+    /**
+     * 判斷是否為 iOS 裝置（用於顯示手動加入說明）
+     * @returns {boolean}
+     */
+    isIos() {
+        const ua = navigator.userAgent || '';
+        return /iphone|ipad|ipod/i.test(ua) && !window.MSStream;
     }
     
     /**
