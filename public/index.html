@@ -763,6 +763,17 @@
                     </div>
                 </div>
                 
+                <!-- 導出專用區塊（直接操作按鈕） -->
+                <div class="settings-section" id="settings-export-section" style="margin-top:1rem;border-top:1px solid var(--gray);padding-top:1rem;">
+                    <h4>導出</h4>
+                    <p class="setting-description">直接在此區塊執行導出操作，結果會顯示於下方的導出結果區塊。</p>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
+                        <button type="button" class="btn btn-export" onclick="cashApp.handleExportSettings()">導出設定</button>
+                        <button type="button" class="btn btn-export" onclick="cashApp.handleExportHistory()">導出歷史</button>
+                        <button type="button" class="btn btn-export highlight" onclick="cashApp.handleExportAll()">一鍵全部導出</button>
+                    </div>
+                </div>
+                
                 <div class="modal-footer">
                     <button id="save-settings-btn" class="btn btn-simulate">保存設定</button>
                     <button id="reset-settings-btn" class="btn btn-clear">恢復預設</button>
