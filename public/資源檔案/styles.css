@@ -798,6 +798,25 @@ th {
     border-radius: var(--radius); 
     font-size: 1rem; 
     background-color: #f9f9f9;
+    /* 確保下拉選單的文字在明亮主題下可見 */
+    color: var(--dark);
+}
+
+/* 通用表單元件文字色保護：避免繼承錯誤導致白底白字 */
+.amount-input,
+.bag-input,
+.exchange-input,
+.exchange-select,
+.save-select,
+select,
+textarea {
+    color: var(--dark);
+}
+
+/* option 使用繼承的文字色，讓瀏覽器在深色模式下仍能靠變數顯示正確色彩 */
+.exchange-select option,
+select option {
+    color: inherit;
 }
 
 .exchange-info {
