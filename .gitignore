@@ -23,3 +23,6 @@ npm-debug.log*
 .env
 .env.local
 
+#  .cursor\skills 目錄，這是提供 AI 導入技能說明文件使用
+.cursor/skills/
+
