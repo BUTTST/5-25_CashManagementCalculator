@@ -471,7 +471,7 @@ class CashManagementApp {
         console.log('開始計算...');
         
         if (!this.validateAllInputs()) {
-            alert('部分金額輸入錯誤，請檢查紅色框標示的欄位！');
+            createNotification('部分金額輸入錯誤，請檢查紅色框標示的欄位！', 'error');
             return;
         }
         
@@ -515,7 +515,7 @@ class CashManagementApp {
             
         } catch (error) {
             console.error('計算過程發生錯誤:', error);
-            alert('計算過程發生錯誤，請重新嘗試。');
+            createNotification('計算過程發生錯誤，請重新嘗試。', 'error');
         }
     }
     
@@ -563,7 +563,7 @@ class CashManagementApp {
     hardReset() {
         this.softClear();
         resetColors(this.domElements);
-        alert('已徹底重置工具並清除所有儲存的資料。');
+        createNotification('已徹底重置工具並清除所有儲存的資料。', 'success');
     }
     
     /**
@@ -679,7 +679,7 @@ class CashManagementApp {
         const swapPath = findValidSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
         
         if (!swapPath.possible) {
-            alert("無法執行此交換，請檢查數量與面額。");
+            createNotification('無法執行此交換，請檢查數量與面額。', 'error');
             return;
         }
         
@@ -705,6 +705,7 @@ class CashManagementApp {
         // 更新 UI
         updateUI(newResult, { petty: true, revenue: true });
         this.updateResultExchangePreview();
+        createNotification(`[預留]${fromDenom}元x${fromCount} ⇄ [上繳]${toDenom}元x${toCount} 已完成`, 'success');
     }
     
     /**
@@ -716,6 +717,7 @@ class CashManagementApp {
             updateUI(lastResult);
             this.updateResultExchangePreview();
             this.updateCoinConsolidationPreview();
+            createNotification('已撤銷最後一次微調操作', 'info');
         }
     }
     
@@ -766,14 +768,14 @@ class CashManagementApp {
         }
         
         if (!lastResult) {
-            alert("請先進行計算！");
+            createNotification('請先進行計算！', 'error');
             return;
         }
         
         const swapPath = findValidCoinSwapPath(fromDenom, toDenom, fromCount, lastResult.distribution);
         
         if (!swapPath.possible) {
-            alert("無法執行此交換，請檢查數量與面額。");
+            createNotification('無法執行此交換，請檢查數量與面額。', 'error');
             return;
         }
         
@@ -800,6 +802,7 @@ class CashManagementApp {
         updateUI(newResult, { revenue: true, packing: true });
         this.updateCoinConsolidationPreview();
         this.renderCoinConsolidationHistory();
+        createNotification(`[上繳]${fromDenom}元x${fromCount} ⇄ [打包]${toDenom}元x${toCount} 已完成`, 'success');
     }
     
     /**
@@ -811,6 +814,7 @@ class CashManagementApp {
             updateUI(lastResult);
             this.updateCoinConsolidationPreview();
             this.renderCoinConsolidationHistory();
+            createNotification('已撤銷收納零錢對換最後一次操作', 'info');
         }
     }
     
@@ -920,13 +924,13 @@ class CashManagementApp {
         
         // 基本驗證：正數、不得超出來源、必須為來源面額的整數倍
         if (amount <= 0 || amount > fromCurrentAmount || amount % fromDenom !== 0) {
-            alert('請輸入有效的轉換金額（必須為來源面額的整倍數且不可超出來源可用金額）。');
+            createNotification('請輸入有效的轉換金額（必須為來源面額的整倍數且不可超出來源可用金額）。', 'error');
             return;
         }
 
         // 目標面額可整除性檢查：確保轉換後能換成整數張數的目標面額
         if (amount % toDenom !== 0) {
-            alert('轉換金額必須能轉成整數張數的目標面額，請調整金額或目標面額。');
+            createNotification('轉換金額必須能轉成整數張數的目標面額，請調整金額或目標面額。', 'error');
             return;
         }
         
@@ -948,7 +952,8 @@ class CashManagementApp {
         // 更新歷史記錄顯示
         this.renderExchangeToolHistory();
         
-        // 關閉彈窗
+        // 顯示成功通知並關閉彈窗
+        createNotification('面額換算已完成', 'success');
         this.domElements.modals.exchange.style.display = 'none';
     }
     
@@ -961,6 +966,7 @@ class CashManagementApp {
             restoreInputsFromState({ inputs: latestInputs }, this.domElements);
             this.updateStateFromInputs();
             this.renderExchangeToolHistory();
+            createNotification('已撤銷換算工具最後一次操作', 'info');
         }
     }
     
@@ -1219,7 +1225,7 @@ class CashManagementApp {
      */
     handleSaveSettings() {
         this.saveSettings();
-        alert('設定已保存！');
+        createNotification('設定已保存！', 'success');
         this.domElements.modals.settings.style.display = 'none';
     }
     
@@ -1230,7 +1236,7 @@ class CashManagementApp {
         if (confirm('確定要恢復所有設定為預設值嗎？')) {
             this.resetSettings();
             this.updateSettingsModal();
-            alert('設定已重置！');
+            createNotification('設定已重置！', 'success');
         }
     }
     
@@ -1244,7 +1250,7 @@ class CashManagementApp {
         const staff = APP_CONFIG.SETTINGS.staffList[staffIndex];
         
         if (!this.stateManager.getState().results) {
-            alert('請先進行計算再保存！');
+            createNotification('請先進行計算再保存！', 'error');
             return;
         }
         
@@ -1265,7 +1271,7 @@ class CashManagementApp {
         // 更新設定中的保存記錄預覽
         this.updateSettingsSavePreview();
         
-        alert(`記錄已保存！\\n時間: ${timestamp}\\n機號: ①${machine}\\n人員: ${staff}`);
+        createNotification(`記錄已保存！\\n時間: ${timestamp}\\n機號: ①${machine}\\n人員: ${staff}`, 'success');
         this.renderSaveHistory();
         
         // 重要：確保保存記錄功能完整更新
@@ -1330,12 +1336,12 @@ class CashManagementApp {
     handleCopyExport() {
         const text = this.domElements.export.text.value;
         navigator.clipboard.writeText(text).then(() => {
-            alert('已複製到剪貼板！');
+            createNotification('已複製到剪貼板！', 'success');
         }).catch(() => {
             // 備用方案
             this.domElements.export.text.select();
             document.execCommand('copy');
-            alert('已複製到剪貼板！');
+            createNotification('已複製到剪貼板！', 'success');
         });
     }
     
@@ -1596,7 +1602,7 @@ class CashManagementApp {
     restoreFromSave(saveId) {
         const target = this.saveHistory.find(s => s.id === saveId);
         if (!target) {
-            alert('找不到指定的保存紀錄');
+            createNotification('找不到指定的保存紀錄', 'error');
             return;
         }
 
@@ -1633,7 +1639,7 @@ class CashManagementApp {
         }
 
         this.validateAllInputs();
-        showNotification('已復現所選保存紀錄', 'success');
+        createNotification('已復現所選保存紀錄', 'success');
     }
 
     /**

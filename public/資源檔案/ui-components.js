@@ -446,7 +446,7 @@ function showLoadingState(show) {
  * @param {string} message - 錯誤訊息
  */
 function showErrorMessage(message) {
-    alert(`錯誤：${message}`);
+    createNotification(`錯誤：${message}`, 'error');
 }
 
 /**
@@ -454,8 +454,7 @@ function showErrorMessage(message) {
  * @param {string} message - 成功訊息
  */
 function showSuccessMessage(message) {
-    // 可以用更優雅的通知方式替代 alert
-    alert(`成功：${message}`);
+    createNotification(`成功：${message}`, 'success');
 }
 
 /**
@@ -467,15 +466,29 @@ function createNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
-    
+
+    // 可點擊隱藏（點擊立即消失）
+    notification.style.cursor = 'pointer';
+    notification.setAttribute('role', 'status');
+    notification.addEventListener('click', () => {
+        if (!notification.classList.contains('fade-out')) {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                if (notification.parentNode) notification.parentNode.removeChild(notification);
+            }, 200);
+        }
+    });
+
     document.body.appendChild(notification);
-    
-    // 自動消失
+
+    // 自動消失（3 秒），但用戶可提前點擊關閉
     setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
+        if (!notification.classList.contains('fade-out')) {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                if (notification.parentNode) notification.parentNode.removeChild(notification);
+            }, 200);
+        }
     }, 3000);
 }
 

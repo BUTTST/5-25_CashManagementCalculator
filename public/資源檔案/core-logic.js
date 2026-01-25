@@ -642,10 +642,10 @@ function importAfterCollectionAmount() {
             // 觸發計算更新
             updateExtraCalc();
         } else {
-            alert('代收加總後金額為負數，無法匯入！\n請檢查報表總額是否大於代收數值。');
+            createNotification('代收加總後金額為負數，無法匯入！\\n請檢查報表總額是否大於代收數值。', 'error');
         }
     } else {
-        alert('請先輸入代收金額和報表總額！');
+        createNotification('請先輸入代收金額和報表總額！', 'error');
     }
 }
 
@@ -807,7 +807,7 @@ function initExtraCalc() {
                 let value = parseInputValue(input.value);
                 if (value < 0) {
                     input.value = '0';
-                    alert('代收金額只能輸入正數！');
+                    createNotification('代收金額只能輸入正數！', 'error');
                 }
             }
             
