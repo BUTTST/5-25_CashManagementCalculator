@@ -1432,8 +1432,55 @@ th {
     left: 50%;
     transform: translateX(-50%);
     margin: 0;
-    font-size: 1.8rem;
+    /* 使用 clamp 提供在容器擠壓時的自動縮放 */
+    font-size: clamp(1.0rem, 2.6vw, 1.8rem);
     font-weight: 700;
+    white-space: nowrap; /* 不強制換行 */
+    display: inline-block;
+    line-height: 1;
+    /* 若需要超窄螢幕再進一步縮小 */
+    text-rendering: optimizeLegibility;
+}
+
+/* 標題內部結構：把主要字與「工具」分開，方便版本號定位 */
+.header-top h1 .title-main {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.header-top h1 .title-tool {
+    display: inline-block;
+    position: relative; /* 讓版本號可絕對定位於此 */
+    margin-left: 0.12rem;
+    vertical-align: top;
+    /* 防止書寫系統在窄幅下把「工具」拆行 */
+    white-space: nowrap;
+}
+
+.header-top h1 .title-version {
+    position: absolute;
+    /* 微調：緊黏於「工具」的右下角 */
+    right: -0.05em;
+    bottom: -0.25em;
+    font-size: 0.45em;
+    line-height: 1;
+    font-weight: 600;
+    opacity: 0.95;
+    /* 使用變數或深色以便在明亮/深色主題下可見 */
+    color: var(--primary);
+    transform-origin: right bottom;
+    padding-left: 0.06rem;
+}
+
+/* 極窄顯示器時再微幅縮小版本字並抑制過大間距 */
+@media (max-width: 420px) {
+    .header-top h1 {
+        font-size: clamp(0.95rem, 3.6vw, 1.4rem);
+    }
+    .header-top h1 .title-version {
+        font-size: 0.42em;
+        bottom: -0.28em;
+    }
 }
 
 .header-controls {
