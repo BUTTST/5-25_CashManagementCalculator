@@ -14,7 +14,7 @@ class StateManager {
             exchangeHistory: [],           // [預留/上繳] 跨區等值交換歷史記錄
             exchangeToolHistory: [],       // 面額換算工具 (總額) 歷史記錄
             coinConsolidationHistory: [],  // 對換零錢湊整歷史記錄
-            version: '4.1'                 // 版本號
+            version: '4.3'                 // 版本號
         };
         this.listeners = [];      // 狀態變更監聽器
     }

@@ -7,6 +7,25 @@
 function getChangelogHTML() {
     return `
         <div class="changelog-container">
+            <!-- 2026/1/25 -->
+            <div class="changelog-entry">
+                <div class="changelog-date">2026/1/25</div>
+                <div class="changelog-content">
+                    <div class="changelog-section">
+                        <h5 class="changelog-category">✨ 版本更新 — v4.3 (最後更新 2026/1/25 14:30)</h5>
+                        <ul class="changelog-list">
+                            <li><strong>新增互動通知</strong>：加入可點擊的非阻塞通知元件（點擊立即隱藏），統一取代原有的 alert，所有操作（換算、微調、收納、保存、複製等）均提供即時回饋。</li>
+                            <li><strong>面額換算修正</strong>：修正總額換算工具的驗證與預覽邏輯，加入「目標面額可整除性」檢查，確保預覽與執行一致，避免不可整數張數的轉換。</li>
+                            <li><strong>歷史紀錄完整性</strong>：確保面額換算工具、微調與收納零錢的歷史記錄仍完整保留且正確記錄操作時間與快照。</li>
+                            <li><strong>介面修正</strong>：修正輸入欄位在明亮主題出現白底白字的問題，以及上方標題擠壓換行問題，調整版本號顯示位置與樣式，使標題更穩定。</li>
+                            <li><strong>版本升級</strong>：版本號更新為 <strong>v4.3</strong>，並更新頁面標題與發行說明。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="changelog-divider">
+
             <!-- 2025/11/13 -->
             <div class="changelog-entry">
                 <div class="changelog-date">2025/11/13</div>
@@ -150,9 +169,9 @@ function getChangelogHTML() {
                 <h5 class="summary-title">版本演進總覽</h5>
                 <div class="version-timeline">
                     <div class="version-item">
-                        <span class="version-tag">v4.1</span>
-                        <span class="version-date">(2025/11/13)</span>
-                        <span class="version-desc">介面優化與歷史記錄功能增強</span>
+                        <span class="version-tag">v4.3</span>
+                        <span class="version-date">(2026/1/25)</span>
+                        <span class="version-desc">互動通知、換算修正與介面修正</span>
                     </div>
                     <div class="version-item">
                         <span class="version-tag">v2.6</span>
