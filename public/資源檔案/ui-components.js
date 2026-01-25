@@ -388,9 +388,38 @@ function updateExchangeInfo(domElements) {
     let fromNewAmount = fromCurrentAmount;
     let toNewAmount = toCurrentAmount;
     
-    if (amount > 0 && amount <= fromCurrentAmount && amount % fromDenom === 0) {
+    // 驗證：必須為正數、不得超出來源、同時能被來源面額與目標面額整除
+    const canConvert = amount > 0 &&
+        amount <= fromCurrentAmount &&
+        amount % fromDenom === 0 &&
+        amount % toDenom === 0;
+
+    if (canConvert) {
         fromNewAmount -= amount;
         toNewAmount += amount;
+        // 啟用確認按鈕（如果存在）
+        if (ex.confirm) {
+            ex.confirm.disabled = false;
+            ex.confirm.title = '';
+        }
+    } else {
+        // 禁用確認按鈕並提供提示
+        if (ex.confirm) {
+            ex.confirm.disabled = true;
+            if (amount > 0) {
+                if (amount > fromCurrentAmount) {
+                    ex.confirm.title = '轉換金額超出來源可用金額';
+                } else if (amount % fromDenom !== 0) {
+                    ex.confirm.title = '轉換金額必須為來源面額的整數倍';
+                } else if (amount % toDenom !== 0) {
+                    ex.confirm.title = '轉換金額必須能被目標面額整除';
+                } else {
+                    ex.confirm.title = '請確認轉換參數';
+                }
+            } else {
+                ex.confirm.title = '請輸入轉換金額';
+            }
+        }
     }
     
     ex.fromNewAmount.textContent = formatNumber(fromNewAmount);

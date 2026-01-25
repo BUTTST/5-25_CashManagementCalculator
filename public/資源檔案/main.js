@@ -918,8 +918,15 @@ class CashManagementApp {
         const toInput = this.domElements.amountInputs[toDenom];
         const fromCurrentAmount = parseInputValue(fromInput.value);
         
+        // 基本驗證：正數、不得超出來源、必須為來源面額的整數倍
         if (amount <= 0 || amount > fromCurrentAmount || amount % fromDenom !== 0) {
-            alert('請輸入有效的轉換金額。');
+            alert('請輸入有效的轉換金額（必須為來源面額的整倍數且不可超出來源可用金額）。');
+            return;
+        }
+
+        // 目標面額可整除性檢查：確保轉換後能換成整數張數的目標面額
+        if (amount % toDenom !== 0) {
+            alert('轉換金額必須能轉成整數張數的目標面額，請調整金額或目標面額。');
             return;
         }
         
